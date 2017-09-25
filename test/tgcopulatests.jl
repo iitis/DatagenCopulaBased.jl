@@ -30,3 +30,31 @@
     @test normdist([1. 0.5;0.5 1.], 2, 10) ≈ [0.225457 0.897627; 0.548381 1.43926] atol=1.0e-5
   end
 end
+
+@testset "subcopulas" begin
+  srand(43)
+  cov = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.]
+  x = gcopulagen(cov, 3)
+  x1 = copy(x)
+  g2tsubcopula!(x1, cov, [1,2])
+  @test x1 ≈ [0.558652  0.719921  0.794493; 0.935573  0.922409  0.345177; 0.217512  0.174138  0.123049] atol=1.0e-5
+  v = clcopappend(x[:,2], 0.5)
+  @test v ≈ [0.31555, 0.846364, 0.0132052] atol=1.0e-5
+end
+
+@testset "tests for uniform copulas output" begin
+  srand(43)
+  cov = [1. 0.8; 0.8 1.]
+  x = gcopulagen(cov, 100000);
+  quant = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+  @test quantile(x[:,1], quant) ≈ quant atol=1.0e-2
+  @test quantile(x[:,2], quant) ≈ quant atol=1.0e-2
+  v = clcopappend(x[:,2], 0.8)
+  @test quantile(v, quant) ≈ quant atol=1.0e-2
+  g2tsubcopula!(x, cov, [1,2])
+  @test quantile(x[:,1], quant) ≈ quant atol=1.0e-2
+  @test quantile(x[:,2], quant) ≈ quant atol=1.0e-2
+  x = tcopulagen(cov, 100000);
+  @test quantile(x[:,1], quant) ≈ quant atol=1.0e-2
+  @test quantile(x[:,2], quant) ≈ quant atol=1.0e-2
+end
