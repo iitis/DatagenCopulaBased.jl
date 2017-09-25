@@ -1,6 +1,6 @@
 using Base.Test
 using DatagenCopulaBased
 
-import DatagenCopulaBased: u2stnormal, u2tdist, invers_gen
+import DatagenCopulaBased: u2normal, u2tdist, invers_gen
 
-include("subcopulatest.jl")
+include("tgcopulatests.jl")

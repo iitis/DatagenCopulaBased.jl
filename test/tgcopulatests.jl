@@ -3,18 +3,20 @@
   @testset "axiliary functions" begin
     @test invers_gen([1., 2., 3., 4., 5.], 3.2) ≈ [0.638608, 0.535014, 0.478181, 0.44034, 0.412558] atol=1.0e-5
     srand(43)
-    @test cormatgen(3) ≈ [1.0 -0.152492 0.629667; -0.152492 1.0 0.273588; 0.629667 0.273588 1.0] atol=1.0e-5
+    cor, cov = covmatgen(3)
+    @test cor ≈ [0.274784 -0.068671 0.933668; -0.068671 0.741411 0.657473; 0.933668 0.657473 7.93625] atol=1.0e-5
+    @test cov ≈ [1.0 -0.152142 0.63225; -0.152142 1.0 0.271045; 0.63225 0.271045 1.0] atol=1.0e-5
   end
   @testset "generate data from copuls" begin
     srand(43)
-    @test clcopulagen(2,2) ≈ [0.982589 0.207961; 2.95138 2.77698] atol=1.0e-5
+    @test clcopulagen(2,2) ≈ [0.991747 0.20762; 2.96931 2.79434] atol=1.0e-5
     srand(43)
     @test tcopulagen([[1. 0.5];[0.5 1.]], 2) ≈ [0.581625 0.792144; 0.76935 0.968669] atol=1.0e-5
     srand(43)
     @test gcopulagen([[1. 0.5];[0.5 1.]], 2) ≈ [0.589188 0.815308; 0.708285 0.924962] atol=1.0e-5
   end
   @testset "transform marginals" begin
-    @test u2stnormal([0.2 0.4; 0.4 0.6; 0.6 0.8]) ≈ [-0.841621 -0.253347; -0.253347 0.253347; 0.253347 0.841621] atol=1.0e-5
+    @test u2normal([0.2 0.4; 0.4 0.6; 0.6 0.8]) ≈ [-0.841621 -0.253347; -0.253347 0.253347; 0.253347 0.841621] atol=1.0e-5
     @test u2tdist([0.2 0.4; 0.4 0.6; 0.6 0.8], 10) ≈ [-0.879058  -0.260185; -0.260185 0.260185; 0.260185 0.879058] atol=1.0e-5
   end
   @testset "generates data given copula nad marginal" begin

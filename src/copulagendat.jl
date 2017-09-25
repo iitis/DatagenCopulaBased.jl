@@ -1,3 +1,21 @@
+# generates covariance matrix
+
+"""
+  covmatgen(band_n::Int)
+
+Returns: symmetric correlation and covariance matrix
+"""
+
+function covmatgen(n::Int)
+  x = 10.*clcopulagen(3*n, n, -28/n, 30.)
+  for i in 1:n
+    x[:,i] = rand([-1, 1])*x[:,i]
+  end
+  cov(x), cor(x)
+end
+
+# generated data using copulas
+
 """
 
   invers_gen(x::Vector{Float64}, theta::Float64)
@@ -16,7 +34,7 @@ Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Cl
 """
 
 function clcopulagen(t::Int, n::Int, step::Float64 = 0.01, w1 = 1.)
-  theta = 1.02
+  theta = 1.0
   qamma_dist = Gamma(1,1/theta)
   x = rand(t)
   u = rand(t, n)
@@ -26,20 +44,6 @@ function clcopulagen(t::Int, n::Int, step::Float64 = 0.01, w1 = 1.)
     @inbounds matrix[:,i] = quantile(Weibull(w1+step*i,1), unif_ret)
   end
   matrix
-end
-
-"""
-  covmatgen(band_n::Int)
-
-Returns: symmetric correlation and covariance matrix
-"""
-
-function cormatgen(n::Int)
-  x = clcopulagen(3*n, n, -28/n, 30.)
-  for i in 1:n
-    x[:,i] = rand([-1, 1])*x[:,i]
-  end
-  cor(x)
 end
 
 """
@@ -61,23 +65,11 @@ function tcopulagen(cormat::Matrix{Float64}, t::Int, nu::Int=20)
 end
 
 """
-  u2normal(y::Matrix{Float})
+    gcopulagen(covmat::Matrix{Float}, t::Int)
 
-Returns matrix of multivariate data with standard gaussian marginals
+Returns: t x n matrix of t realisations of multivariate data generated
+using gaussian copula with correlation matrix - cormat
 """
-function u2stnormal(y::Matrix{Float64})
-  x = copy(y)
-  for i in 1:size(y, 2)
-    d = Normal(0, 1.)
-    x[:,i] = quantile(d, y[:,i])
-  end
-  x
-end
-
-
-tcopulagmarg(cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], t::Int = 10000, nu::Int = 10) =
-  u2stnormal(tcopulagen(cormat, t, nu))
-
 
 function gcopulagen(cormat::Matrix{Float64}, t::Int)
   y = rand(MvNormal(cormat),t)'
@@ -89,6 +81,26 @@ function gcopulagen(cormat::Matrix{Float64}, t::Int)
   z
 end
 
+# transforms univariate distributions
+
+"""
+  u2normal(y::Matrix{Float}, covmat::Matrix{Float})
+
+Returns matrix of data with gaussian marginals at given covariance natrix,
+ from copula generated data y on uniform segment [0,1]^n where n = size(y, 2)
+"""
+
+
+function u2normal(y::Matrix{Float64}, cormat::Matrix{Float64} = eye(size(y, 2)))
+  x = copy(y)
+  for i in 1:size(y, 2)
+    d = Normal(0, sqrt(cormat[i,i]))
+    x[:,i] = quantile(d, y[:,i])
+  end
+  x
+end
+
+
 function u2tdist(y::Matrix{Float64}, nu::Int = 10)
     x = copy(y)
     for i in 1:size(y, 2)
@@ -97,6 +109,18 @@ function u2tdist(y::Matrix{Float64}, nu::Int = 10)
     end
     x
   end
+
+# generates data given copula and marginal dists
+
+"""
+  tcopulagmarg(cormat::Matrix{Float64}, t::Int, nu::Int)
+
+Returns: t x n matrix of t realisations of multivariate data generated using
+t-Student copula with nu degrees of freedom ans standard normal marginals
+
+"""
+
+tcopulagmarg(cormat::Matrix{Float64}, t::Int, nu::Int) = u2normal(tcopulagen(cormat, t, nu))
 
 
 gcopulatmarg(cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], t::Int = 10000, nu::Int = 10) =
