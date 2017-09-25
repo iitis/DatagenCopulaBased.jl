@@ -1,32 +1,3 @@
-"""
-
-  invers_gen(x::Vector{Float64}, theta::Float64)
-
-Returns: Vector{Float64} of data transformed using inverse of Clayton Copula
-generator with parametr theta
-"""
-invers_gen(x::Vector{Float64}, theta::Float64) = (1 + theta.*x).^(-1/theta)
-
-"""
-
-  clcopulagen(t::Int, m::Int)
-
-Returns: Matrix{Float} of size t*m - t realisations of m dimentional random var.
-generated from Clayton copula with Weibull marginals
-"""
-
-function clcopulagen(t::Int, m::Int, step::Float64 = 0.01, w1 = 1.)
-  theta = 1.02
-  qamma_dist = Gamma(1,1/theta)
-  x = rand(t)
-  u = rand(t, m)
-  matrix = zeros(Float64, t, m)
-  for i = 1:m
-    unif_ret = invers_gen(-log.(u[:,i])./quantile(qamma_dist, x), theta)
-    @inbounds matrix[:,i] = quantile(Weibull(w1+step*i,1), unif_ret)
-  end
-  matrix
-end
 
 """
   covmatgen(band_n::Int)
@@ -114,7 +85,7 @@ Returns Matrix{Float} pixel_n x band_n being pixel_n realisations of band_n vari
 random variable with gaussian marginals, clayton copula at indeces cli, student clcopula
 at sti anf gaussian copula otherwise
 """
-function datagen(cli::Array = [], sti::Array = [], pixel_n::Int = 500,
+function subcopdatagen(cli::Array = [], sti::Array = [], pixel_n::Int = 500,
   band_n::Int = 30)
   covmat, cormat = covmatgen(band_n)
   z, y = normcopulagen(cormat, pixel_n, band_n)

@@ -12,7 +12,7 @@ symbands = [10,20,30,40,50,60,70,80,90,100,110]
 asymbands = [5,15,25,35,45]
 symbands = [10,20,30,40,50]
 
-data = datagen(asymbands, symbands, pixel_n, band_n);
+data = subcopdatagen(asymbands, symbands, pixel_n, band_n);
 
 npzwrite("finalsnpz/datatest.npy", data)
 data = npzread("finalsnpz/datatest.npy")
