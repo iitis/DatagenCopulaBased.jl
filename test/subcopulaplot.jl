@@ -1,10 +1,4 @@
-
-#srand()
-##
-#data generator
-using Distributions
-
-include("src/gendata.jl")
+using DatagenCopulaBased
 
 pixel_n = 350000
 band_n = 128
