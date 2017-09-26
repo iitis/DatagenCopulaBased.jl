@@ -33,17 +33,26 @@ Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Cl
  copula with Weibull marginals
 """
 
-function clcopulagen(t::Int, n::Int, step::Float64 = 0.01, w1 = 1.)
+function clcopulag(t::Int, n::Int)
   theta = 1.0
   qamma_dist = Gamma(1,1/theta)
   x = rand(t)
   u = rand(t, n)
   matrix = zeros(Float64, t, n)
   for i = 1:n
-    unif_ret = invers_gen(-log.(u[:,i])./quantile(qamma_dist, x), theta)
-    @inbounds matrix[:,i] = quantile(Weibull(w1+step*i,1), unif_ret)
+    matrix[:,i] = invers_gen(-log.(u[:,i])./quantile(qamma_dist, x), theta)
   end
   matrix
+end
+
+
+function clcopulagen(t::Int, n::Int, step::Float64 = 0.01, w1 = 1.)
+  X = clcopulag(t, n)
+  Y = copy(X)
+  for i = 1:n
+    @inbounds Y[:,i] = quantile(Weibull(w1+step*i,1), X[:,i])
+  end
+  Y
 end
 
 """
