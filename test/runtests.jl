@@ -4,4 +4,4 @@ using Distributions
 
 import DatagenCopulaBased: invers_gen, lefttail, righttail, copuladeftest
 
-include("tgcopulatests.jl")
+include("copulatests.jl")

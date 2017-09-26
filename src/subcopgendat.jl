@@ -53,4 +53,5 @@ function subcopdatagen(cli::Array = [], sti::Array = [], t::Int = 500, n::Int = 
       g2tsubcopula!(z, cormat, sti)
   end
   convertmarg!(z, Normal, [[0, sqrt(covmat[i,i])] for i in 1:n])
+  z
 end

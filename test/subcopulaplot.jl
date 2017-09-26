@@ -13,7 +13,7 @@ data = subcopdatagen(asymn, symn, t, n);
 npzwrite("finalsnpz/datatest.npy", data)
 data = npzread("finalsnpz/datatest.npy")
 #plots distributions
-
+data
 
 using PyPlot
 plot(data[:,5], data[:,15], "o")
