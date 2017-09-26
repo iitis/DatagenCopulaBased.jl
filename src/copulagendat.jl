@@ -1,18 +1,3 @@
-# generates covariance matrix
-
-"""
-  covmatgen(band_n::Int)
-
-Returns: symmetric correlation and covariance matrix
-"""
-
-function covmatgen(n::Int)
-  x = 10.*clcopulagen(3*n, n, -28/n, 30.)
-  for i in 1:n
-    x[:,i] = rand([-1, 1])*x[:,i]
-  end
-  cov(x), cor(x)
-end
 
 # generated data using copulas
 
@@ -30,7 +15,7 @@ invers_gen(x::Vector{Float64}, theta::Float64) = (1 + theta.*x).^(-1/theta)
   clcopulagen(t::Int, n::Int)
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
- copula with Weibull marginals
+ copula with parameter θ = 1
 """
 
 function clcopulag(t::Int, n::Int)
@@ -43,16 +28,6 @@ function clcopulag(t::Int, n::Int)
     matrix[:,i] = invers_gen(-log.(u[:,i])./quantile(qamma_dist, x), theta)
   end
   matrix
-end
-
-
-function clcopulagen(t::Int, n::Int, step::Float64 = 0.01, w1 = 1.)
-  X = clcopulag(t, n)
-  Y = copy(X)
-  for i = 1:n
-    @inbounds Y[:,i] = quantile(Weibull(w1+step*i,1), X[:,i])
-  end
-  Y
 end
 
 """
@@ -92,6 +67,20 @@ end
 
 # transforms univariate distributions
 
+function convertmarg!(X::Matrix{T}, dist, par::Union{Vector{Vector{Int64}}, Vector{Vector{T}}}) where T <: AbstractFloat
+  for i = 1:size(X, 2)
+    @inbounds X[:,i] = quantile(dist(par[i]...), X[:,i])
+  end
+end
+
+
+function clcopulagen(t::Int, n::Int, step::Float64 = 0.01, w1 = 1.)
+  X = clcopulag(t, n)
+  convertmarg!(X, Weibull, [[w1+step*i,1] for i in 1:n])
+  X
+end
+
+
 """
   u2normal(y::Matrix{Float}, covmat::Matrix{Float})
 
@@ -102,15 +91,18 @@ Returns matrix of data with gaussian marginals at given covariance natrix,
 
 function u2normal(y::Matrix{Float64}, cormat::Matrix{Float64} = eye(size(y, 2)))
   x = copy(y)
-  for i in 1:size(y, 2)
-    d = Normal(0, sqrt(cormat[i,i]))
-    x[:,i] = quantile(d, y[:,i])
-  end
+  convertmarg!(x, Normal, [[0, sqrt(cormat[i,i])] for i in 1:size(cormat, 1)])
+  x
+end
+
+function u2tdist(y::Matrix{Float64}, nu::Int = 10)
+  x = copy(y)
+  convertmarg!(x, TDist, [[nu] for i in 1:size(y, 2)])
   x
 end
 
 
-function u2tdist(y::Matrix{Float64}, nu::Int = 10)
+function u2tdist1(y::Matrix{Float64}, nu::Int = 10)
     x = copy(y)
     for i in 1:size(y, 2)
       d = TDist(nu)
@@ -144,3 +136,20 @@ end
 
 normdist(cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], t::Int = 10000, nu::Int = 10) =
   transpose(rand(MvNormal(cormat),t))
+
+
+  # generates covariance matrix
+
+  """
+    covmatgen(band_n::Int)
+
+  Returns: symmetric correlation and covariance matrix
+  """
+
+  function covmatgen(n::Int)
+    x = 10.*clcopulagen(3*n, n, -28/n, 30.)
+    for i in 1:n
+      x[:,i] = rand([-1, 1])*x[:,i]
+    end
+    cov(x), cor(x)
+  end
