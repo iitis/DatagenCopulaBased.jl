@@ -18,13 +18,13 @@ function g2tsubcopula!(z::Matrix{Float64}, cormat::Matrix{Float64}, subn::Array{
 end
 
 """
-  clcopappend(U::Vector{Float}, rho::Float)
+  g2clsubcopula(U::Vector{Float}, rho::Float)
 
 Returns vector of data generated using clayton (assymatric) copula accoriding to
 vector of data U at given pearson correlation coeficient rho. If rho is to small or
 negative its value is changed
 """
-function clcopappend(U::Vector{Float64}, rho::Float64)
+function g2clsubcopula(U::Vector{Float64}, rho::Float64)
   rho = (abs(rho) > 0.35)? abs(rho): 0.35+0.1*rand()
   tau = 2/pi*asin(rho)
   theta = 2*tau/(1-tau)
@@ -46,11 +46,11 @@ function subcopdatagen(cli::Array = [], sti::Array = [], t::Int = 500, n::Int = 
   z = gcopulagen(cormat, t)
   if cli !=[]
     for i in 2:length(cli)
-      z[:,cli[i]] = clcopappend(z[:,cli[i-1]], cormat[cli[i], cli[i-1]])
+      z[:,cli[i]] = g2clsubcopula(z[:,cli[i-1]], cormat[cli[i], cli[i-1]])
     end
   end
   if sti !=[]
       g2tsubcopula!(z, cormat, sti)
   end
-  u2normal(z, covmat)
+  convertmarg!(z, Normal, [[0, sqrt(covmat[i,i])] for i in 1:n])
 end

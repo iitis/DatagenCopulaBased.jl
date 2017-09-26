@@ -6,7 +6,6 @@ module DatagenCopulaBased
   include("subcopgendat.jl")
   include("helpers.jl")
 
-  export subcopdatagen, clcopulagen, covmatgen, tcopulagen, gcopulagen,
-   gcopulatmarg, tcopulagmarg, tdistdat, normdist
-
+  export clcopulagen, tcopulagen, gcopulagen, convertmarg!
+  export subcopdatagen, covmatgen, g2clsubcopula, g2tsubcopula!
 end
