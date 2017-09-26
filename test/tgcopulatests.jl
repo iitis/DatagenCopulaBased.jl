@@ -42,19 +42,41 @@ end
   @test v ≈ [0.31555, 0.846364, 0.0132052] atol=1.0e-5
 end
 
-@testset "tests for uniform copulas output" begin
-  srand(43)
-  cov = [1. 0.8; 0.8 1.]
-  x = gcopulagen(cov, 100000);
-  quant = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-  @test quantile(x[:,1], quant) ≈ quant atol=1.0e-2
-  @test quantile(x[:,2], quant) ≈ quant atol=1.0e-2
+@testset "helpers" begin
+  v1 = vcat(zeros(5), 0.5*ones(5), zeros(5), 0.5*ones(70), ones(5), 0.5*ones(5), ones(5));
+  v2 = vcat(zeros(10), 0.5*ones(80), ones(10))
+  @test lefttail(v1, v2, 0.1) ≈ 0.5
+  @test righttail(v1, v2, 0.9) ≈ 0.5
+end
+
+
+
+@testset "probabilistic tests" begin
+  cov = [1. 0.5; 0.5 1.]
+  x = gcopulagen(cov, 100000)
   v = clcopappend(x[:,2], 0.8)
-  @test quantile(v, quant) ≈ quant atol=1.0e-2
-  g2tsubcopula!(x, cov, [1,2])
-  @test quantile(x[:,1], quant) ≈ quant atol=1.0e-2
-  @test quantile(x[:,2], quant) ≈ quant atol=1.0e-2
-  x = tcopulagen(cov, 100000);
-  @test quantile(x[:,1], quant) ≈ quant atol=1.0e-2
-  @test quantile(x[:,2], quant) ≈ quant atol=1.0e-2
+  y = copy(x)
+  ν = 6
+  g2tsubcopula!(y, cov, [1,2])
+  xt = tcopulagen(cov, 100000, ν);
+  @testset "tests for uniform distribution" begin
+    srand(43)
+    quant = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+    @test quantile(x[:,1], quant) ≈ quant atol=1.0e-2
+    @test quantile(x[:,2], quant) ≈ quant atol=1.0e-2
+    @test quantile(v, quant) ≈ quant atol=1.0e-2
+    @test quantile(y[:,1], quant) ≈ quant atol=1.0e-2
+    @test quantile(y[:,2], quant) ≈ quant atol=1.0e-2
+    @test quantile(xt[:,1], quant) ≈ quant atol=1.0e-2
+    @test quantile(xt[:,2], quant) ≈ quant atol=1.0e-2
+  end
+  @testset "tail test" begin
+    @test lefttail(x[:,1], x[:,2], 0.001) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,1], x[:,2], 0.999) ≈ 0 atol=1.0e-1
+    d = TDist(ν+1)
+    rho = cov[1,2]
+    λ = 2*pdf(d, -sqrt.((ν+1)*(1-rho)/(1+rho)))
+    @test lefttail(xt[:,1], xt[:,2], 0.001) ≈ λ atol=1.0e-1
+    @test righttail(xt[:,1], xt[:,2], 0.999) ≈ λ atol=1.0e-1
+  end
 end
