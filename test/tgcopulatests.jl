@@ -54,7 +54,7 @@ end
 @testset "probabilistic tests" begin
   cov = [1. 0.5; 0.5 1.]
   x = gcopulagen(cov, 100000)
-  v = clcopappend(x[:,2], 0.8)
+  v = clcopappend(x[:,2], cov[1,2])
   y = copy(x)
   ν = 6
   g2tsubcopula!(y, cov, [1,2])
@@ -69,6 +69,12 @@ end
     @test quantile(y[:,2], quant) ≈ quant atol=1.0e-2
     @test quantile(xt[:,1], quant) ≈ quant atol=1.0e-2
     @test quantile(xt[:,2], quant) ≈ quant atol=1.0e-2
+  end
+  @testset "copula def" begin
+    @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
+    @test copuladeftest(y[:,1], y[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
+    @test copuladeftest(x[:,1], v, [0.7, 0.8], [0.2, 0.7]) > 0
+    @test copuladeftest(xt[:,1], xt[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   end
   @testset "tail test" begin
     @test lefttail(x[:,1], x[:,2], 0.001) ≈ 0 atol=1.0e-1
