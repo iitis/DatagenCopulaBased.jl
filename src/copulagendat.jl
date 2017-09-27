@@ -15,7 +15,7 @@ invers_gen(x::Vector{Float64}, theta::Float64) = (1 + theta.*x).^(-1/theta)
   clcopulagen(t::Int, n::Int)
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
- copula with parameter θ = 1
+ copula with parameters θ = 1
 """
 
 function clcopulagen(t::Int, n::Int)
@@ -29,6 +29,14 @@ function clcopulagen(t::Int, n::Int)
   end
   matrix
 end
+
+"""
+
+  clcopulagenapprox(t::Int, n::Int)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
+ copula with positive parameters θ_1, ..., θ_n
+"""
 
 function clcopulagenapprox(t::Int = 1000, θ::Vector{Float64} = [1,1,1,1])
   X = rand(t,1)
