@@ -45,44 +45,57 @@ end
 
 
 
-@testset "probabilistic tests" begin
-  cov = [1. 0.5; 0.5 1.]
-  x = gcopulagen(cov, 200000)
-  v = g2clsubcopula(x[:,2], cov[1,2])
-  y = copy(x)
-  ν = 6
-  g2tsubcopula!(y, cov, [1,2])
-  xt = tcopulagen(cov, 200000, ν);
-  xc = clcopulagen(200000, 2);
-  @testset "tests for uniform distribution" begin
-    srand(43)
-    quant = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-    @test quantile(x[:,1], quant) ≈ quant atol=1.0e-2
-    @test quantile(x[:,2], quant) ≈ quant atol=1.0e-2
-    @test quantile(v, quant) ≈ quant atol=1.0e-2
-    @test quantile(y[:,1], quant) ≈ quant atol=1.0e-2
-    @test quantile(y[:,2], quant) ≈ quant atol=1.0e-2
-    @test quantile(xt[:,1], quant) ≈ quant atol=1.0e-2
-    @test quantile(xt[:,2], quant) ≈ quant atol=1.0e-2
-    @test quantile(xc[:,1], quant) ≈ quant atol=1.0e-2
-    @test quantile(xc[:,2], quant) ≈ quant atol=1.0e-2
-  end
-  @testset "copula def" begin
-    @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
-    @test copuladeftest(y[:,1], y[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
-    @test copuladeftest(x[:,1], v, [0.7, 0.8], [0.2, 0.7]) > 0
-    @test copuladeftest(xt[:,1], xt[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
-    @test copuladeftest(xc[:,1], xc[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
-  end
-  @testset "tail test" begin
-    @test lefttail(x[:,1], x[:,2], 0.001) ≈ 0 atol=1.0e-1
-    @test righttail(x[:,1], x[:,2], 0.999) ≈ 0 atol=1.0e-1
-    @test lefttail(xc[:,1], xc[:,2], 0.001) ≈ 0.5 atol=1.0e-1
-    @test righttail(xc[:,1], xc[:,2], 0.999) ≈ 0 atol=1.0e-1
-    d = TDist(ν+1)
-    rho = cov[1,2]
-    λ = 2*pdf(d, -sqrt.((ν+1)*(1-rho)/(1+rho)))
-    @test lefttail(xt[:,1], xt[:,2], 0.001) ≈ λ atol=1.0e-1
-    @test righttail(xt[:,1], xt[:,2], 0.999) ≈ λ atol=1.0e-1
-  end
+cov = [1. 0.5; 0.5 1.]
+srand(40)
+x = gcopulagen(cov, 200000)
+v = g2clsubcopula(x[:,2], cov[1,2])
+y = copy(x)
+ν = 6
+g2tsubcopula!(y, cov, [1,2])
+xt = tcopulagen(cov, 200000, ν);
+xc = clcopulagen(200000, 2);
+α = 0.05
+@testset "tests for uniform distribution" begin
+  d = Uniform(0,1)
+  @test pvalue(ExactOneSampleKSTest(x[:,1],d)) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2],d)) > α
+  @test pvalue(ExactOneSampleKSTest(y[:,1],d)) > α
+  @test pvalue(ExactOneSampleKSTest(y[:,2],d)) > α
+  @test pvalue(ExactOneSampleKSTest(v,d)) > α
+  @test pvalue(ExactOneSampleKSTest(xt[:,1],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xt[:,2],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xc[:,1],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xc[:,2],d)) > α
+end
+@testset "copula def" begin
+  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
+  @test copuladeftest(y[:,1], y[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
+  @test copuladeftest(x[:,1], v, [0.7, 0.8], [0.2, 0.7]) > 0
+  @test copuladeftest(xt[:,1], xt[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
+  @test copuladeftest(xc[:,1], xc[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
+end
+@testset "tail test" begin
+  @test lefttail(x[:,1], x[:,2], 0.001) ≈ 0 atol=1.0e-1
+  @test righttail(x[:,1], x[:,2], 0.999) ≈ 0 atol=1.0e-1
+  @test lefttail(xc[:,1], xc[:,2], 0.001) ≈ 0.5 atol=1.0e-1
+  @test righttail(xc[:,1], xc[:,2], 0.999) ≈ 0 atol=1.0e-1
+  d = TDist(ν+1)
+  rho = cov[1,2]
+  λ = 2*pdf(d, -sqrt.((ν+1)*(1-rho)/(1+rho)))
+  @test lefttail(xt[:,1], xt[:,2], 0.001) ≈ λ atol=1.0e-1
+  @test righttail(xt[:,1], xt[:,2], 0.999) ≈ λ atol=1.0e-1
+end
+@testset "test for std normal distribution of marginals of subcopdatagen" begin
+  x = subcopdatagen([1,2], [4,5], 100000, 5);
+  d = Normal(0,1)
+  @test pvalue(ExactOneSampleKSTest(x[:,1],d)) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2],d)) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3],d)) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4],d)) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,5],d)) > α
+  x = subcopdatagen([1,2], [], 100000, 3, [3., 3., 3.]);
+  d = Normal(0,3)
+  @test pvalue(ExactOneSampleKSTest(x[:,1],d)) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2],d)) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3],d)) > α
 end

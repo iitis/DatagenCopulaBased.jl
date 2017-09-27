@@ -41,8 +41,8 @@ Returns Matrix{Float} pixel_n x band_n being pixel_n realisations of band_n vari
 random variable with gaussian marginals, clayton copula at indeces cli, student clcopula
 at sti anf gaussian copula otherwise
 """
-function subcopdatagen(cli::Array = [], sti::Array = [], t::Int = 500, n::Int = 30)
-  covmat, cormat = covmatgen(n)
+function subcopdatagen(cli::Array = [], sti::Array = [], t::Int = 500, n::Int = 30, std::Vector{Float64} = [fill(1., n)...])
+  _, cormat = covmatgen(n)
   z = gcopulagen(cormat, t)
   if cli !=[]
     for i in 2:length(cli)
@@ -52,6 +52,6 @@ function subcopdatagen(cli::Array = [], sti::Array = [], t::Int = 500, n::Int = 
   if sti !=[]
       g2tsubcopula!(z, cormat, sti)
   end
-  convertmarg!(z, Normal, [[0, sqrt(covmat[i,i])] for i in 1:n])
+  convertmarg!(z, Normal, [[0, std[i]] for i in 1:n])
   z
 end
