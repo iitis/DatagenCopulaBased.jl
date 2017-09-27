@@ -1,5 +1,5 @@
 module DatagenCopulaBased
-
+  using HypothesisTests
   using Distributions
 
   include("copulagendat.jl")
@@ -7,5 +7,5 @@ module DatagenCopulaBased
   include("helpers.jl")
 
   export clcopulagen, tcopulagen, gcopulagen, convertmarg!
-  export subcopdatagen, covmatgen, g2clsubcopula, g2tsubcopula!
+  export subcopdatagen, cormatgen, g2clsubcopula, g2tsubcopula!, clcopulagenapprox
 end

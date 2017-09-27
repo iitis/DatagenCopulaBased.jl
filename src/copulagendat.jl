@@ -30,6 +30,16 @@ function clcopulagen(t::Int, n::Int)
   matrix
 end
 
+function clcopulagenapprox(t::Int = 1000, θ::Vector{Float64} = [1,1,1,1])
+  X = rand(t,1)
+  for i in 2:length(θ)
+    W = rand(t)
+    U = X[:, i-1]
+    X = hcat(X, U.*(W.^(-θ[i]/(1 + θ[i])) - 1 + U.^θ[i]).^(-1/θ[i]))
+  end
+  X
+end
+
 """
   tcopulagen(cormat::Matrix{Float}, nu::Int)
 
@@ -72,11 +82,14 @@ end
 
 Takes t x n matrix of t realisations of n variate data with uniform marginals and
 convert marginals on [0,1] and convert i th marginals to those with distribution dist
-and parameters p[i] 
+and parameters p[i]
 """
 
 function convertmarg!(X::Matrix{T}, dist, p::Union{Vector{Vector{Int64}}, Vector{Vector{T}}}) where T <: AbstractFloat
+  d = Uniform(0,1)
   for i = 1:size(X, 2)
+    pw = pvalue(ExactOneSampleKSTest(X[:,i],d))
+    pw > 0.001 || throw(AssertionError("$i marginal not uniform"))
     @inbounds X[:,i] = quantile(dist(p[i]...), X[:,i])
   end
 end
@@ -84,16 +97,16 @@ end
   # generates covariance matrix
 
   """
-    covmatgen(band_n::Int)
+    cormatgen(band_n::Int)
 
-  Returns: symmetric correlation and covariance matrix
+  Returns: symmetric correlation matrix
   """
 
-  function covmatgen(n::Int)
-    x = clcopulagen(3*n, n)
+  function cormatgen(n::Int)
+    x = clcopulagen(4*n, n)
     convertmarg!(x, Weibull, [[30-28*i/n,1] for i in 1:n])
     for i in 1:n
       x[:,i] = 10*rand([-1, 1])*x[:,i]
     end
-    cov(x), cor(x)
+    cor(x)
   end

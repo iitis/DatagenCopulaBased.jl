@@ -21,11 +21,9 @@ end
   g2clsubcopula(U::Vector{Float}, rho::Float)
 
 Returns vector of data generated using clayton (assymatric) copula accoriding to
-vector of data U at given pearson correlation coeficient rho. If rho is to small or
-negative its value is changed
+vector of data U at given pearson correlation coeficient rho. 
 """
 function g2clsubcopula(U::Vector{Float64}, rho::Float64)
-  rho = (abs(rho) > 0.35)? abs(rho): 0.35+0.1*rand()
   tau = 2/pi*asin(rho)
   theta = 2*tau/(1-tau)
   W = rand(length(U))
@@ -42,7 +40,7 @@ random variable with gaussian marginals, clayton copula at indeces cli, student 
 at sti anf gaussian copula otherwise
 """
 function subcopdatagen(cli::Array = [], sti::Array = [], t::Int = 500, n::Int = 30, std::Vector{Float64} = [fill(1., n)...])
-  _, cormat = covmatgen(n)
+  cormat = cormatgen(n)
   z = gcopulagen(cormat, t)
   if cli !=[]
     for i in 2:length(cli)

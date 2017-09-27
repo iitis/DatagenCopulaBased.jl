@@ -3,9 +3,7 @@
   @testset "axiliary functions" begin
     @test invers_gen([1., 2., 3., 4., 5.], 3.2) ≈ [0.638608, 0.535014, 0.478181, 0.44034, 0.412558] atol=1.0e-5
     srand(43)
-    cor, cov = covmatgen(3)
-    @test cor ≈ [0.274784 -0.068671 0.933668; -0.068671 0.741411 0.657473; 0.933668 0.657473 7.93625] atol=1.0e-5
-    @test cov ≈ [1.0 -0.152142 0.63225; -0.152142 1.0 0.271045; 0.63225 0.271045 1.0] atol=1.0e-5
+    @test cormatgen(2) ≈ [1.0 0.264834; 0.264834 1.0] atol=1.0e-5
   end
   @testset "generate data from copuls" begin
     srand(43)
@@ -22,6 +20,16 @@
     convertmarg!(x1, TDist, [[10],[10]])
     @test x ≈ [-0.841621 -0.253347; -0.253347 0.253347; 0.253347 0.841621] atol=1.0e-5
     @test x1 ≈ [-0.879058  -0.260185; -0.260185 0.260185; 0.260185 0.879058] atol=1.0e-5
+    x = rand(10000, 2)
+    x1 = rand(10000, 2)
+    convertmarg!(x, Normal, [[0., 2.],[0., 3.]])
+    convertmarg!(x1, TDist, [[10],[6]])
+    α = 0.05
+    @test pvalue(ExactOneSampleKSTest(x[:,1],Normal(0,2))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2],Normal(0,3))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,1],TDist(10))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,2],TDist(6))) > α
+    @test_throws AssertionError convertmarg!(randn(1000, 2), Normal, [[0., 2.],[0., 3.]])
   end
 end
 
@@ -54,6 +62,7 @@ y = copy(x)
 g2tsubcopula!(y, cov, [1,2])
 xt = tcopulagen(cov, 200000, ν);
 xc = clcopulagen(200000, 2);
+xcap = clcopulagenapprox(200000, [3., 3., 3., 2., 3., 0.5])
 α = 0.05
 @testset "tests for uniform distribution" begin
   d = Uniform(0,1)
@@ -66,6 +75,8 @@ xc = clcopulagen(200000, 2);
   @test pvalue(ExactOneSampleKSTest(xt[:,2],d)) > α
   @test pvalue(ExactOneSampleKSTest(xc[:,1],d)) > α
   @test pvalue(ExactOneSampleKSTest(xc[:,2],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xcap[:,4],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xcap[:,5],d)) > α
 end
 @testset "copula def" begin
   @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
@@ -79,6 +90,12 @@ end
   @test righttail(x[:,1], x[:,2], 0.999) ≈ 0 atol=1.0e-1
   @test lefttail(xc[:,1], xc[:,2], 0.001) ≈ 0.5 atol=1.0e-1
   @test righttail(xc[:,1], xc[:,2], 0.999) ≈ 0 atol=1.0e-1
+  @test lefttail(xcap[:,3], xcap[:,4], 0.001) ≈ 1/(2^(1/2)) atol=1.0e-1
+  @test lefttail(xcap[:,4], xcap[:,5], 0.001) ≈ 1/(2^(1/3)) atol=1.0e-1
+  @test lefttail(xcap[:,5], xcap[:,6], 0.001) ≈ 1/(2^2) atol=1.0e-1
+  @test righttail(xcap[:,4], xcap[:,5], 0.999) ≈ 0 atol=1.0e-1
+  @test righttail(xcap[:,3], xcap[:,4], 0.999) ≈ 0 atol=1.0e-1
+  @test righttail(xcap[:,3], xcap[:,5], 0.999) ≈ 0 atol=1.0e-1
   d = TDist(ν+1)
   rho = cov[1,2]
   λ = 2*pdf(d, -sqrt.((ν+1)*(1-rho)/(1+rho)))
@@ -86,16 +103,16 @@ end
   @test righttail(xt[:,1], xt[:,2], 0.999) ≈ λ atol=1.0e-1
 end
 @testset "test for std normal distribution of marginals of subcopdatagen" begin
-  x = subcopdatagen([1,2], [4,5], 100000, 5);
+  xs = subcopdatagen([1,2], [4,5], 100000, 5);
   d = Normal(0,1)
-  @test pvalue(ExactOneSampleKSTest(x[:,1],d)) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,2],d)) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,3],d)) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,4],d)) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,5],d)) > α
-  x = subcopdatagen([1,2], [], 100000, 3, [3., 3., 3.]);
+  @test pvalue(ExactOneSampleKSTest(xs[:,1],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xs[:,2],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xs[:,3],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xs[:,4],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xs[:,5],d)) > α
+  xs = subcopdatagen([1,2], [], 100000, 3, [3., 3., 3.]);
   d = Normal(0,3)
-  @test pvalue(ExactOneSampleKSTest(x[:,1],d)) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,2],d)) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,3],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xs[:,1],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xs[:,2],d)) > α
+  @test pvalue(ExactOneSampleKSTest(xs[:,3],d)) > α
 end
