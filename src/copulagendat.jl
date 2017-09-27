@@ -39,6 +39,7 @@ Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Cl
 """
 
 function clcopulagenapprox(t::Int = 1000, θ::Vector{Float64} = [1,1,1,1])
+  minimum(θ) >= -1 || throw(AssertionError("$i th θ parameter < -1"))
   X = rand(t,1)
   for i in 2:length(θ)
     W = rand(t)

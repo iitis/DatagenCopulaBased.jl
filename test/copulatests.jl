@@ -20,7 +20,9 @@
     convertmarg!(x1, TDist, [[10],[10]])
     @test x ≈ [-0.841621 -0.253347; -0.253347 0.253347; 0.253347 0.841621] atol=1.0e-5
     @test x1 ≈ [-0.879058  -0.260185; -0.260185 0.260185; 0.260185 0.879058] atol=1.0e-5
+    srand(43)
     x = rand(10000, 2)
+    srand(43)
     x1 = rand(10000, 2)
     convertmarg!(x, Normal, [[0., 2.],[0., 3.]])
     convertmarg!(x1, TDist, [[10],[6]])
@@ -29,13 +31,14 @@
     @test pvalue(ExactOneSampleKSTest(x[:,2],Normal(0,3))) > α
     @test pvalue(ExactOneSampleKSTest(x1[:,1],TDist(10))) > α
     @test pvalue(ExactOneSampleKSTest(x1[:,2],TDist(6))) > α
+    srand(43)
     @test_throws AssertionError convertmarg!(randn(1000, 2), Normal, [[0., 2.],[0., 3.]])
   end
 end
 
 @testset "subcopulas" begin
-  srand(43)
   cov = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.]
+  srand(43)
   x = gcopulagen(cov, 3)
   x1 = copy(x)
   g2tsubcopula!(x1, cov, [1,2])
@@ -54,15 +57,21 @@ end
 
 
 cov = [1. 0.5; 0.5 1.]
-srand(40)
-x = gcopulagen(cov, 200000)
+srand(43)
+x = gcopulagen(cov, 500000)
+srand(43)
 v = g2clsubcopula(x[:,2], cov[1,2])
 y = copy(x)
 ν = 6
 g2tsubcopula!(y, cov, [1,2])
-xt = tcopulagen(cov, 200000, ν);
-xc = clcopulagen(200000, 2);
-xcap = clcopulagenapprox(200000, [3., 3., 3., 2., 3., 0.5])
+srand(43)
+xt = tcopulagen(cov, 500000, ν);
+srand(43)
+xc = clcopulagen(500000, 2);
+srand(43)
+xcap = clcopulagenapprox(500000, [3., 3., 3., 2., 3., 0.5])
+srand(43)
+clneg = clcopulagenapprox(500000, [-0.9, -0.9, -0.9])
 α = 0.05
 @testset "tests for uniform distribution" begin
   d = Uniform(0,1)
@@ -77,6 +86,8 @@ xcap = clcopulagenapprox(200000, [3., 3., 3., 2., 3., 0.5])
   @test pvalue(ExactOneSampleKSTest(xc[:,2],d)) > α
   @test pvalue(ExactOneSampleKSTest(xcap[:,4],d)) > α
   @test pvalue(ExactOneSampleKSTest(xcap[:,5],d)) > α
+  @test pvalue(ExactOneSampleKSTest(clneg[:,2],d)) > α
+  @test pvalue(ExactOneSampleKSTest(clneg[:,3],d)) > α
 end
 @testset "copula def" begin
   @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
@@ -96,6 +107,8 @@ end
   @test righttail(xcap[:,4], xcap[:,5], 0.999) ≈ 0 atol=1.0e-1
   @test righttail(xcap[:,3], xcap[:,4], 0.999) ≈ 0 atol=1.0e-1
   @test righttail(xcap[:,3], xcap[:,5], 0.999) ≈ 0 atol=1.0e-1
+  @test lefttail(clneg[:,2], clneg[:,3], 0.001) ≈ 0
+  @test righttail(clneg[:,2], clneg[:,3], 0.999) ≈ 0
   d = TDist(ν+1)
   rho = cov[1,2]
   λ = 2*pdf(d, -sqrt.((ν+1)*(1-rho)/(1+rho)))
@@ -103,6 +116,7 @@ end
   @test righttail(xt[:,1], xt[:,2], 0.999) ≈ λ atol=1.0e-1
 end
 @testset "test for std normal distribution of marginals of subcopdatagen" begin
+  srand(43)
   xs = subcopdatagen([1,2], [4,5], 100000, 5);
   d = Normal(0,1)
   @test pvalue(ExactOneSampleKSTest(xs[:,1],d)) > α
@@ -110,6 +124,7 @@ end
   @test pvalue(ExactOneSampleKSTest(xs[:,3],d)) > α
   @test pvalue(ExactOneSampleKSTest(xs[:,4],d)) > α
   @test pvalue(ExactOneSampleKSTest(xs[:,5],d)) > α
+  srand(43)
   xs = subcopdatagen([1,2], [], 100000, 3, [3., 3., 3.]);
   d = Normal(0,3)
   @test pvalue(ExactOneSampleKSTest(xs[:,1],d)) > α
