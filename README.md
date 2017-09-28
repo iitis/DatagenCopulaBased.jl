@@ -138,7 +138,7 @@ julia> claytoncopulagen(10, 2)
 To convert marginals of `U \in [0,1]^n` using one type univariate of distributions `dist` with parameters `p[i]` for `i` th marginal run:
 
 ```julia
-julia> function convertmarg!(U::Matrix{T}, dist::Distribution, p::Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}; testunif::Bool = true)
+julia> convertmarg!(U::Matrix{T}, dist::Distribution, p::Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}; testunif::Bool = true)
 ```
 
 It `testunif` each marginal is tested for uniformity.
