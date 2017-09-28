@@ -40,7 +40,7 @@ end
     srand(43)
     @test claytoncopulagen(2,2) ≈ [0.629041  0.182246; 0.950303  0.942292] atol=1.0e-5
     srand(43)
-    @test tstudentcopulagen(2, [[1. 0.5];[0.5 1.]]) ≈ [0.581625 0.792144; 0.76935 0.968669] atol=1.0e-5
+    @test tstudentcopulagen(2, [[1. 0.5];[0.5 1.]], 20) ≈ [0.581625 0.792144; 0.76935 0.968669] atol=1.0e-5
     srand(43)
     @test gausscopulagen(2, [[1. 0.5];[0.5 1.]]) ≈ [0.589188 0.815308; 0.708285 0.924962] atol=1.0e-5
   end
