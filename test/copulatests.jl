@@ -1,10 +1,11 @@
 α = 0.05
 
-@testset "generate data" begin
+@testset "heplers" begin
   @testset "axiliary functions" begin
     @test invers_gen([1., 2., 3., 4., 5.], 3.2) ≈ [0.638608, 0.535014, 0.478181, 0.44034, 0.412558] atol=1.0e-5
     srand(43)
     @test cormatgen(2) ≈ [1.0 -0.901386; -0.901386 1.0] atol=1.0e-5
+    @test claytonθ(.5) ≈ 1.
   end
   @testset "tail dependencies" begin
     v1 = vcat(zeros(5), 0.5*ones(5), zeros(5), 0.5*ones(70), ones(5), 0.5*ones(5), ones(5));
@@ -49,8 +50,8 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
-    @test lefttail(x[:,1], x[:,2], 0.001) ≈ 0 atol=1.0e-1
-    @test righttail(x[:,1], x[:,2], 0.999) ≈ 0 atol=1.0e-1
+    @test lefttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   end
   @testset "t-student copula" begin
     ν = 10
@@ -62,17 +63,23 @@ end
     @test pvalue(ExactOneSampleKSTest(xt[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(xt[:,2], Uniform(0,1))) > α
     @test copuladeftest(xt[:,1], xt[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
-    @test lefttail(xt[:,1], xt[:,2], 0.001) ≈ λ atol=1.0e-1
-    @test righttail(xt[:,1], xt[:,2], 0.999) ≈ λ atol=1.0e-1
+    @test lefttail(xt[:,1], xt[:,2]) ≈ λ atol=1.0e-1
+    @test righttail(xt[:,1], xt[:,2]) ≈ λ atol=1.0e-1
+    convertmarg!(xt, Normal)
+    @test cov(xt) ≈ [[1. 0.5]; [0.5 1.]] atol=1.0e-2
   end
   srand(43)
-  xc = claytoncopulagen(500000, 2);
+  xc = claytoncopulagen(500000, 3);
   @testset "clayton copula" begin
     @test pvalue(ExactOneSampleKSTest(xc[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(xc[:,2], Uniform(0,1))) > α
-    @test lefttail(xc[:,1], xc[:,2], 0.001) ≈ 0.5 atol=1.0e-1
-    @test righttail(xc[:,1], xc[:,2], 0.999) ≈ 0 atol=1.0e-1
+    @test pvalue(ExactOneSampleKSTest(xc[:,3], Uniform(0,1))) > α
+    @test lefttail(xc[:,1], xc[:,2]) ≈ 0.5 atol=1.0e-1
+    @test lefttail(xc[:,1], xc[:,3]) ≈ 0.5 atol=1.0e-1
+    @test righttail(xc[:,1], xc[:,2]) ≈ 0 atol=1.0e-1
     @test copuladeftest(xc[:,1], xc[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
+    convertmarg!(xc, Normal)
+    @test cov(xc) ≈ [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.] atol=1.0e-2
   end
 end
 
@@ -102,21 +109,24 @@ end
     v = g2clsubcopula(x[:,2], 0.5)
     @test pvalue(ExactOneSampleKSTest(v, Uniform(0,1))) > α
     srand(43)
-    xcap = claytonsubcopulagen(500000, [3., 3., 3., 2., 3., 0.5])
-    @test pvalue(ExactOneSampleKSTest(xcap[:,4], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(xcap[:,5], Uniform(0,1))) > α
-    @test lefttail(xcap[:,3], xcap[:,4], 0.001) ≈ 1/(2^(1/2)) atol=1.0e-1
-    @test lefttail(xcap[:,4], xcap[:,5], 0.001) ≈ 1/(2^(1/3)) atol=1.0e-1
-    @test lefttail(xcap[:,5], xcap[:,6], 0.001) ≈ 1/(2^2) atol=1.0e-1
-    @test righttail(xcap[:,4], xcap[:,5], 0.999) ≈ 0 atol=1.0e-1
-    @test righttail(xcap[:,3], xcap[:,4], 0.999) ≈ 0 atol=1.0e-1
-    @test righttail(xcap[:,3], xcap[:,5], 0.999) ≈ 0 atol=1.0e-1
+    x = claytonsubcopulagen(500000, [1.,-0.9, 3., 2., 3., 0.5])
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+    @test lefttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
+    @test lefttail(x[:,3], x[:,4]) ≈ 1/(2^(1/2)) atol=1.0e-1
+    @test lefttail(x[:,4], x[:,5]) ≈ 1/(2^(1/3)) atol=1.0e-1
+    @test lefttail(x[:,5], x[:,6]) ≈ 1/(2^2) atol=1.0e-1
+    @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,4], x[:,5]) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,3], x[:,4]) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,3], x[:,6]) ≈ 0 atol=1.0e-1
+    convertmarg!(x, Normal)
+    @test cor(x[:,1], x[:,2]) ≈ -0.959 atol=1.0e-1
     srand(43)
-    clneg = claytonsubcopulagen(500000, [-0.9, -0.9, -0.9])
-    @test pvalue(ExactOneSampleKSTest(clneg[:,2], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(clneg[:,3], Uniform(0,1))) > α
-    @test lefttail(clneg[:,2], clneg[:,3], 0.001) ≈ 0
-    @test righttail(clneg[:,2], clneg[:,3], 0.999) ≈ 0
+    x = claytonsubcopulagen(500000, [0., 0.6, -0.6]; usecor = true)
+    @test cor(x[:,1], x[:,2]) ≈ 0.6 atol=1.0e-1
+    @test cor(x[:,2], x[:,3]) ≈ -0.6 atol=1.0e-1
   end
   @testset "test for std normal distribution of marginals of subcopdatagen" begin
     srand(43)

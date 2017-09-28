@@ -6,8 +6,12 @@ Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
 2-d Clayton subcopulas with parameters θ_1, ..., θ_n >= -1
 """
 
-function claytonsubcopulagen(t::Int = 1000, θ::Vector{Float64} = [1,1,1,1])
-  minimum(θ) >= -1 || throw(AssertionError("$i th θ parameter < -1"))
+function claytonsubcopulagen(t::Int = 1000, θ::Vector{Float64} = [1,1,1,1]; usecor::Bool = false)
+  minimum(θ) >= -1 || throw(AssertionError("$i th parameter < -1"))
+  if usecor
+    maximum(θ) <= 1 || throw(AssertionError("$i th parameter > 1"))
+    θ = map(claytonθ, θ)
+  end
   X = rand(t,1)
   for i in 2:length(θ)
     W = rand(t)
@@ -35,16 +39,15 @@ function g2tsubcopula!(z::Matrix{Float64}, cormat::Matrix{Float64}, subn::Array{
 end
 
 """
-  g2clsubcopula(U::Vector{Float}, rho::Float)
+  g2clsubcopula(U::Vector{Float}, ρ::Float)
 
 Returns vector of data generated using clayton (assymatric) copula accoriding to
-vector of data U at given pearson correlation coeficient rho.
+vector of data U at given pearson correlation coeficient ρ.
 """
-function g2clsubcopula(U::Vector{Float64}, rho::Float64)
-  tau = 2/pi*asin(rho)
-  theta = 2*tau/(1-tau)
+function g2clsubcopula(U::Vector{Float64}, ρ::Float64)
+  θ = claytonθ(ρ)
   W = rand(length(U))
-  U.*(W.^(-theta/(1 + theta)) - 1 + U.^theta).^(-1/theta)
+  U.*(W.^(-θ/(1 + θ)) - 1 + U.^θ).^(-1/θ)
 end
 
 
