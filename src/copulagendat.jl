@@ -62,7 +62,7 @@ function tcopulagen(cormat::Matrix{Float64}, t::Int, nu::Int=20)
   U = rand(d, size(y, 1))
   p = TDist(nu)
   for i in 1:size(cormat, 1)
-    z[:,i] = cdf(p, y[:,i].*sqrt.(nu./U))
+    z[:,i] = cdf(p, y[:,i].*sqrt.(nu./U)./cormat[i,i])
   end
   z
 end

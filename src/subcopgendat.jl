@@ -13,7 +13,7 @@ function g2tsubcopula!(z::Matrix{Float64}, cormat::Matrix{Float64}, subn::Array{
   p = TDist(nu)
   for i in subn
     w = quantile(Normal(0, cormat[i,i]), z[:,i])
-    z[:,i] = cdf(p, w.*sqrt(nu./U))
+    z[:,i] = cdf(p, w.*sqrt.(nu./U))
   end
 end
 
@@ -21,7 +21,7 @@ end
   g2clsubcopula(U::Vector{Float}, rho::Float)
 
 Returns vector of data generated using clayton (assymatric) copula accoriding to
-vector of data U at given pearson correlation coeficient rho. 
+vector of data U at given pearson correlation coeficient rho.
 """
 function g2clsubcopula(U::Vector{Float64}, rho::Float64)
   tau = 2/pi*asin(rho)
