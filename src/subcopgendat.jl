@@ -1,4 +1,21 @@
+"""
 
+  claytonsubcopulagen(t::Int = 1000, θ::Vector{Float64})
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
+2-d Clayton subcopulas with parameters θ_1, ..., θ_n >= -1
+"""
+
+function claytonsubcopulagen(t::Int = 1000, θ::Vector{Float64} = [1,1,1,1])
+  minimum(θ) >= -1 || throw(AssertionError("$i th θ parameter < -1"))
+  X = rand(t,1)
+  for i in 2:length(θ)
+    W = rand(t)
+    U = X[:, i-1]
+    X = hcat(X, U.*(W.^(-θ[i]/(1 + θ[i])) - 1 + U.^θ[i]).^(-1/θ[i]))
+  end
+  X
+end
 
 """
   g2tsubcopula!(z::Matrix{Float}, cormat::Matrix{Float}, subn::Array{Int})
@@ -33,15 +50,15 @@ end
 
 
 """
-  subcopdatagen(cli::Array = [], sti::Array = [], pixel_n::Int, band_n:::Int)
+  subcopdatagen(t::Int, n::Int, cli::Array, sti::Array, std::Vector)
 
-Returns Matrix{Float} pixel_n x band_n being pixel_n realisations of band_n variate
-random variable with gaussian marginals, clayton copula at indeces cli, student clcopula
-at sti anf gaussian copula otherwise
+Returns Matrix{Float} t x n of t realisations of n variate random variable with gaussian marginals
+with (0, std[i]) parameters. Data have generally gaussian copula, clayton subcopula at
+cli indices and tstudent copula at sti indices. Obviously 0 .< cli .<= n and  0 .< sli .<= n
 """
-function subcopdatagen(cli::Array = [], sti::Array = [], t::Int = 500, n::Int = 30, std::Vector{Float64} = [fill(1., n)...])
+function subcopdatagen(t::Int, n::Int = 30, cli::Array = [], sti::Array = [], std::Vector{Float64} = [fill(1., n)...])
   cormat = cormatgen(n)
-  z = gcopulagen(cormat, t)
+  z = gausscopulagen(t, cormat)
   if cli !=[]
     for i in 2:length(cli)
       z[:,cli[i]] = g2clsubcopula(z[:,cli[i-1]], cormat[cli[i], cli[i-1]])

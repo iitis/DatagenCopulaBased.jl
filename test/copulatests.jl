@@ -3,15 +3,15 @@
   @testset "axiliary functions" begin
     @test invers_gen([1., 2., 3., 4., 5.], 3.2) ≈ [0.638608, 0.535014, 0.478181, 0.44034, 0.412558] atol=1.0e-5
     srand(43)
-    @test cormatgen(2) ≈ [1.0 0.264834; 0.264834 1.0] atol=1.0e-5
+    @test cormatgen(2) ≈ [1.0 -0.901386; -0.901386 1.0] atol=1.0e-5
   end
   @testset "generate data from copuls" begin
     srand(43)
-    @test clcopulagen(2,2) ≈ [0.629041  0.182246; 0.950303  0.942292] atol=1.0e-5
+    @test claytoncopulagen(2,2) ≈ [0.629041  0.182246; 0.950303  0.942292] atol=1.0e-5
     srand(43)
-    @test tcopulagen([[1. 0.5];[0.5 1.]], 2) ≈ [0.581625 0.792144; 0.76935 0.968669] atol=1.0e-5
+    @test tstudentcopulagen(2, [[1. 0.5];[0.5 1.]]) ≈ [0.581625 0.792144; 0.76935 0.968669] atol=1.0e-5
     srand(43)
-    @test gcopulagen([[1. 0.5];[0.5 1.]], 2) ≈ [0.589188 0.815308; 0.708285 0.924962] atol=1.0e-5
+    @test gausscopulagen(2, [[1. 0.5];[0.5 1.]]) ≈ [0.589188 0.815308; 0.708285 0.924962] atol=1.0e-5
   end
   @testset "transform marginals" begin
     x = [0.2 0.4; 0.4 0.6; 0.6 0.8]
@@ -39,7 +39,7 @@ end
 @testset "subcopulas" begin
   cov = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.]
   srand(43)
-  x = gcopulagen(cov, 3)
+  x = gausscopulagen(3, cov)
   x1 = copy(x)
   g2tsubcopula!(x1, cov, [1,2])
   @test x1 ≈ [0.558652  0.719921  0.794493; 0.935573  0.922409  0.345177; 0.217512  0.174138  0.123049] atol=1.0e-5
@@ -58,20 +58,20 @@ end
 
 cov = [1. 0.5; 0.5 1.]
 srand(43)
-x = gcopulagen(cov, 500000)
+x = gausscopulagen(500000, cov)
 srand(43)
 v = g2clsubcopula(x[:,2], cov[1,2])
 y = copy(x)
 ν = 6
 g2tsubcopula!(y, cov, [1,2])
 srand(43)
-xt = tcopulagen(cov, 500000, ν);
+xt = tstudentcopulagen(500000, cov, ν);
 srand(43)
-xc = clcopulagen(500000, 2);
+xc = claytoncopulagen(500000, 2);
 srand(43)
-xcap = clcopulagenapprox(500000, [3., 3., 3., 2., 3., 0.5])
+xcap = claytonsubcopulagen(500000, [3., 3., 3., 2., 3., 0.5])
 srand(43)
-clneg = clcopulagenapprox(500000, [-0.9, -0.9, -0.9])
+clneg = claytonsubcopulagen(500000, [-0.9, -0.9, -0.9])
 α = 0.05
 @testset "tests for uniform distribution" begin
   d = Uniform(0,1)
@@ -117,7 +117,7 @@ end
 end
 @testset "test for std normal distribution of marginals of subcopdatagen" begin
   srand(43)
-  xs = subcopdatagen([1,2], [4,5], 100000, 5);
+  xs = subcopdatagen(100000, 5, [1,2], [4,5]);
   d = Normal(0,1)
   @test pvalue(ExactOneSampleKSTest(xs[:,1],d)) > α
   @test pvalue(ExactOneSampleKSTest(xs[:,2],d)) > α
@@ -125,7 +125,7 @@ end
   @test pvalue(ExactOneSampleKSTest(xs[:,4],d)) > α
   @test pvalue(ExactOneSampleKSTest(xs[:,5],d)) > α
   srand(43)
-  xs = subcopdatagen([1,2], [], 100000, 3, [3., 3., 3.]);
+  xs = subcopdatagen(100000, 3, [1,2], [], [3., 3., 3.]);
   d = Normal(0,3)
   @test pvalue(ExactOneSampleKSTest(xs[:,1],d)) > α
   @test pvalue(ExactOneSampleKSTest(xs[:,2],d)) > α

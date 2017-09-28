@@ -12,13 +12,13 @@ invers_gen(x::Vector{Float64}, theta::Float64) = (1 + theta.*x).^(-1/theta)
 
 """
 
-  clcopulagen(t::Int, n::Int)
+  claytoncopulagen(t::Int, n::Int)
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
  copula with parameters θ = 1
 """
 
-function clcopulagen(t::Int, n::Int)
+function claytoncopulagen(t::Int, n::Int = 2)
   theta = 1.0
   qamma_dist = Gamma(1,1/theta)
   x = rand(t)
@@ -31,31 +31,13 @@ function clcopulagen(t::Int, n::Int)
 end
 
 """
-
-  clcopulagenapprox(t::Int, n::Int)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
- copula with positive parameters θ_1, ..., θ_n
-"""
-
-function clcopulagenapprox(t::Int = 1000, θ::Vector{Float64} = [1,1,1,1])
-  minimum(θ) >= -1 || throw(AssertionError("$i th θ parameter < -1"))
-  X = rand(t,1)
-  for i in 2:length(θ)
-    W = rand(t)
-    U = X[:, i-1]
-    X = hcat(X, U.*(W.^(-θ[i]/(1 + θ[i])) - 1 + U.^θ[i]).^(-1/θ[i]))
-  end
-  X
-end
-
-"""
-  tcopulagen(cormat::Matrix{Float}, nu::Int)
+  tstudentcopulagen(cormat::Matrix{Float}, nu::Int)
 
 Generates data using t-student Copula given a correlation  matrix and degrees of freedom
 """
 
-function tcopulagen(cormat::Matrix{Float64}, t::Int, nu::Int=20)
+function tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1., 0.5];[0.5, 1.]],
+                                    nu::Int=20)
   y = rand(MvNormal(cormat),t)'
   z = copy(y)
   d = Chisq(nu)
@@ -68,13 +50,13 @@ function tcopulagen(cormat::Matrix{Float64}, t::Int, nu::Int=20)
 end
 
 """
-    gcopulagen(covmat::Matrix{Float}, t::Int)
+    gausscopulagen(covmat::Matrix{Float}, t::Int)
 
 Returns: t x n matrix of t realisations of multivariate data generated
 using gaussian copula with correlation matrix - cormat
 """
 
-function gcopulagen(cormat::Matrix{Float64}, t::Int)
+function gausscopulagen(t::Int, cormat::Matrix{Float64} = [[1., 0.5];[0.5, 1.]])
   y = rand(MvNormal(cormat),t)'
   z = copy(y)
   for i in 1:size(cormat, 1)
@@ -93,12 +75,15 @@ Takes t x n matrix of t realisations of n variate data with uniform marginals an
 convert marginals on [0,1] and convert i th marginals to those with distribution dist
 and parameters p[i]
 """
+VecVec{T} = Union{Vector{Vector{Int64}}, Vector{Vector{T}}}
 
-function convertmarg!(X::Matrix{T}, dist, p::Union{Vector{Vector{Int64}}, Vector{Vector{T}}}) where T <: AbstractFloat
+
+function convertmarg!(X::Matrix{T}, dist, p::VecVec{T} = [fill([0,1], size(X, 2))...];
+                                          testunif::Bool = true) where T <: AbstractFloat
   d = Uniform(0,1)
   for i = 1:size(X, 2)
     pw = pvalue(ExactOneSampleKSTest(X[:,i],d))
-    pw > 0.001 || throw(AssertionError("$i marginal not uniform"))
+    testunif? pw > 0.0001 || throw(AssertionError("$i marginal not uniform")): ()
     @inbounds X[:,i] = quantile(dist(p[i]...), X[:,i])
   end
 end
@@ -106,13 +91,13 @@ end
   # generates covariance matrix
 
   """
-    cormatgen(band_n::Int)
+    cormatgen(n::Int)
 
   Returns: symmetric correlation matrix
   """
 
-  function cormatgen(n::Int)
-    x = clcopulagen(4*n, n)
+  function cormatgen(n::Int, descor = true)
+    x = descor? claytoncopulagen(3*n, n) : claytonsubcopulagen(3*n, rand([3., -0.8], n))
     convertmarg!(x, Weibull, [[30-28*i/n,1] for i in 1:n])
     for i in 1:n
       x[:,i] = 10*rand([-1, 1])*x[:,i]
