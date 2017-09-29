@@ -163,29 +163,34 @@ end
   # generates covariance matrix
 
   """
-    cormatgen(n::Int, ordered = false)
+    cormatgen(n::Int, rho::Float64 = 0.5, ordered = false)
 
-Returns: symmetric correlation matrix of size `n x n`. If ordered it starts with high |cov[i;j]|
-as |i-j| = 1 and |cov[i;j]| drops as |i-j| rises.
+Returns: symmetric correlation matrix of size `n x n`, with reference correlation 0 < rho < 1.
+ If ordered = false, matrix correlation matrix elements varies arround rho, else it drops
+ as a distance between marginal variables risis. If altersing some elements are positive
+ and some negative, ales all pelements are postive.
 
 ```jldoctest
 julia> srand(43);
 
-julia> cormatgen(5)
-5×5 Array{Float64,2}:
-  1.0       -0.464674   0.352662   0.452469   0.273749
- -0.464674   1.0       -0.143304  -0.589167  -0.354571
-  0.352662  -0.143304   1.0        0.643956   0.628471
-  0.452469  -0.589167   0.643956   1.0        0.356678
-  0.273749  -0.354571   0.628471   0.356678   1.0
+julia> cormatgen(4)
+4×4 Array{Float64,2}:
+  1.0        0.566747  -0.34848   -0.413496
+  0.566747   1.0       -0.496956  -0.575852
+ -0.34848   -0.496956   1.0        0.612688
+ -0.413496  -0.575852   0.612688   1.0
 ```
 """
 
-  function cormatgen(n::Int, ordered = false)
-    x = ordered? claytonsubcopulagen(3*n, rand([3., -0.8], n)) : claytoncopulagen(3*n, n)
-    convertmarg!(x, Weibull, [[30-28*i/n,1] for i in 1:n])
-    for i in 1:n
-      x[:,i] = 10*rand([-1, 1])*x[:,i]
+  function cormatgen(n::Int, rho::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
+    1 > rho > 0 || throw(AssertionError("only 1 > rho > 0 supported"))
+    θ = claytonθ(rho)
+    x = ordered? claytonsubcopulagen(4*n, [fill(θ, (n-1))...]) : claytoncopulagen(4*n, n, θ)
+    convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n])
+    if altersing
+      for i in 1:n
+        x[:,i] = rand([-1, 1])*x[:,i]
+      end
     end
     cor(x)
   end
