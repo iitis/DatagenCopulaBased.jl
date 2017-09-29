@@ -19,36 +19,36 @@ to install the files Julia 0.6 is required.
 
 ### Corelation matrix generation
 
-To generate a `n x n` correlation matrix run:
+To generate a `n x n` correlation matrix with reference correlation `rho` run:
 
 ```julia
-julia> cormatgen(n::Int, ordered = false)
+julia> cormatgen(n::Int, rho::Float64 = 0.5, ordered = false, altersing::Bool = true)
 ```
 
-If `ordered` we start with high `|cov[i,j]|` as `|i-j| = 1` and decreases `|cov[i,j]|` as `|i-j|` rises. Else covariance matrix elements are more random.
+If `ordered = false` matrix correlation matrix elements varies arround `rho`, else it drops
+as a distance between marginal variables risis. If `altersing = true` some elements are positive
+and some negative, else all pelements are postive.
 
 ```julia
 julia> srand(43);
 
-julia> cormatgen(5)
-5×5 Array{Float64,2}:
-  1.0       -0.464674   0.352662   0.452469   0.273749
- -0.464674   1.0       -0.143304  -0.589167  -0.354571
-  0.352662  -0.143304   1.0        0.643956   0.628471
-  0.452469  -0.589167   0.643956   1.0        0.356678
-  0.273749  -0.354571   0.628471   0.356678   1.0
+julia> cormatgen(4, 0.5)
+4×4 Array{Float64,2}:
+  1.0        0.566747  -0.34848   -0.413496
+  0.566747   1.0       -0.496956  -0.575852
+ -0.34848   -0.496956   1.0        0.612688
+ -0.413496  -0.575852   0.612688   1.0
 ```
 
 ```julia
 julia> srand(43);
 
-julia> cormatgen(5, true)
-5×5 Array{Float64,2}:
-  1.0       -0.911958  -0.867202   0.84641    0.623197
- -0.911958   1.0        0.928058  -0.924794  -0.681956
- -0.867202   0.928058   1.0       -0.936033  -0.769087
-  0.84641   -0.924794  -0.936033   1.0        0.743044
-  0.623197  -0.681956  -0.769087   0.743044   1.0
+julia> cormatgen(4, 0.5, true)
+4×4 Array{Float64,2}:
+  1.0        -0.39749   -0.422068  -0.0790561
+ -0.39749     1.0        0.698496   0.380271 
+ -0.422068    0.698496   1.0        0.518025 
+ -0.0790561   0.380271   0.518025   1.0
 
 ```
 

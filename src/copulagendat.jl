@@ -163,12 +163,12 @@ end
   # generates covariance matrix
 
   """
-    cormatgen(n::Int, rho::Float64 = 0.5, ordered = false)
+    cormatgen(n::Int, rho::Float64 = 0.5, ordered = false, altersing::Bool = true)
 
-Returns: symmetric correlation matrix of size `n x n`, with reference correlation 0 < rho < 1.
- If ordered = false, matrix correlation matrix elements varies arround rho, else it drops
- as a distance between marginal variables risis. If altersing some elements are positive
- and some negative, ales all pelements are postive.
+Returns symmetric correlation matrix of size `n x n`, with reference correlation 0 < rho < 1.
+If ordered = false, matrix correlation matrix elements varies arround rho, else it drops
+as a distance between marginal variables risis. If altersing = true some elements are positive
+and some negative, else all pelements are postive.
 
 ```jldoctest
 julia> srand(43);
