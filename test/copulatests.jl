@@ -69,7 +69,7 @@ end
     @test cov(xt) ≈ [[1. 0.5]; [0.5 1.]] atol=1.0e-2
   end
   srand(43)
-  xc = claytoncopulagen(500000, 3);
+  xc = claytoncopulagen(500000, 3, 1);
   @testset "clayton copula" begin
     @test pvalue(ExactOneSampleKSTest(xc[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(xc[:,2], Uniform(0,1))) > α
@@ -80,6 +80,11 @@ end
     @test copuladeftest(xc[:,1], xc[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
     convertmarg!(xc, Normal)
     @test cov(xc) ≈ [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.] atol=1.0e-2
+    xc = claytoncopulagen(500000, 3, 6.5);
+    @test pvalue(ExactOneSampleKSTest(xc[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(xc[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(xc[:,3], Uniform(0,1))) > α
+    @test lefttail(xc[:,1], xc[:,2]) ≈ 1/(2^(1/(6.5))) atol=1.0e-1
   end
 end
 

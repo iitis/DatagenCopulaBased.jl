@@ -8,19 +8,19 @@
 Returns: Vector{Float64} of data transformed using inverse of Clayton Copula
 generator with parametr theta
 """
-invers_gen(x::Vector{Float64}, theta::Float64) = (1 + theta.*x).^(-1/theta)
+invers_gen(x::Vector{Float64}, θ::Union{Float64, Int}) = (1 + θ.*x).^(-1/θ)
 
 """
 
-  claytoncopulagen(t::Int, n::Int)
+  claytoncopulagen(t::Int, n::Int, θ::Float64)
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
- copula with parameters θ = 1
+ copula with parameter θ >= 0
 
 ```jldoctest
 julia> srand(43);
 
-julia> claytoncopulagen(10, 2)
+julia> claytoncopulagen(10, 2, 1)
 10×2 Array{Float64,2}:
   0.325965  0.984025
   0.364814  0.484407
@@ -35,14 +35,14 @@ julia> claytoncopulagen(10, 2)
  ```
 """
 
-function claytoncopulagen(t::Int, n::Int = 2)
-  theta = 1.0
-  qamma_dist = Gamma(1,1/theta)
+function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0)
+  θ >= 0 || throw(AssertionError("generaton not supported for θ < 0"))
+  qamma_dist = Gamma(1/θ, θ)
   x = rand(t)
   u = rand(t, n)
   matrix = zeros(Float64, t, n)
   for i = 1:n
-    matrix[:,i] = invers_gen(-log.(u[:,i])./quantile(qamma_dist, x), theta)
+    matrix[:,i] = invers_gen(-log.(u[:,i])./quantile(qamma_dist, x), θ)
   end
   matrix
 end

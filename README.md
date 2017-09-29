@@ -109,16 +109,16 @@ julia> tstudentcopulagen(10)
  
 ### Clayton copula
 
-To generate `t` realisations of `n`-variate data from Clayton copula with paramete `θ = 1.` run
+To generate `t` realisations of `n`-variate data from Clayton copula with paramete `θ >= 0` run
 
 ```julia
-julia> claytoncopulagen(t::Int, n::Int = 2)
+julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{INT, Float64} = 1)
 ```
 
 ```julia
 julia> srand(43);
 
-julia> claytoncopulagen(10, 2)
+julia> claytoncopulagen(10, 2, 1)
 10×2 Array{Float64,2}:
  0.325965  0.984025
  0.364814  0.484407
