@@ -109,7 +109,7 @@ julia> tstudentcopulagen(10)
  
 ### Clayton copula
 
-To generate `t` realisations of `n`-variate data from Clayton copula with paramete `\theta = 1.` run
+To generate `t` realisations of `n`-variate data from Clayton copula with paramete `θ = 1.` run
 
 ```julia
 julia> claytoncopulagen(t::Int, n::Int = 2)
@@ -133,6 +133,45 @@ julia> claytoncopulagen(10, 2)
 
 ```
 
+### Clayton subcopula
+
+It is possible to generate `t` realistations of `n`-variate data using bivariate Clayton copula with parameter `θ_i >= -1` for each pair `U_i` and `U_{i+1}`.
+Hence for each neighbouring marginals we have a Clayton subcopula. Number of marginal variables is `n = length(θ)+1`. If `usecor` sperman correlation coeficinet
+array is atken as a parameter array `θ`, here `-1 <= θ <= 1`.
+
+```julia
+julia> claytonsubcopulagen(t::Int, θ::Vector{Float64}; usecor::Bool)
+```
+
+```julia
+julia> srand(43);
+
+julia> x = claytonsubcopulagen(10, [1.])
+10×2 Array{Float64,2}:
+ 0.180975  0.441152 
+ 0.775377  0.225086 
+ 0.888934  0.327726 
+ 0.924876  0.291837 
+ 0.408278  0.187564 
+ 0.912603  0.848985 
+ 0.828727  0.0571042
+ 0.400537  0.0758159
+ 0.429437  0.527526 
+ 0.955881  0.919363 
+ 
+
+julia> srand(43);
+
+julia> U = claytonsubcopulagen(5000, [0.5, -0.5]; usecor = true);
+
+julia> cor(quantile(Normal(0,1), U))
+3×3 Array{Float64,2}:
+  1.0        0.496167  -0.235751
+  0.496167   1.0       -0.473841
+ -0.235751  -0.473841   1.0 
+```
+
+
 ### Converting marinals
 
 To convert marginals of `U \in [0,1]^n` using one type univariate of distributions `dist` with parameters `p[i]` for `i` th marginal run:
@@ -144,24 +183,74 @@ julia> convertmarg!(U::Matrix{T}, dist::Distribution, p::Union{Vector{Vector{Int
 It `testunif` each marginal is tested for uniformity.
 
 ```julia
+julia> using Distributions
+
 julia> srand(43);
 
-julia> x = rand(10,2);
+julia> U = gausscopulagen(10);
 
-julia> convertmarg!(x, Normal, [[0, 1],[0, 1]])
+julia> convertmarg!(U, Normal, [[0, 1],[0, 10]])
 
-julia> x
+julia> U
 10×2 Array{Float64,2}:
- -0.911655    4.17328
-  0.756673  -14.4472 
-  1.22088   -11.4823 
-  1.43866   -13.1053 
- -0.231978  -11.2415 
-  1.35696     6.43914
-  0.949145  -26.0172 
- -0.251957  -18.9723 
- -0.177808    0.54172
-  1.70477    10.4192 
+  0.225457      8.97627 
+  0.548381     14.3926  
+  0.666147    -10.0689                                                                                                                                                      
+ -0.746662     -9.03553                                                                                                                                                     
+ -0.746857     17.2101                                                                                                                                                      
+ -0.608109     -3.45649 
+ -0.136555      0.700419
+  0.215631     -7.34409 
+ -0.00352701   -0.434793
+ -0.876853      2.39009 
+
+```
+
+To convert `i` th marginal to univariate distribution `dist` with parameters array `p` run 
+```julia
+
+julia> using Distributions
+
+julia> quantile(dist(p...), U[:,i])
+
+```
+
+```julia
+julia> quantile(Levy(0, 1), u[:,2])
+10-element Array{Float64,1}:
+  18.3279 
+ 112.728 
+   0.499265
+   0.564286
+ 350.068 
+   1.2176
+   2.51008 
+   0.698059
+   2.02902 
+   3.52799 
+```
+To convert all marginals to the same `dist` with the same parameters `p` run
+
+```
+julia> using Distributions
+
+julia> quantile(dist(p...), U)
+```
+
+```julia
+julia> quantile(Levy(0, 1), u)
+10×2 Array{Float64,2}:
+ 3.42919    18.3279
+ 7.14305   112.728 
+ 9.6359      0.499265
+ 0.687009    0.564286
+ 0.686835  350.068 
+ 0.827224    1.2176
+ 1.71944     2.51008 
+ 3.3597      0.698059
+ 2.18374     2.02902 
+ 0.582946    3.52799
+
 ```
 
 # Citing this work

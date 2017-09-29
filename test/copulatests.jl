@@ -109,7 +109,7 @@ end
     v = g2clsubcopula(x[:,2], 0.5)
     @test pvalue(ExactOneSampleKSTest(v, Uniform(0,1))) > α
     srand(43)
-    x = claytonsubcopulagen(500000, [1.,-0.9, 3., 2., 3., 0.5])
+    x = claytonsubcopulagen(500000, [-0.9, 3., 2., 3., 0.5])
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
@@ -124,7 +124,7 @@ end
     convertmarg!(x, Normal)
     @test cor(x[:,1], x[:,2]) ≈ -0.959 atol=1.0e-1
     srand(43)
-    x = claytonsubcopulagen(500000, [0., 0.6, -0.6]; usecor = true)
+    x = claytonsubcopulagen(500000, [0.6, -0.6]; usecor = true)
     @test cor(x[:,1], x[:,2]) ≈ 0.6 atol=1.0e-1
     @test cor(x[:,2], x[:,3]) ≈ -0.6 atol=1.0e-1
   end

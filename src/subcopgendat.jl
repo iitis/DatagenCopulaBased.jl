@@ -3,19 +3,36 @@
   claytonsubcopulagen(t::Int = 1000, θ::Vector{Float64})
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
-2-d Clayton subcopulas with parameters θ_1, ..., θ_n >= -1
+2-d Clayton subcopulas with parameters θ_1, ..., θ_{n-1} >= -1
+
+```jldoctest
+julia> srand(43);
+
+julia> x = claytonsubcopulagen(10, [1.])
+10×2 Array{Float64,2}:
+ 0.180975  0.441152
+ 0.775377  0.225086
+ 0.888934  0.327726
+ 0.924876  0.291837
+ 0.408278  0.187564
+ 0.912603  0.848985
+ 0.828727  0.0571042
+ 0.400537  0.0758159
+ 0.429437  0.527526
+ 0.955881  0.919363
+```
 """
 
-function claytonsubcopulagen(t::Int = 1000, θ::Vector{Float64} = [1,1,1,1]; usecor::Bool = false)
+function claytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.]; usecor::Bool = false)
   minimum(θ) >= -1 || throw(AssertionError("$i th parameter < -1"))
   if usecor
     maximum(θ) <= 1 || throw(AssertionError("$i th parameter > 1"))
     θ = map(claytonθ, θ)
   end
   X = rand(t,1)
-  for i in 2:length(θ)
+  for i in 1:length(θ)
     W = rand(t)
-    U = X[:, i-1]
+    U = X[:, i]
     X = hcat(X, U.*(W.^(-θ[i]/(1 + θ[i])) - 1 + U.^θ[i]).^(-1/θ[i]))
   end
   X
