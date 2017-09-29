@@ -17,7 +17,7 @@ to install the files Julia 0.6 is required.
 
 ## Functions
 
-### Corelation matrix generation
+### Correlation matrix generation
 
 To generate a `n x n` correlation matrix with reference correlation `rho` run:
 
@@ -25,9 +25,10 @@ To generate a `n x n` correlation matrix with reference correlation `rho` run:
 julia> cormatgen(n::Int, rho::Float64 = 0.5, ordered = false, altersing::Bool = true)
 ```
 
-If `ordered = false` matrix correlation matrix elements varies arround `rho`, else it drops
+If `ordered = false` matrix correlation matrix elements varies around `rho`, 
+else it drops
 as a distance between marginal variables risis. If `altersing = true` some elements are positive
-and some negative, else all pelements are postive.
+and some negative, else all elements are positive.
 
 ```julia
 julia> srand(43);
@@ -109,7 +110,8 @@ julia> tstudentcopulagen(10)
  
 ### Clayton copula
 
-To generate `t` realisations of `n`-variate data from Clayton copula with paramete `θ >= 0` run
+To generate `t` realisations of `n`-variate data from Clayton copula with 
+parameter `θ >= 0` run
 
 ```julia
 julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{INT, Float64} = 1)
@@ -137,7 +139,8 @@ julia> claytoncopulagen(10, 2, 1)
 Generalisation of reversed bivariate Clayton copula, see The use of copula functions for predictive analysis of correlations between extreme storm tides, 
 K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497.
 
-To generate `t` realisations of `n`-variate data from Reversed Clayton copula with paramete `θ >= 0` run
+To generate `t` realisations of `n`-variate data from Reversed Clayton copula 
+with parameter `θ >= 0` run
 
 ```julia
 julia> revclaytoncopulagen(t::Int, n::Int = 2, θ::Union{INT, Float64} = 1)
@@ -160,9 +163,12 @@ julia> revclaytoncopulagen(10)
 ```
 #### Clayton subcopula
 
-It is possible to generate `t` realistations of `n`-variate data using bivariate Clayton copula with parameter `θ_i >= -1` for each pair `U_i` and `U_{i+1}`.
-Hence for each neighbouring marginals we have a Clayton subcopula. Number of marginal variables is `n = length(θ)+1`. If `usecor` sperman correlation coeficinet
-array is atken as a parameter array `θ`, here `-1 <= θ <= 1`.
+It is possible to generate `t` realisations of `n`-variate data using bivariate 
+Clayton copula with parameter `θ_i >= -1` for each pair `U_i` and `U_{i+1}`.
+Hence for each neighbouring marginals we have a Clayton subcopula. Number of 
+marginal variables is `n = length(θ)+1`. If `usecor` Spearman correlation 
+coefficient
+array is taken as a parameter array `θ`, here `-1 <= θ <= 1`.
 
 ```julia
 julia> claytonsubcopulagen(t::Int, θ::Vector{Float64}; usecor::Bool)
@@ -210,7 +216,7 @@ To generate `t` realisations of `n` variate data from product (independent) copu
 julia> productcopula(t::Int, n::Int)
 ```
 
-### Converting marinals
+### Converting marginals
 
 To convert marginals of `U \in [0,1]^n` using one type univariate of distributions `dist` with parameters `p[i]` for `i` th marginal run:
 
