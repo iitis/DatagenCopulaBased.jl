@@ -132,8 +132,33 @@ julia> claytoncopulagen(10, 2, 1)
  0.950937  0.934698
 
 ```
+#### Reversed Clayton copula
 
-### Clayton subcopula
+Generalisation of reversed bivariate Clayton copula, see The use of copula functions for predictive analysis of correlations between extreme storm tides, 
+K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497.
+
+To generate `t` realisations of `n`-variate data from Reversed Clayton copula with paramete `θ >= 0` run
+
+```julia
+julia> revclaytoncopulagen(t::Int, n::Int = 2, θ::Union{INT, Float64} = 1)
+```
+
+```julia
+
+julia> revclaytoncopulagen(10)
+10×2 Array{Float64,2}:
+ 0.674035   0.0159754 
+ 0.635186   0.515593
+ 0.485764   0.00915412
+ 0.476243   0.44962 
+ 0.795136   0.601436
+ 0.109876   0.0834836 
+ 0.752802   0.253692
+ 0.873826   0.117996
+ 0.537014   0.622158
+ 0.0490631  0.0653018 
+```
+#### Clayton subcopula
 
 It is possible to generate `t` realistations of `n`-variate data using bivariate Clayton copula with parameter `θ_i >= -1` for each pair `U_i` and `U_{i+1}`.
 Hence for each neighbouring marginals we have a Clayton subcopula. Number of marginal variables is `n = length(θ)+1`. If `usecor` sperman correlation coeficinet
@@ -171,6 +196,19 @@ julia> cor(quantile(Normal(0,1), U))
  -0.235751  -0.473841   1.0 
 ```
 
+For reversed Clayton subcopula run:
+
+```julia
+julia> revclaytonsubcopulagen(t::Int, θ::Vector{Float64}; usecor::Bool)
+```
+
+### Product, independent copula
+
+To generate `t` realisations of `n` variate data from product (independent) copula run:
+
+```julia
+julia> productcopula(t::Int, n::Int)
+```
 
 ### Converting marinals
 

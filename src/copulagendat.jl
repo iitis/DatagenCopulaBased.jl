@@ -48,6 +48,33 @@ function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0)
 end
 
 """
+
+  revclaytoncopulagen(t::Int, n::Int, θ::Float64)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
+ copula with parameter θ >= 0
+
+```jldoctest
+
+julia> revclaytoncopulagen(10)
+10×2 Array{Float64,2}:
+ 0.674035   0.0159754
+ 0.635186   0.515593
+ 0.485764   0.00915412
+ 0.476243   0.44962
+ 0.795136   0.601436
+ 0.109876   0.0834836
+ 0.752802   0.253692
+ 0.873826   0.117996
+ 0.537014   0.622158
+ 0.0490631  0.0653018
+```
+"""
+
+revclaytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0) =
+  ones(t, n) - claytoncopulagen(t, n, θ)
+
+"""
   tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
 
 Generates data using t-student Copula given a correlation  matrix and degrees of freedom
@@ -117,6 +144,29 @@ function gausscopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]])
   z
 end
 
+"""
+  productcopula(t::Int, n::Int)
+
+Returns t realisation of n variate data generated from produce (independent) copula
+
+```jldoctest
+julia> srand(43);
+
+julia> productcopula(10, 2)
+10×2 Array{Float64,2}:
+ 0.180975  0.661781
+ 0.775377  0.0742681
+ 0.888934  0.125437
+ 0.924876  0.0950087
+ 0.408278  0.130474
+ 0.912603  0.740184
+ 0.828727  0.00463791
+ 0.400537  0.0288987
+ 0.429437  0.521601
+ 0.955881  0.851275
+```
+"""
+productcopula(t::Int, n::Int) = rand(t,n)
 # transforms univariate distributions
 
 """

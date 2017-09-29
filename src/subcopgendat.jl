@@ -39,6 +39,17 @@ function claytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.]; usecor::B
 end
 
 """
+
+  revclaytonsubcopulagen(t::Int = 1000, θ::Vector{Float64})
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
+2-d reversed Clayton subcopulas with parameters θ_1, ..., θ_{n-1} >= -1
+
+"""
+revclaytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.]; usecor::Bool = false) =
+  ones(t, length(θ)+1) - claytonsubcopulagen(t, θ; usecor=usecor)
+
+"""
   g2tsubcopula!(z::Matrix{Float}, cormat::Matrix{Float}, subn::Array{Int})
 
 Changes data generated using gaussian copula to data generated using student

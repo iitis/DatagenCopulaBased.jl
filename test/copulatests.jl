@@ -68,9 +68,9 @@ end
     convertmarg!(xt, Normal)
     @test cov(xt) ≈ [[1. 0.5]; [0.5 1.]] atol=1.0e-2
   end
-  srand(43)
-  xc = claytoncopulagen(500000, 3, 1);
   @testset "clayton copula" begin
+    srand(43)
+    xc = claytoncopulagen(500000, 3, 1);
     @test pvalue(ExactOneSampleKSTest(xc[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(xc[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(xc[:,3], Uniform(0,1))) > α
@@ -85,6 +85,25 @@ end
     @test pvalue(ExactOneSampleKSTest(xc[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(xc[:,3], Uniform(0,1))) > α
     @test lefttail(xc[:,1], xc[:,2]) ≈ 1/(2^(1/(6.5))) atol=1.0e-1
+  end
+  @testset "reversed clayton copula" begin
+    srand(43)
+    xic = revclaytoncopulagen(500000, 3, 1);
+    @test pvalue(ExactOneSampleKSTest(xic[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(xic[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(xic[:,3], Uniform(0,1))) > α
+    @test lefttail(xic[:,1], xic[:,3]) ≈ 0 atol=1.0e-1
+    @test righttail(xic[:,1], xic[:,2]) ≈ 0.5 atol=1.0e-1
+  end
+  @testset "product copula" begin
+    srand(43)
+    x = productcopula(500000, 3);
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test lefttail(x[:,1], x[:,3]) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
+    @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   end
 end
 
@@ -118,6 +137,7 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+    @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
     @test lefttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
     @test lefttail(x[:,3], x[:,4]) ≈ 1/(2^(1/2)) atol=1.0e-1
     @test lefttail(x[:,4], x[:,5]) ≈ 1/(2^(1/3)) atol=1.0e-1
@@ -132,6 +152,19 @@ end
     x = claytonsubcopulagen(500000, [0.6, -0.6]; usecor = true)
     @test cor(x[:,1], x[:,2]) ≈ 0.6 atol=1.0e-1
     @test cor(x[:,2], x[:,3]) ≈ -0.6 atol=1.0e-1
+  end
+  @testset "reverse clayton subcopula" begin
+    srand(43)
+    x = revclaytonsubcopulagen(500000, [-0.9, 3., 2., 3., 0.5])
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+    @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,3], x[:,4]) ≈ 1/(2^(1/2)) atol=1.0e-1
+    @test lefttail(x[:,3], x[:,4]) ≈ 0 atol=1.0e-1
+    @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
+    convertmarg!(x, Normal)
+    @test cor(x[:,1], x[:,2]) ≈ -0.959 atol=1.0e-1
   end
   @testset "test for std normal distribution of marginals of subcopdatagen" begin
     srand(43)
