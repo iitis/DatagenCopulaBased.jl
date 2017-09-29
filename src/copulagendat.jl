@@ -168,33 +168,6 @@ julia> productcopula(10, 2)
 """
 productcopula(t::Int, n::Int) = rand(t,n)
 
-function vnelimination(f::Function t::Int, n::Int)
-  data = zeros(t,n)
-  k = 1
-  for i in 1:1e20
-    x = rand(n)
-    lim = rand()
-    if (f(x) > lim)
-        data[k,:] = x
-        k += 1
-    end
-    if k == t+1
-      return(data)
-    end
-  end
-end
-
-
-minimalcopula(t::Int, n::Int) = vnelimination(minimum, t, n)
-
-function maximalcopula(t::Int, n::Int)
-  f(x) = maximum(sum(x)+1, 0)
-  vnelimination(f, t, n)
-end
-
-function mixedcopula(t::Int, n::Int, α, β)
-  β*minimalcopula(t,n)+α*maximalcopula(t,n)+(1-α-β)*productcopula(t,n)
-end
 # transforms univariate distributions
 """
   convertmarg!(X::Matrix, dist, p::Vector{Vector})
