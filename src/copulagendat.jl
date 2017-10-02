@@ -25,12 +25,17 @@ julia> claytoncopulagen(10, 2, 1)
  ```
 """
 
-function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0)
+function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0;
+                                              reverse::Bool = false)
   θ >= 0 || throw(AssertionError("generaton not supported for θ < 0"))
   qamma_dist = Gamma(1/θ, θ)
   x = rand(t)
   u = -log.(rand(t, n))./quantile(qamma_dist, x)
-  (1 + θ.*u).^(-1/θ)
+  if reverse
+    return 1 - (1 + θ.*u).^(-1/θ)
+  else
+    return (1 + θ.*u).^(-1/θ)
+  end
 end
 
 """
@@ -58,7 +63,7 @@ julia> revclaytoncopulagen(10)
 """
 
 revclaytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0) =
-  ones(t, n) - claytoncopulagen(t, n, θ)
+  claytoncopulagen(t, n, θ; reverse = true)
 
 """
   tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)

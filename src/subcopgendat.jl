@@ -23,7 +23,8 @@ julia> x = claytonsubcopulagen(10, [1.])
 ```
 """
 
-function claytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.]; usecor::Bool = false)
+function claytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.];
+                                      usecor::Bool = false, reverse::Bool = false)
   minimum(θ) >= -1 || throw(AssertionError("$i th parameter < -1"))
   if usecor
     maximum(θ) <= 1 || throw(AssertionError("$i th parameter > 1"))
@@ -35,7 +36,7 @@ function claytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.]; usecor::B
     U = X[:, i]
     X = hcat(X, U.*(W.^(-θ[i]/(1 + θ[i])) - 1 + U.^θ[i]).^(-1/θ[i]))
   end
-  X
+  reverse? (return 1-X) : (return X)
 end
 
 """
@@ -47,7 +48,7 @@ Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
 
 """
 revclaytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.]; usecor::Bool = false) =
-  ones(t, length(θ)+1) - claytonsubcopulagen(t, θ; usecor=usecor)
+ claytonsubcopulagen(t, θ; usecor=usecor, reverse = true)
 
 """
   g2tsubcopula!(z::Matrix{Float}, cormat::Matrix{Float}, subn::Array{Int})

@@ -114,7 +114,7 @@ To generate `t` realisations of `n`-variate data from Clayton copula with
 parameter `θ >= 0` run
 
 ```julia
-julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{INT, Float64} = 1)
+julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{INT, Float64} = 1; reverse::Bool = false)
 ```
 
 ```julia
@@ -134,33 +134,13 @@ julia> claytoncopulagen(10, 2, 1)
  0.950937  0.934698
 
 ```
-#### Reversed Clayton copula
 
-Generalisation of reversed bivariate Clayton copula, see The use of copula functions for predictive analysis of correlations between extreme storm tides, 
+If `reversed` returns data from reversed `n` variate Clayton copula. For reversed bivariate Clayton copula, see The use of copula functions for predictive analysis of correlations between extreme storm tides, 
 K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497.
 
-To generate `t` realisations of `n`-variate data from Reversed Clayton copula 
-with parameter `θ >= 0` run
+`claytoncopulagen(t, n, θ; reversed = true) = 1 .- claytoncopulagen(t, n, θ)`
 
-```julia
-julia> revclaytoncopulagen(t::Int, n::Int = 2, θ::Union{INT, Float64} = 1)
-```
 
-```julia
-
-julia> revclaytoncopulagen(10)
-10×2 Array{Float64,2}:
- 0.674035   0.0159754 
- 0.635186   0.515593
- 0.485764   0.00915412
- 0.476243   0.44962 
- 0.795136   0.601436
- 0.109876   0.0834836 
- 0.752802   0.253692
- 0.873826   0.117996
- 0.537014   0.622158
- 0.0490631  0.0653018 
-```
 #### Clayton subcopula
 
 It is possible to generate `t` realisations of `n`-variate data using bivariate 
@@ -171,7 +151,7 @@ coefficient
 array is taken as a parameter array `θ`, here `-1 <= θ <= 1`.
 
 ```julia
-julia> claytonsubcopulagen(t::Int, θ::Vector{Float64}; usecor::Bool)
+julia> claytonsubcopulagen(t::Int, θ::Vector{Float64}; usecor::Bool = false, reversed::Bool = false)
 ```
 
 ```julia
@@ -202,11 +182,7 @@ julia> cor(quantile(Normal(0,1), U))
  -0.235751  -0.473841   1.0 
 ```
 
-For reversed Clayton subcopula run:
-
-```julia
-julia> revclaytonsubcopulagen(t::Int, θ::Vector{Float64}; usecor::Bool)
-```
+If `reversed` uses reversed Clayton subcopula `claytonsubcopulagen(t, θ, usecor, reversed = true) = 1 .- claytonsubcopulagen(t, θ, usecor)`
 
 ### Product, independent copula
 

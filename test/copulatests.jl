@@ -87,7 +87,7 @@ end
   end
   @testset "reversed clayton copula" begin
     srand(43)
-    xic = revclaytoncopulagen(500000, 3, 1);
+    xic = claytoncopulagen(500000, 3, 1; reverse = true);
     @test pvalue(ExactOneSampleKSTest(xic[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(xic[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(xic[:,3], Uniform(0,1))) > α
@@ -154,7 +154,7 @@ end
   end
   @testset "reverse clayton subcopula" begin
     srand(43)
-    x = revclaytonsubcopulagen(500000, [-0.9, 3., 2., 3., 0.5])
+    x = claytonsubcopulagen(500000, [-0.9, 3., 2., 3., 0.5]; reverse = true)
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
