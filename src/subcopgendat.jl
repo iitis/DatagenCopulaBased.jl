@@ -30,13 +30,13 @@ function claytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.];
     maximum(θ) <= 1 || throw(AssertionError("$i th parameter > 1"))
     θ = map(claytonθ, θ)
   end
-  X = rand(t,1)
+  u = rand(t,1)
   for i in 1:length(θ)
-    W = rand(t)
-    U = X[:, i]
-    X = hcat(X, U.*(W.^(-θ[i]/(1 + θ[i])) - 1 + U.^θ[i]).^(-1/θ[i]))
+    w = rand(t)
+    z = u[:, i]
+    u = hcat(u, z.*(w.^(-θ[i]/(1 + θ[i])) - 1 + z.^θ[i]).^(-1/θ[i]))
   end
-  reverse? (return 1-X) : (return X)
+  reverse? 1-u : u
 end
 
 """
