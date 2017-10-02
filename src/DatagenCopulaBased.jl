@@ -7,5 +7,5 @@ module DatagenCopulaBased
   include("helpers.jl")
 
   export claytoncopulagen, tstudentcopulagen, gausscopulagen, convertmarg!
-  export subcopdatagen, cormatgen, gumbelcopulagen, productcopula
+  export subcopdatagen, cormatgen, gumbelcopulagen, frankcopulagen, productcopula
 end

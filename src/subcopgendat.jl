@@ -1,4 +1,41 @@
 """
+  frankcopulagen(t::Int, θ::Vector{Float64})
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data, where n = length(θ)+1.
+Each two neighbour marginals (i'th and i+1'th) are generated from bivariate Frank copula
+with parameter θ_i != 0.
+
+```jldoctest
+julia> srand(43);
+
+julia> frankcopulagen(10, [4., 11.])
+10×3 Array{Float64,2}:
+ 0.220082   0.169968   0.132016
+ 0.246445   0.373513   0.297198
+ 0.0348839  0.129379   0.173934
+ 0.491317   0.547426   0.835849
+ 0.482926   0.403088   0.563117
+ 0.805497   0.0817427  0.0191319
+ 0.899497   0.92802    0.95324
+ 0.125435   0.275123   0.379057
+ 0.612692   0.83329    0.887488
+ 0.74624    0.60535    0.424692
+
+```
+"""
+function frankcopulagen(t::Int, θ::Vector{Float64})
+  u = rand(t, 1)
+  for i in 1:length(θ)
+    z = u[:,i]
+    w = rand(t)
+    α = θ[i]
+    v = -log.((exp.(-α.*z).*(1./w-1)+exp(-α))./(1+exp.(-α.*z).*(1./w-1)))/α
+    u = hcat(u, v)
+  end
+  u
+end
+
+"""
 
   claytoncopulagen(t::Int = 1000, θ::Vector{Float64}; pearsonrho, reverse)
 

@@ -15,3 +15,11 @@ claytonθ(ρ::Union{Float64, Int}) = 4*asin(ρ)/(pi-2*asin(ρ))
 gumbelθ(ρ::Union{Float64, Int}) = 1/(1-2*asin(ρ)/pi)
 
 claytonθ2ρ(θ::Union{Float64, Int}) = sin(θ*pi/(4+2*θ))
+
+# for frank copula
+
+tau4 = 1+4*(0.38814-1)/4
+
+tau11 = 1+4*(0.149521-1)/11
+
+rho(tau) = sin(pi*tau/2)

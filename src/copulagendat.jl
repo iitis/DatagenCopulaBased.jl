@@ -84,6 +84,20 @@ function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bo
 end
 
 """
+  frankcopulagen(t::Int, n::Int, θ::Float64; reverse::Bool = false)
+"""
+function frankcopulagen(t::Int, n::Int, θ::Float64; reverse::Bool = false)
+  θ > 0 || throw(AssertionError("generaton not supported for θ <= 0"))
+  z = rand(t)
+  u = rand(t, n)
+  for i in 1:n
+    w = u[:,i]
+    u[:,i] = -log.((exp.(-θ.*z).*(1./w-1)+exp(-θ))./(1+exp.(-θ.*z).*(1./w-1)))/θ
+  end
+  reverse? 1-u : u
+end
+
+"""
   tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
 
 Generates data using t-student Copula given a correlation matrix cormat and nu degrees of freedom
