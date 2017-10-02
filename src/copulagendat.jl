@@ -5,7 +5,7 @@
   claytoncopulagen(t::Int, n::Int, θ::Float64)
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
- copula with parameter θ >= 0
+ copula with parameter θ >= 0. If usecor = true in
 
 ```jldoctest
 julia> srand(43);
@@ -26,44 +26,18 @@ julia> claytoncopulagen(10, 2, 1)
 """
 
 function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0;
-                                              reverse::Bool = false)
-  θ >= 0 || throw(AssertionError("generaton not supported for θ < 0"))
+                                            usecor::Bool = false, reverse::Bool = false)
+  θ > 0 || throw(AssertionError("generaton not supported for θ <= 0"))
+  if usecor
+    θ <= 1 || throw(AssertionError("correlation coeficient > 1"))
+    θ = claytonθ(θ)
+  end
   qamma_dist = Gamma(1/θ, θ)
   x = rand(t)
   u = -log.(rand(t, n))./quantile(qamma_dist, x)
-  if reverse
-    return 1 - (1 + θ.*u).^(-1/θ)
-  else
-    return (1 + θ.*u).^(-1/θ)
-  end
+  u = (1 + θ.*u).^(-1/θ)
+  reverse? 1-u: u
 end
-
-"""
-
-  revclaytoncopulagen(t::Int, n::Int, θ::Float64)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
- copula with parameter θ >= 0
-
-```jldoctest
-
-julia> revclaytoncopulagen(10)
-10×2 Array{Float64,2}:
- 0.674035   0.0159754
- 0.635186   0.515593
- 0.485764   0.00915412
- 0.476243   0.44962
- 0.795136   0.601436
- 0.109876   0.0834836
- 0.752802   0.253692
- 0.873826   0.117996
- 0.537014   0.622158
- 0.0490631  0.0653018
-```
-"""
-
-revclaytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0) =
-  claytoncopulagen(t, n, θ; reverse = true)
 
 """
   tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
@@ -233,10 +207,10 @@ julia> cormatgen(4)
 ```
 """
 
-  function cormatgen(n::Int, rho::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
-    1 > rho > 0 || throw(AssertionError("only 1 > rho > 0 supported"))
-    θ = claytonθ(rho)
-    x = ordered? claytonsubcopulagen(4*n, [fill(θ, (n-1))...]) : claytoncopulagen(4*n, n, θ)
+  function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
+    1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
+    ρ = ordered? [fill(ρ, (n-1))...]: ρ
+    x = claytoncopulagen(4*n, n, ρ; usecor = true)
     convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n])
     if altersing
       for i in 1:n

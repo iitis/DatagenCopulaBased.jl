@@ -96,14 +96,14 @@ julia> srand(43);
 julia> tstudentcopulagen(10)
 10×2 Array{Float64,2}:
  0.658199  0.937148 
- 0.718244  0.92602  
+ 0.718244  0.92602
  0.809521  0.0980325
  0.263068  0.222589 
  0.187187  0.971109 
  0.245373  0.346428 
  0.452336  0.524498 
  0.57113   0.272525 
- 0.498443  0.48082  
+ 0.498443  0.48082
  0.113788  0.633349 
 
 ```
@@ -114,7 +114,7 @@ To generate `t` realisations of `n`-variate data from Clayton copula with
 parameter `θ >= 0` run
 
 ```julia
-julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{INT, Float64} = 1; reverse::Bool = false)
+julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{Int, Float64} = 1; usecor::Bool = false, reverse::Bool = false)
 ```
 
 ```julia
@@ -135,54 +135,44 @@ julia> claytoncopulagen(10, 2, 1)
 
 ```
 
-If `reversed` returns data from reversed `n` variate Clayton copula. For reversed bivariate Clayton copula, see The use of copula functions for predictive analysis of correlations between extreme storm tides, 
-K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497.
+If `usecor` use Spearman correlation coefficent `0 >= θ >= 1` instead of the Clayton copula parameter. If `reversed` returns data from reversed `n` variate Clayton copula. 
+For reversed bivariate Clayton copula, see 'The use of copula functions for predictive analysis of correlations between extreme storm tides', K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497.
 
 `claytoncopulagen(t, n, θ; reversed = true) = 1 .- claytoncopulagen(t, n, θ)`
 
-
-#### Clayton subcopula
-
-It is possible to generate `t` realisations of `n`-variate data using bivariate 
-Clayton copula with parameter `θ_i >= -1` for each pair `U_i` and `U_{i+1}`.
-Hence for each neighbouring marginals we have a Clayton subcopula. Number of 
-marginal variables is `n = length(θ)+1`. If `usecor` Spearman correlation 
-coefficient
-array is taken as a parameter array `θ`, here `-1 <= θ <= 1`.
+To generate  `n` - variate data given `n-1` parameters `θ_i` of Clayton like copula you can run:
 
 ```julia
-julia> claytonsubcopulagen(t::Int, θ::Vector{Float64}; usecor::Bool = false, reversed::Bool = false)
+julia> claytoncopulagen(t::Int, θ::Array{Float64}; usecor::Bool = false, reverse::Bool = false)
 ```
 
-```julia
-julia> srand(43);
+Here we heve bivariate Clayton copula with parameter `θ_i > -1 ^ θ_i != 0` between each `i` 'th and `i+1` th marginal and number of 
+marginal variables is `n = length(θ)+1`. If `usecor` use Spearman correlation coefficents `-1 > θ_i >= 1 ^ θ_i != 0` instead of the Clayton copula parameters.
 
-julia> x = claytonsubcopulagen(10, [1.])
-10×2 Array{Float64,2}:
- 0.180975  0.441152 
- 0.775377  0.225086 
- 0.888934  0.327726 
- 0.924876  0.291837 
- 0.408278  0.187564 
- 0.912603  0.848985 
- 0.828727  0.0571042
- 0.400537  0.0758159
- 0.429437  0.527526 
- 0.955881  0.919363 
- 
+
+```julia
 
 julia> srand(43);
 
-julia> U = claytonsubcopulagen(5000, [0.5, -0.5]; usecor = true);
+julia> x = claytoncopulagen(9, [-0.9, 0.9, 1.]; usecor = true)
+9×4 Array{Float64,2}:
+ 0.180975  0.942164   0.872673   0.872673 
+ 0.775377  0.230724   0.340819   0.340819 
+ 0.888934  0.0579034  0.190519   0.190519 
+ 0.924876  0.0360802  0.0294198  0.0294198
+ 0.408278  0.461712   0.889275   0.889275 
+ 0.912603  0.0433313  0.0315759  0.0315759
+ 0.828727  0.270476   0.274191   0.274191 
+ 0.400537  0.469634   0.633396   0.633396 
+ 0.429437  0.440285   0.478058   0.478058 
 
-julia> cor(quantile(Normal(0,1), U))
-3×3 Array{Float64,2}:
-  1.0        0.496167  -0.235751
-  0.496167   1.0       -0.473841
- -0.235751  -0.473841   1.0 
+julia> cor(x)
+4×4 Array{Float64,2}:
+  1.0       -0.945672  -0.936555  -0.936555
+ -0.945672   1.0        0.890923   0.890923
+ -0.936555   0.890923   1.0        1.0
+ -0.936555   0.890923   1.0        1.0 
 ```
-
-If `reversed` uses reversed Clayton subcopula `claytonsubcopulagen(t, θ, usecor, reversed = true) = 1 .- claytonsubcopulagen(t, θ, usecor)`
 
 ### Product, independent copula
 

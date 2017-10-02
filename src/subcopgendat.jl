@@ -1,6 +1,6 @@
 """
 
-  claytonsubcopulagen(t::Int = 1000, θ::Vector{Float64})
+  claytoncopulagen(t::Int = 1000, θ::Vector{Float64})
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
 2-d Clayton subcopulas with parameters θ_1, ..., θ_{n-1} >= -1
@@ -23,11 +23,11 @@ julia> x = claytonsubcopulagen(10, [1.])
 ```
 """
 
-function claytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.];
-                                      usecor::Bool = false, reverse::Bool = false)
-  minimum(θ) >= -1 || throw(AssertionError("$i th parameter < -1"))
+function claytoncopulagen(t::Int, θ::Vector{Float64}; usecor::Bool = false, reverse::Bool = false)
+  minimum(θ) >= -1 || throw(AssertionError("not supported for $i th parameter < -1"))
+  ! 0. in θ || throw(AssertionError("not supported for $i th parameter = 0"))
   if usecor
-    maximum(θ) <= 1 || throw(AssertionError("$i th parameter > 1"))
+    maximum(θ) <= 1 || throw(AssertionError("$i correlation coeficient > 1"))
     θ = map(claytonθ, θ)
   end
   u = rand(t,1)
@@ -39,16 +39,6 @@ function claytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.];
   reverse? 1-u : u
 end
 
-"""
-
-  revclaytonsubcopulagen(t::Int = 1000, θ::Vector{Float64})
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
-2-d reversed Clayton subcopulas with parameters θ_1, ..., θ_{n-1} >= -1
-
-"""
-revclaytonsubcopulagen(t::Int, θ::Vector{Float64} = [1.,1.,1.]; usecor::Bool = false) =
- claytonsubcopulagen(t, θ; usecor=usecor, reverse = true)
 
 """
   g2tsubcopula!(z::Matrix{Float}, cormat::Matrix{Float}, subn::Array{Int})
