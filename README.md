@@ -148,8 +148,7 @@ julia> claytoncopulagen(t::Int, θ::Array{Float64}; pearsonrho::Bool = false, re
 ```
 
 where `n = length(θ)`, here each two neighbour marginals (`i`'th and `i+1`'th) are generated from bivariate Clayton copula
-with parameter θ_i >= -1 ^ θ_i != 0. If `pearsonrho` parameters `-1 > θ_i >= 1 
-^ θ_i != 0` are taken as Pearson correlation coefficients.
+with parameter `θ_i >= -1 ^ θ_i != 0`. If pearsonrho parameters `-1 > θ_i >= 1 ^ θ_i != 0` are taken as Pearson correlation coefficients.
 If `reversed` returns data from reversed Clayton copula.
 
 ```julia
