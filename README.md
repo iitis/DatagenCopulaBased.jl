@@ -3,7 +3,7 @@
 Copula based generator of `t` realisations of `n`-variate data in a form of `t x n` matrix `U`.
 Realisations of each marginal `U[:,i]` are uniformly distributed on `[0,1]`, however the interdependence between 
 marginals are not simple and depends between copula. For copula definitions and properties see e.g. 
-Copula Methods in Finance, Umberto Cherubini, Elisa Luciano, Walter Vecchiato, Wiley 2004. 
+`Copula Methods in Finance`, Umberto Cherubini, Elisa Luciano, Walter Vecchiato, Wiley 2004. 
 
 ## Installation
 
@@ -111,7 +111,7 @@ julia> tstudentcopulagen(10)
 ### Clayton copula
 
 To generate `t` realisations of `n`-variate data from Clayton copula with 
-parameter `θ >= 0` run
+parameter `θ > 0` run
 
 ```julia
 julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{Int, Float64} = 1; pearsonrho::Bool = false, reverse::Bool = false)
@@ -135,10 +135,10 @@ julia> claytoncopulagen(10, 2, 1)
 
 ```
 
-If `pearsonrho` parameter `0 >= θ >= 1` is taken as a Pearson correlation coefficent. If `reversed` returns data from reversed Clayton copula, 
+If `pearsonrho` parameter `0 > θ >= 1` is taken as a Pearson correlation coefficent. If `reversed` returns data from reversed Clayton copula, 
 `claytoncopulagen(t, n, θ; reversed = true) = 1 .- claytoncopulagen(t, n, θ)`.
 For justification see: 'The use of copula functions for predictive analysis of correlations between extreme storm tides',
-K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497. 
+K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497, 2014. 
 
 
 To generate `n` - variate data given `n-1` parameters `θ_i` run:
@@ -174,6 +174,37 @@ julia> cor(x)
  -0.936555   0.890923   1.0        1.0
  -0.936555   0.890923   1.0        1.0 
 ```
+
+### Gumbel copula
+
+To generate `t` realisations of `n`-variate data from Clayton copula with 
+parameter `θ > 0` run
+
+```julia
+julia> gumbelcopulagen(t::Int, n::Int, θ::Union{Int, Float64}; pearsonrho::Bool = false, reverse::Bool = false)
+```
+If `pearsonrho` parameter `0 > θ > 1` is taken as a Pearson correlation 
+coefficent. If `reversed` returns data from reversed Gumbel copula.
+For justification see: 'The use of copula functions for modeling the risk of 
+investment in shares traded on the Warsaw Stock Exchange',
+K. Domino, T. Błachowicz, Physica A: Statistical Mechanics and its Applications 413, 77-85, 2014. 
+
+```julia
+julia> srand(43);
+
+julia> gumbelcopulagen(10, 3, 3.5)
+10×3 Array{Float64,2}:
+ 0.550199  0.574653   0.486977
+ 0.352515  0.0621575  0.072297
+ 0.31809   0.112819   0.375482
+ 0.652536  0.691707   0.645668
+ 0.988459  0.989946   0.986297
+ 0.731589  0.532971   0.678277
+ 0.62426   0.625661   0.851237
+ 0.335811  0.117504   0.329193
+ 0.504036  0.672722   0.561857
+ 0.326098  0.459547   0.117946
+ ```
 
 ### Product, independent copula
 

@@ -35,15 +35,57 @@ function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0;
   end
   qamma_dist = Gamma(1/θ, θ)
   x = rand(t)
-  u = -log.(rand(t, n))./quantile(qamma_dist, x)
+  u = rand(t, n)
+  u = -log.(u)./quantile(qamma_dist, x)
   u = (1 + θ.*u).^(-1/θ)
   reverse? 1-u: u
 end
 
 """
+  gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false, reverse::Bool = false)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Gumbel
+copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
+Pearson correlation coefficent. If reversed returns data from reversed Gumbel copula.
+
+```jldoctest
+julia> srand(43);
+
+julia> gumbelcopulagen(10, 3, 3.5)
+10×3 Array{Float64,2}:
+ 0.550199  0.574653   0.486977
+ 0.352515  0.0621575  0.072297
+ 0.31809   0.112819   0.375482
+ 0.652536  0.691707   0.645668
+ 0.988459  0.989946   0.986297
+ 0.731589  0.532971   0.678277
+ 0.62426   0.625661   0.851237
+ 0.335811  0.117504   0.329193
+ 0.504036  0.672722   0.561857
+ 0.326098  0.459547   0.117946
+ ```
+ """
+
+function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int};
+                                            pearsonrho::Bool = false, reverse::Bool = false)
+  if pearsonrho
+    0 < θ < 1 || throw(AssertionError("generaton not supported for correlation <= 0 v >= 1"))
+    θ = gumbelθ(θ)
+  else
+    θ > 1 || throw(AssertionError("generaton not supported for θ <= 1"))
+  end
+  u = rand(t, n)
+  v = rand(t)
+  g = sin.(pi.*v.*(1 - 1/θ))./(-log.(rand(t)))
+  g = (sin.(pi.*v/θ)./g).^(1/θ).*g./sin.(pi.*v)
+  u = exp.(-(-log.(u)).^(1/θ)./g)
+  reverse? 1-u : u
+end
+
+"""
   tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
 
-Generates data using t-student Copula given a correlation  matrix and degrees of freedom
+Generates data using t-student Copula given a correlation matrix cormat and nu degrees of freedom
 
 ```jldoctest
 julia> srand(43);
@@ -62,16 +104,6 @@ julia> tstudentcopulagen(10)
  0.113788  0.633349
  ```
 """
-
-function gumbelcopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.5)
-  θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
-  u = rand(t, n)
-  v = rand(t)
-  z = sin.(pi.*v.*(1 - 1/θ))./(-log.(rand(t)))
-  g = (sin.(pi.*v/θ)./z).^(1/θ).*z./sin.(pi.*v)
-  exp.(-(-log.(u)).^(1/θ)./g)
-end
-
 
 function tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
   y = rand(MvNormal(cormat),t)'

@@ -10,6 +10,8 @@ function copuladeftest(v1::Vector{T}, v2::Vector{T}, α::Vector{T}, β::Vector{T
  sum((v1 .> α[1]) .* (v2 .> β[1]))+ sum((v1 .> α[2]) .* (v2 .> β[2])) - sum((v1 .> α[1]) .* (v2 .> β[2]))+ sum((v1 .> α[2]) .* (v2 .> β[1]))
 end
 
-claytonθ(ρ::Float64) = 4*asin(ρ)/(pi-2*asin(ρ))
+claytonθ(ρ::Union{Float64, Int}) = 4*asin(ρ)/(pi-2*asin(ρ))
 
-claytonθ2ρ(θ::Float64) = sin(θ*pi/(4+2*θ))
+gumbelθ(ρ::Union{Float64, Int}) = 1/(1-2*asin(ρ)/pi)
+
+claytonθ2ρ(θ::Union{Float64, Int}) = sin(θ*pi/(4+2*θ))
