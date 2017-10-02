@@ -146,7 +146,7 @@ end
     convertmarg!(x, Normal)
     @test cor(x[:,1], x[:,2]) ≈ -0.959 atol=1.0e-1
     srand(43)
-    x = claytoncopulagen(500000, [0.6, -0.6]; usecor = true)
+    x = claytoncopulagen(500000, [0.6, -0.6]; pearsonrho = true)
     @test cor(x[:,1], x[:,2]) ≈ 0.6 atol=1.0e-1
     @test cor(x[:,2], x[:,3]) ≈ -0.6 atol=1.0e-1
     srand(43)

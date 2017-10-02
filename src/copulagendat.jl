@@ -5,7 +5,8 @@
   claytoncopulagen(t::Int, n::Int, θ::Float64)
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
- copula with parameter θ >= 0. If usecor = true in
+copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
+Pearson correlation coefficent. If reversed returns data from reversed Clayton copula.
 
 ```jldoctest
 julia> srand(43);
@@ -26,9 +27,9 @@ julia> claytoncopulagen(10, 2, 1)
 """
 
 function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0;
-                                            usecor::Bool = false, reverse::Bool = false)
+                                            pearsonrho::Bool = false, reverse::Bool = false)
   θ > 0 || throw(AssertionError("generaton not supported for θ <= 0"))
-  if usecor
+  if pearsonrho
     θ <= 1 || throw(AssertionError("correlation coeficient > 1"))
     θ = claytonθ(θ)
   end
@@ -210,7 +211,7 @@ julia> cormatgen(4)
   function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
     1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
     ρ = ordered? [fill(ρ, (n-1))...]: ρ
-    x = claytoncopulagen(4*n, n, ρ; usecor = true)
+    x = claytoncopulagen(4*n, n, ρ; pearsonrho = true)
     convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n])
     if altersing
       for i in 1:n

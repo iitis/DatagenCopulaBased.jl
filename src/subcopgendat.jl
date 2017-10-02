@@ -1,32 +1,33 @@
 """
 
-  claytoncopulagen(t::Int = 1000, θ::Vector{Float64})
+  claytoncopulagen(t::Int = 1000, θ::Vector{Float64}; pearsonrho, reverse)
 
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
-2-d Clayton subcopulas with parameters θ_1, ..., θ_{n-1} >= -1
+Returns: t x n Matrix{Float}, t realisations of n-variate data, where n = length(θ)+1.
+Each two neighbour marginals (i'th and i+1'th) are generated from bivariate Clayton copula
+with parameter θ_i >= -1 ^ θ_i != 0. If pearsonrho parameters -1 > θ_i >= 1 ^ θ_i != 0 are taken as Pearson
+correlation coefficents. If reversed returns data from reversed Clayton copula.
 
 ```jldoctest
 julia> srand(43);
 
-julia> x = claytonsubcopulagen(10, [1.])
-10×2 Array{Float64,2}:
- 0.180975  0.441152
- 0.775377  0.225086
- 0.888934  0.327726
- 0.924876  0.291837
- 0.408278  0.187564
- 0.912603  0.848985
- 0.828727  0.0571042
- 0.400537  0.0758159
- 0.429437  0.527526
- 0.955881  0.919363
+julia> x = claytoncopulagen(9, [-0.9, 0.9, 1.]; pearsonrho = true)
+9×4 Array{Float64,2}:
+ 0.180975  0.942164   0.872673   0.872673
+ 0.775377  0.230724   0.340819   0.340819
+ 0.888934  0.0579034  0.190519   0.190519
+ 0.924876  0.0360802  0.0294198  0.0294198
+ 0.408278  0.461712   0.889275   0.889275
+ 0.912603  0.0433313  0.0315759  0.0315759
+ 0.828727  0.270476   0.274191   0.274191
+ 0.400537  0.469634   0.633396   0.633396
+ 0.429437  0.440285   0.478058   0.478058
 ```
 """
 
-function claytoncopulagen(t::Int, θ::Vector{Float64}; usecor::Bool = false, reverse::Bool = false)
+function claytoncopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
   minimum(θ) >= -1 || throw(AssertionError("not supported for $i th parameter < -1"))
-  ! 0. in θ || throw(AssertionError("not supported for $i th parameter = 0"))
-  if usecor
+  !(0. in θ) || throw(AssertionError("not supported for $i th parameter = 0"))
+  if pearsonrho
     maximum(θ) <= 1 || throw(AssertionError("$i correlation coeficient > 1"))
     θ = map(claytonθ, θ)
   end

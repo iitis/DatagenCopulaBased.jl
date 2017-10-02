@@ -114,7 +114,7 @@ To generate `t` realisations of `n`-variate data from Clayton copula with
 parameter `θ >= 0` run
 
 ```julia
-julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{Int, Float64} = 1; usecor::Bool = false, reverse::Bool = false)
+julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{Int, Float64} = 1; pearsonrho::Bool = false, reverse::Bool = false)
 ```
 
 ```julia
@@ -135,26 +135,28 @@ julia> claytoncopulagen(10, 2, 1)
 
 ```
 
-If `usecor` use Spearman correlation coefficent `0 >= θ >= 1` instead of the Clayton copula parameter. If `reversed` returns data from reversed `n` variate Clayton copula. 
-For reversed bivariate Clayton copula, see 'The use of copula functions for predictive analysis of correlations between extreme storm tides', K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497.
+If `pearsonrho` parameter `0 >= θ >= 1` is taken as a Pearson correlation coefficent. If `reversed` returns data from reversed Clayton copula, 
+`claytoncopulagen(t, n, θ; reversed = true) = 1 .- claytoncopulagen(t, n, θ)`.
+For justification see: 'The use of copula functions for predictive analysis of correlations between extreme storm tides',
+K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497. 
 
-`claytoncopulagen(t, n, θ; reversed = true) = 1 .- claytoncopulagen(t, n, θ)`
 
-To generate  `n` - variate data given `n-1` parameters `θ_i` of Clayton like copula you can run:
+To generate `n` - variate data given `n-1` parameters `θ_i` run:
 
 ```julia
-julia> claytoncopulagen(t::Int, θ::Array{Float64}; usecor::Bool = false, reverse::Bool = false)
+julia> claytoncopulagen(t::Int, θ::Array{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
 ```
 
-Here we heve bivariate Clayton copula with parameter `θ_i > -1 ^ θ_i != 0` between each `i` 'th and `i+1` th marginal and number of 
-marginal variables is `n = length(θ)+1`. If `usecor` use Spearman correlation coefficents `-1 > θ_i >= 1 ^ θ_i != 0` instead of the Clayton copula parameters.
-
+where `n = length(θ)`, here each two neighbour marginals (`i`'th and `i+1`'th) are generated from bivariate Clayton copula
+with parameter θ_i >= -1 ^ θ_i != 0. If `pearsonrho` parameters `-1 > θ_i >= 1 
+^ θ_i != 0` are taken as Pearson correlation coefficients.
+If `reversed` returns data from reversed Clayton copula.
 
 ```julia
 
 julia> srand(43);
 
-julia> x = claytoncopulagen(9, [-0.9, 0.9, 1.]; usecor = true)
+julia> x = claytoncopulagen(9, [-0.9, 0.9, 1.]; pearsonrho = true)
 9×4 Array{Float64,2}:
  0.180975  0.942164   0.872673   0.872673 
  0.775377  0.230724   0.340819   0.340819 
@@ -204,7 +206,7 @@ julia> convertmarg!(U, Normal, [[0, 1],[0, 10]])
 julia> U
 10×2 Array{Float64,2}:
   0.225457      8.97627 
-  0.548381     14.3926  
+  0.548381     14.3926
   0.666147    -10.0689                                                                                                                                                      
  -0.746662     -9.03553                                                                                                                                                     
  -0.746857     17.2101                                                                                                                                                      
