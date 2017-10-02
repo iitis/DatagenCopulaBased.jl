@@ -1,15 +1,5 @@
 
 # generated data using copulas
-
-"""
-
-  invers_gen(x::Vector{Float64}, theta::Float64)
-
-Returns: Vector{Float64} of data transformed using inverse of Clayton Copula
-generator with parametr theta
-"""
-invers_gen(x::Vector{Float64}, θ::Union{Float64, Int}) = (1 + θ.*x).^(-1/θ)
-
 """
 
   claytoncopulagen(t::Int, n::Int, θ::Float64)
@@ -39,12 +29,8 @@ function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0)
   θ >= 0 || throw(AssertionError("generaton not supported for θ < 0"))
   qamma_dist = Gamma(1/θ, θ)
   x = rand(t)
-  u = rand(t, n)
-  matrix = zeros(Float64, t, n)
-  for i = 1:n
-    matrix[:,i] = invers_gen(-log.(u[:,i])./quantile(qamma_dist, x), θ)
-  end
-  matrix
+  u = -log.(rand(t, n))./quantile(qamma_dist, x)
+  (1 + θ.*u).^(-1/θ)
 end
 
 """

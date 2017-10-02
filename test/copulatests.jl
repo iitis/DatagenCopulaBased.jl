@@ -2,7 +2,6 @@
 
 @testset "heplers" begin
   @testset "axiliary functions" begin
-    @test invers_gen([1., 2., 3., 4., 5.], 3.2) ≈ [0.638608, 0.535014, 0.478181, 0.44034, 0.412558] atol=1.0e-5
     srand(43)
     @test cormatgen(2) ≈ [1.0 -0.258883; -0.258883 1.0] atol=1.0e-5
     @test claytonθ(.5) ≈ 1.
