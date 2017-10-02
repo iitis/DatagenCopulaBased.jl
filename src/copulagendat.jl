@@ -42,7 +42,8 @@ function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0;
 end
 
 """
-  gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false, reverse::Bool = false)
+  gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
+                                                          reverse::Bool = false)
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Gumbel
 copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
@@ -66,8 +67,8 @@ julia> gumbelcopulagen(10, 3, 3.5)
  ```
  """
 
-function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int};
-                                            pearsonrho::Bool = false, reverse::Bool = false)
+function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
+                                                                 reverse::Bool = false)
   if pearsonrho
     0 < θ < 1 || throw(AssertionError("generaton not supported for correlation <= 0 v >= 1"))
     θ = gumbelθ(θ)
@@ -105,14 +106,14 @@ julia> tstudentcopulagen(10)
  ```
 """
 
-function tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
-  y = rand(MvNormal(cormat),t)'
-  z = copy(y)
+function tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]],
+                                   nu::Int=10)
+  z = transpose(rand(MvNormal(cormat),t))
   d = Chisq(nu)
-  U = rand(d, size(y, 1))
+  U = rand(d, size(z, 1))
   p = TDist(nu)
   for i in 1:size(cormat, 1)
-    z[:,i] = cdf(p, y[:,i].*sqrt.(nu./U)./cormat[i,i])
+    z[:,i] = cdf(p, z[:,i].*sqrt.(nu./U)./cormat[i,i])
   end
   z
 end
@@ -143,11 +144,10 @@ julia> gausscopulagen(10)
 """
 
 function gausscopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]])
-  y = rand(MvNormal(cormat),t)'
-  z = copy(y)
+  z = transpose(rand(MvNormal(cormat),t))
   for i in 1:size(cormat, 1)
     d = Normal(0, sqrt.(cormat[i,i]))
-    z[:,i] = cdf(d, y[:,i])
+    z[:,i] = cdf(d, z[:,i])
   end
   z
 end
@@ -245,10 +245,5 @@ julia> cormatgen(4)
     ρ = ordered? [fill(ρ, (n-1))...]: ρ
     x = claytoncopulagen(4*n, n, ρ; pearsonrho = true)
     convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n])
-    if altersing
-      for i in 1:n
-        x[:,i] = rand([-1, 1])*x[:,i]
-      end
-    end
-    cor(x)
+    altersing? cor(x): cor(x.*transpose(rand([-1, 1],n)))
   end
