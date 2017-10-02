@@ -8,6 +8,6 @@ module DatagenCopulaBased
 
   export claytoncopulagen, tstudentcopulagen, gausscopulagen, convertmarg!
   export subcopdatagen, cormatgen, claytonsubcopulagen, revclaytoncopulagen
-  export revclaytonsubcopulagen
+  export revclaytonsubcopulagen, gumbelcopulagen
   export productcopula, minimalcopula, maximalcopula, mixedcopula
 end

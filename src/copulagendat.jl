@@ -97,6 +97,16 @@ julia> tstudentcopulagen(10)
  ```
 """
 
+function gumbelcopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.5)
+  θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
+  u = rand(t, n)
+  v = rand(t)
+  z = sin.(pi.*v.*(1 - 1/θ))./(-log.(rand(t)))
+  g = (sin.(pi.*v/θ)./z).^(1/θ).*z./sin.(pi.*v)
+  exp.(-(-log.(u)).^(1/θ)./g)
+end
+
+
 function tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
   y = rand(MvNormal(cormat),t)'
   z = copy(y)
