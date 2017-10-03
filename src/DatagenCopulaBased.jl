@@ -1,6 +1,7 @@
 module DatagenCopulaBased
   using HypothesisTests
   using Distributions
+  using QuadGK
 
   include("copulagendat.jl")
   include("subcopgendat.jl")

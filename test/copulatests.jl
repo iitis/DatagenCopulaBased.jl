@@ -198,6 +198,12 @@ end
     convertmarg!(x, Normal)
     @test cor(x[:,1], x[:,2]) ≈ 0.5726 atol=1.0e-1
     @test cor(x[:,2], x[:,3]) ≈ 0.8843 atol=1.0e-1
+    srand(43)
+    x = frankcopulagen(500000, [0.8, 0.3, -0.5]; pearsonrho = true)
+    convertmarg!(x, Normal)
+    @test cor(x[:,1], x[:,2]) ≈ 0.8 atol=1.0e-1
+    @test cor(x[:,2], x[:,3]) ≈ 0.3 atol=1.0e-1
+    @test cor(x[:,3], x[:,4]) ≈ -0.5 atol=1.0e-1
   end
   @testset "test for std normal distribution of marginals of subcopdatagen" begin
     srand(43)

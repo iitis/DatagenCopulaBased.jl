@@ -23,8 +23,13 @@ julia> frankcopulagen(10, [4., 11.])
 
 ```
 """
-function frankcopulagen(t::Int, θ::Vector{Float64})
+function frankcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false)
   u = rand(t, 1)
+  !(0. in θ) || throw(AssertionError("not supported for θ parameter = 0"))
+  if pearsonrho
+    maximum(abs.(θ)) < 1 || throw(AssertionError("correlation must be in range (-1, 1)"))
+    θ = map(Frankθ, θ)
+  end
   for i in 1:length(θ)
     z = u[:,i]
     w = rand(t)
@@ -62,10 +67,10 @@ julia> x = claytoncopulagen(9, [-0.9, 0.9, 1.]; pearsonrho = true)
 """
 
 function claytoncopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
-  minimum(θ) >= -1 || throw(AssertionError("not supported for $i th parameter < -1"))
-  !(0. in θ) || throw(AssertionError("not supported for $i th parameter = 0"))
+  minimum(θ) >= -1 || throw(AssertionError("not supported for parameter < -1"))
+  !(0. in θ) || throw(AssertionError("not supported for θ parameter = 0"))
   if pearsonrho
-    maximum(θ) <= 1 || throw(AssertionError("$i correlation coeficient > 1"))
+    maximum(θ) <= 1 || throw(AssertionError("correlation coeficient must be in range (-1,1)"))
     θ = map(claytonθ, θ)
   end
   u = rand(t,1)

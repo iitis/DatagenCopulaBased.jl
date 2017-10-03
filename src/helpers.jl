@@ -18,8 +18,14 @@ claytonθ2ρ(θ::Union{Float64, Int}) = sin(θ*pi/(4+2*θ))
 
 # for frank copula
 
-tau4 = 1+4*(0.38814-1)/4
+D(θ) = 1/θ*(quadgk(i -> i/(exp(i)-1), 0, θ)[1])
 
-tau11 = 1+4*(0.149521-1)/11
+frankτ(θ) = 1+4*(D(θ)-1)/θ
 
-rho(tau) = sin(pi*tau/2)
+frankρ(θ) = sin(pi*frankτ(θ)/2)
+
+# approx
+
+Frankθ2ρ(θ) = 0.69*atan.(0.28*θ)
+
+Frankθ(ρ) = 1/0.28*tan(ρ/0.69)
