@@ -2,6 +2,8 @@ module DatagenCopulaBased
   using HypothesisTests
   using Distributions
   using QuadGK
+  using PyCall
+  @pyimport numpy.random as npr
 
   include("copulagendat.jl")
   include("subcopgendat.jl")

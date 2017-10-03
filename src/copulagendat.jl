@@ -33,10 +33,9 @@ function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0;
     θ <= 1 || throw(AssertionError("correlation coeficient > 1"))
     θ = claytonθ(θ)
   end
-  qamma_dist = Gamma(1/θ, θ)
-  x = rand(t)
+  v = quantile(Gamma(1/θ, θ), rand(t))
   u = rand(t, n)
-  u = -log.(u)./quantile(qamma_dist, x)
+  u = -log.(u)./v
   u = (1 + θ.*u).^(-1/θ)
   reverse? 1-u: u
 end
@@ -75,26 +74,53 @@ function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bo
   else
     θ > 1 || throw(AssertionError("generaton not supported for θ <= 1"))
   end
-  u = rand(t, n)
   v = rand(t)
-  g = sin.(pi.*v.*(1 - 1/θ))./(-log.(rand(t)))
-  g = (sin.(pi.*v/θ)./g).^(1/θ).*g./sin.(pi.*v)
-  u = exp.(-(-log.(u)).^(1/θ)./g)
+  g = -sin.(pi.*v.*(1 - 1/θ))./log.(rand(t))
+  v = g.^(θ-1).*sin.(pi.*v/θ)./sin.(pi.*v).^θ
+  u = rand(t, n)
+  u = -log.(u)./v
+  u = exp.(-u.^(1/θ))
   reverse? 1-u : u
 end
 
+
 """
-  frankcopulagen(t::Int, n::Int, θ::Float64; reverse::Bool = false)
+  frankcopulagen(t::Int, n::Int, θ::Float64)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Frank
+copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
+Pearson correlation coefficent.
+
+```jldoctest
+
+julia> srand(43);
+
+julia> frankcopulagen(10, 3, 3)
+10×3 Array{Float64,2}:
+ 0.695637  0.894693   0.99902
+ 0.805495  0.319088   0.435302
+ 0.907882  0.408464   0.982066
+ 0.93598   0.378637   0.404066
+ 0.311446  0.14014    0.340145
+ 0.672887  0.405048   0.477145
+ 0.877766  0.221463   0.71116
+ 0.306574  0.0587265  0.834648
+ 0.902399  0.922309   0.89469
+ 0.881764  0.697738   0.637004
+
+```
 """
-function frankcopulagen(t::Int, n::Int, θ::Float64; reverse::Bool = false)
-  θ > 0 || throw(AssertionError("generaton not supported for θ <= 0"))
-  z = rand(t)
-  u = rand(t, n)
-  for i in 1:n
-    w = u[:,i]
-    u[:,i] = -log.((exp.(-θ.*z).*(1./w-1)+exp(-θ))./(1+exp.(-θ.*z).*(1./w-1)))/θ
+
+
+function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false)
+  θ > 0 || throw(AssertionError("generator not supported for θ <= 0"))
+  if pearsonrho
+    θ = Frankθ(θ)
   end
-  reverse? 1-u : u
+  v = npr.logseries((1-exp(-θ)), t)
+  u = rand(t, n)
+  u = -log.(u)./v
+  -log.(1+exp.(-u)*(exp(-θ)-1))/θ
 end
 
 """

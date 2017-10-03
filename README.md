@@ -147,7 +147,7 @@ To generate `n` - variate data given `n-1` parameters `θ_i` run:
 julia> claytoncopulagen(t::Int, θ::Array{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
 ```
 
-where `n = length(θ)`, here each two neighbour marginals (`i`'th and `i+1`'th) are generated from bivariate Clayton copula
+where `n = length(θ)`, here each two neighbour marginals (`i`'th and `i+1`'th) are generated from pair Clayton copula
 with parameter `θ_i >= -1 ^ θ_i != 0`. If `pearsonrho` parameters `-1 > θ_i >= 1 ^ θ_i != 0` are taken as Pearson correlation coefficients.
 If `reversed` returns data from reversed Clayton copula.
 
@@ -174,6 +174,42 @@ julia> cor(x)
  -0.936555   0.890923   1.0        1.0
  -0.936555   0.890923   1.0        1.0 
 ```
+### Frank copula
+
+To generate `t` realisations of `n`-variate data from Frank copula with 
+parameter `θ > 0` run
+
+```julia
+julia> frankcopulagen(t::Int, n::Int, θ::Union{Int, Float64}; pearsonrho::Bool = false)
+```
+If `pearsonrho` parameter `0 > θ > 1` is taken as a Pearson correlation coefficent.
+
+```julia
+julia> srand(43);
+
+julia> frankcopulagen(10, 3, 3)
+10×3 Array{Float64,2}:
+ 0.695637  0.894693   0.99902 
+ 0.805495  0.319088   0.435302
+ 0.907882  0.408464   0.982066
+ 0.93598   0.378637   0.404066
+ 0.311446  0.14014    0.340145
+ 0.672887  0.405048   0.477145
+ 0.877766  0.221463   0.71116 
+ 0.306574  0.0587265  0.834648
+ 0.902399  0.922309   0.89469 
+ 0.881764  0.697738   0.637004
+
+```
+
+To generate `n` - variate data given `n-1` parameters `θ_i` run:
+
+```julia
+julia> frankcopulagen(t::Int, θ::Array{Float64}; pearsonrho::Bool = false)
+```
+
+where `n = length(θ)`, here each two neighbour marginals (`i`'th and `i+1`'th) are generated from pair Frank copula
+with parameter `θ_i != 0`. If `pearsonrho` parameters `-1 > θ_i > 1 ^ θ_i != 0` are taken as Pearson correlation coefficients.
 
 ### Gumbel copula
 
@@ -205,6 +241,7 @@ julia> gumbelcopulagen(10, 3, 3.5)
  0.504036  0.672722   0.561857
  0.326098  0.459547   0.117946
  ```
+
 
 ### Product, independent copula
 
