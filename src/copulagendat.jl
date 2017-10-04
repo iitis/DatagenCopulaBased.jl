@@ -162,6 +162,37 @@ function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, rev
   u = (1-θ)./(exp.(u)-θ)
   reverse? 1-u : u
 end
+
+"""
+  marshalolkincopulagen(t::Int, λ::Vector{Float64})
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Marshal-Olkin
+copula with parameter vector λ with elements >= 0 and n = ceil(Int, log(2, length(λ)-1)).
+Parameters are ordered as follow:
+λ = [λ_1, λ_2, ..., λ_n, λ_{12}, λ_{13}, ..., λ_{1n}, λ_{23}, ..., λ_{n-1 n},... λ_{123}, ..., λ_{123...n}]
+If reversed returns data from reversed Marshal-Olkin copula, i.e. U -> 1-U.
+"""
+
+function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::Bool = false)
+  minimum(λ) >= 0 || throw(AssertionError("all parameters must by >= 0 "))
+  n = floor(Int, log(2, length(λ)+1))
+  s = collect(combinations(collect(1:n)))
+  l = length(s)
+  U = zeros(t, n)
+    for j in 1:t
+      v = rand(l)
+      for i in 1:n
+        inds = find([i in s[k] for k in 1:l])
+        ls = [-log(v[k])./(λ[k]) for k in inds]
+        x = minimum(ls)
+        Λ = sum(λ[inds])
+        U[j,i] = exp.(-Λ*x)
+      end
+    end
+    reverse? 1-U: U
+end
+
+
 """
   tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
 

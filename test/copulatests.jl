@@ -237,6 +237,22 @@ end
   @test cor(x[:,1], x[:,2]) ≈ 0.45 atol=1.0e-1
   @test cor(x[:,2], x[:,3]) ≈ 0.3 atol=1.0e-1
 end
+@testset "AMarhall-Olkin copula" begin
+  srand(43)
+  x = marshalolkincopulagen(100000, [1.1, 0.2, 0.6])
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  a2 = 0.6/0.8
+  a1 = 0.6/1.7
+  @test corkendall(x)[1,2]≈ a1*a2/(a1+a2-a1*a2) atol=1.0e-2
+  @test righttail(x[:,1], x[:,2]) ≈ a1 atol=1.0e-1
+  srand(43)
+  x = marshalolkincopulagen(100000, [1.1, 0.2, 2.1, 0.6, 0.5, 3.2, 7.1, 2.1])
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+
+end
 @testset "subcopulas" begin
   @testset "generate data from subcopuls" begin
     srand(43)

@@ -92,7 +92,7 @@ Returns: t x n Matrix{Float}, t realisations of length(θ)+1=n-variate data from
 Ali-Mikhail-Haq pairs copula.
 Each two neighbour marginals (i'th and i+1'th) are generated from bivariate
 Ali-Mikhail-Haq copula with parameters 0 > θ_i >= 1. If pearsonrho parameters
-are Pearson correlation coefficents such that 0 > θ_i >= .5
+are Pearson correlation coefficents such that 0 > θ_i >= .5.
  If reversed returns data from reversed Ali-Mikhail-Haq pairs copula.
 
 ```jldoctest
