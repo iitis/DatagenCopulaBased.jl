@@ -5,7 +5,6 @@ module DatagenCopulaBased
   using NLsolve
   using PyCall
   using Combinatorics
-  using StatsBase
   @pyimport numpy.random as npr
 
   include("copulagendat.jl")
