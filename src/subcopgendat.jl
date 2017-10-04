@@ -116,7 +116,7 @@ function amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, rev
   minimum(θ) > 0 || throw(AssertionError("not supported for parameter <= 0"))
   maximum(θ) <= 1 || throw(AssertionError("not supported for parameter > 1"))
   if pearsonrho
-    maximum(θ) <= 1 || throw(AssertionError("not supported for correlation >= 0.5"))
+    maximum(θ) <= 0.5 || throw(AssertionError("not supported for correlation >= 0.5"))
     θ = map(amhθ, θ)
   end
   u = rand(t,1)

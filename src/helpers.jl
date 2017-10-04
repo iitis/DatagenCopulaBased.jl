@@ -35,8 +35,12 @@ Frankθ(ρ) = 1/0.28*tan(ρ/0.69)
 AHMρ(θ) = sin(pi/2*(1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2)))
 
 function AHMθ(ρ::Float64)
-  function f1!(θ, fvec)
-    fvec[1] = sin(pi/2*(1 - 2*(*(1-θ[1])*(1-θ[1])log(1-θ[1]) + θ[1])/(3*θ[1]^2)))-ρ
+  if ρ == 0.5
+    return 1.
+  elseif 0 < ρ <0.5
+    function f1!(θ, fvec)
+      fvec[1] = sin(pi/2*(1 - 2*(*(1-θ[1])*(1-θ[1])log(1-θ[1]) + θ[1])/(3*θ[1]^2)))-ρ
+    end
+    return nlsolve(f1!, [ρ]).zero[1]
   end
-  nlsolve(f1!, [ρ]).zero[1]
 end
