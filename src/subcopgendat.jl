@@ -1,9 +1,10 @@
 """
   frankcopulagen(t::Int, θ::Vector{Float64})
 
-Returns: t x n Matrix{Float}, t realisations of n-variate data, where n = length(θ)+1.
-Each two neighbour marginals (i'th and i+1'th) are generated from bivariate Frank copula
-with parameter θ_i != 0.
+Returns: t x n Matrix{Float}, t realisations of length(θ)+1n-variate data, from
+Frank pairs copula. Each two neighbour marginals (i'th and i+1'th) are generated
+from bivariate Frank copula with parameter θ_i != 0. If pearsonrho parameters
+are Pearson correlation coefficents such that -1 > θ_i >= 1 ^ θ_i != 0.
 
 ```jldoctest
 julia> srand(43);
@@ -44,10 +45,11 @@ end
 
   claytoncopulagen(t::Int = 1000, θ::Vector{Float64}; pearsonrho, reverse)
 
-Returns: t x n Matrix{Float}, t realisations of n-variate data, where n = length(θ)+1.
-Each two neighbour marginals (i'th and i+1'th) are generated from bivariate Clayton copula
-with parameter θ_i >= -1 ^ θ_i != 0. If pearsonrho parameters -1 > θ_i >= 1 ^ θ_i != 0 are taken as Pearson
-correlation coefficents. If reversed returns data from reversed Clayton copula.
+Returns: t x n Matrix{Float}, t realisations of length(θ)+1=n-variate data generated
+from Clayton pairs copula. Each neighbour marginals (i'th and i+1'th) are generated
+from bivariate Clayton copula with parameter θ_i >= -1 ^ θ_i != 0.
+If pearsonrho parameters are Pearson correlation coefficents such that
+-1 > θ_i >= 1 ^ θ_i != 0 . If reversed returns data from reversed Clayton pairs copula.
 
 ```jldoctest
 julia> srand(43);
@@ -78,6 +80,54 @@ function claytoncopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false,
     w = rand(t)
     z = u[:, i]
     u = hcat(u, z.*(w.^(-θ[i]/(1 + θ[i])) - 1 + z.^θ[i]).^(-1/θ[i]))
+  end
+  reverse? 1-u : u
+end
+
+"""
+
+  amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool, reverse::Bool)
+
+Returns: t x n Matrix{Float}, t realisations of length(θ)+1=n-variate data from
+Ali-Mikhail-Haq pairs copula.
+Each two neighbour marginals (i'th and i+1'th) are generated from bivariate
+Ali-Mikhail-Haq copula copula with parameter 0 > θ_i > 1 If pearsonrho parameters
+are Pearson correlation coefficents such that 0 > θ_i > 5.
+ If reversed returns data from reversed Ali-Mikhail-Haq pairs copula.
+
+```jldoctest
+julia> srand(43);
+
+julia> x = claytoncopulagen(9, [-0.9, 0.9, 1.]; pearsonrho = true)
+9×4 Array{Float64,2}:
+ 0.180975  0.942164   0.872673   0.872673
+ 0.775377  0.230724   0.340819   0.340819
+ 0.888934  0.0579034  0.190519   0.190519
+ 0.924876  0.0360802  0.0294198  0.0294198
+ 0.408278  0.461712   0.889275   0.889275
+ 0.912603  0.0433313  0.0315759  0.0315759
+ 0.828727  0.270476   0.274191   0.274191
+ 0.400537  0.469634   0.633396   0.633396
+ 0.429437  0.440285   0.478058   0.478058
+```
+"""
+
+function amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
+  minimum(θ) > 0 || throw(AssertionError("not supported for parameter <= 0"))
+  maximum(θ) <= 1 || throw(AssertionError("not supported for parameter > 1"))
+  if pearsonrho
+    maximum(θ) <= 1 || throw(AssertionError("not supported for correlation >= 0.5"))
+    θ = map(amhθ, θ)
+  end
+  u = rand(t,1)
+  for i in 1:length(θ)
+    w = rand(t)
+    z = u[:, i]
+    p = θ[i]
+    a = 1-z
+    b = 1-p.*(1+2*a.*w)+2*p^2*a.^2.*w
+    c = 1-p.*(2-4*w+4*a.*w)+p.^2.*(1-4*a.*w+4*a.^2.*w)
+    u = hcat(u, 2*w.*(a*p-1).^2./(b+sqrt.(c)))
   end
   reverse? 1-u : u
 end

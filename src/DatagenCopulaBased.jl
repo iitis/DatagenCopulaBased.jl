@@ -2,6 +2,7 @@ module DatagenCopulaBased
   using HypothesisTests
   using Distributions
   using QuadGK
+  using NLsolve
   using PyCall
   @pyimport numpy.random as npr
 
@@ -9,6 +10,6 @@ module DatagenCopulaBased
   include("subcopgendat.jl")
   include("helpers.jl")
 
-  export claytoncopulagen, tstudentcopulagen, gausscopulagen, convertmarg!
+  export claytoncopulagen, tstudentcopulagen, gausscopulagen, convertmarg!, amhcopulagen
   export subcopdatagen, cormatgen, gumbelcopulagen, frankcopulagen, productcopula
 end

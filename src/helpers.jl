@@ -29,3 +29,14 @@ frankρ(θ) = sin(pi*frankτ(θ)/2)
 Frankθ2ρ(θ) = 0.69*atan.(0.28*θ)
 
 Frankθ(ρ) = 1/0.28*tan(ρ/0.69)
+
+# AHM copula
+
+AHMρ(θ) = sin(pi/2*(1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2)))
+
+function AHMθ(ρ::Float64)
+  function f1!(θ, fvec)
+    fvec[1] = sin(pi/2*(1 - 2*(*(1-θ[1])*(1-θ[1])log(1-θ[1]) + θ[1])/(3*θ[1]^2)))-ρ
+  end
+  nlsolve(f1!, [ρ]).zero[1]
+end

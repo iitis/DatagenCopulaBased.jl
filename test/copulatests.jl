@@ -223,6 +223,26 @@ end
     @test cor(x[:,2], x[:,3]) ≈ 0.3 atol=1.0e-1
     @test cor(x[:,3], x[:,4]) ≈ -0.5 atol=1.0e-1
   end
+  @testset "Ali-Mikhail-Haq pairs copula" begin
+    srand(43)
+    x = amhcopulagen(500000, [0.3, 0.6, 0.9])
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test lefttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
+    @test lefttail(x[:,2], x[:,3]) ≈ 0 atol=1.0e-1
+    @test lefttail(x[:,3], x[:,4]) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,3], x[:,2]) ≈ 0 atol=1.0e-1
+    @test righttail(x[:,4], x[:,3]) ≈ 0 atol=1.0e-1
+    @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
+    srand(43)
+    x = frankcopulagen(500000, [0.45, 0.3]; pearsonrho = true)
+    convertmarg!(x, Normal)
+    @test cor(x[:,1], x[:,2]) ≈ 0.45 atol=1.0e-1
+    @test cor(x[:,2], x[:,3]) ≈ 0.3 atol=1.0e-1
+  end
   @testset "test for std normal distribution of marginals of subcopdatagen" begin
     srand(43)
     xs = subcopdatagen(100000, 5, [1,2], [4,5], [1., 1., 1., 1., 3.]);
