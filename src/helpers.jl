@@ -30,11 +30,11 @@ Frankθ2ρ(θ) = 0.69*atan.(0.28*θ)
 
 Frankθ(ρ) = 1/0.28*tan(ρ/0.69)
 
-# AHM copula
+#  Ali-Mikhail-Haq Copula 
 
-AHMρ(θ) = sin(pi/2*(1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2)))
+AMHρ(θ) = sin(pi/2*(1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2)))
 
-function AHMθ(ρ::Float64)
+function AMHθ(ρ::Float64)
   if ρ == 0.5
     return 1.
   elseif 0 < ρ <0.5
