@@ -6,7 +6,8 @@
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
 copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
-Pearson correlation coefficent. If reversed returns data from reversed Clayton copula.
+Pearson correlation coefficent. If reversed returns data from reversed Clayton copula
+i.e. U -> 1-U
 
 ```jldoctest
 julia> srand(43);
@@ -46,7 +47,8 @@ end
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Gumbel
 copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
-Pearson correlation coefficent. If reversed returns data from reversed Gumbel copula.
+Pearson correlation coefficent. If reversed returns data from reversed Gumbel copula
+i.e. U -> 1-U.
 
 ```jldoctest
 julia> srand(43);
@@ -85,7 +87,7 @@ end
 
 
 """
-  frankcopulagen(t::Int, n::Int, θ::Float64)
+  frankcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool)
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Frank
 copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
@@ -110,8 +112,6 @@ julia> frankcopulagen(10, 3, 3)
 
 ```
 """
-
-
 function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false)
   θ > 0 || throw(AssertionError("generator not supported for θ <= 0"))
   if pearsonrho
@@ -123,6 +123,45 @@ function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Boo
   -log.(1+exp.(-u)*(exp(-θ)-1))/θ
 end
 
+"""
+  amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool, everse::Bool)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Frank
+copula with parameter 0 > θ_i > 1. If pearsonrho parameters
+are Pearson correlation coefficents such that 0 > θ_i > 0.5.
+If reversed returns data from reversed Ali-Mikhail-Haq copula, i.e. U -> 1-U.
+
+```jldoctest
+
+julia> srand(43);
+
+julia> amhcopulagen(10, 2, 0.5)
+10×2 Array{Float64,2}:
+ 0.494523   0.993549
+ 0.266095   0.417142
+ 0.0669154  0.960595
+ 0.510007   0.541976
+ 0.0697899  0.292847
+ 0.754909   0.809849
+ 0.0352515  0.588425
+ 0.32647    0.973168
+ 0.352815   0.247616
+ 0.938565   0.918152
+```
+"""
+
+function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, reverse::Bool = false)
+  1 > θ > 0 || throw(AssertionError("generator not supported for θ < 0 or θ > 1"))
+  if pearsonrho
+    maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation >= 0.5"))
+    θ = AMHθ(θ)
+  end
+  v = 1+rand(Geometric(1-θ), t)
+  u = rand(t, n)
+  u = -log.(u)./v
+  u = (1-θ)./(exp.(u)-θ)
+  reverse? 1-u : u
+end
 """
   tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
 

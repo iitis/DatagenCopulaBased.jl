@@ -30,7 +30,7 @@ Frankθ2ρ(θ) = 0.69*atan.(0.28*θ)
 
 Frankθ(ρ) = 1/0.28*tan(ρ/0.69)
 
-#  Ali-Mikhail-Haq Copula 
+#  Ali-Mikhail-Haq Copula
 
 AMHρ(θ) = sin(pi/2*(1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2)))
 
