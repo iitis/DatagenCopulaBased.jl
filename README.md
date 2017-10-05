@@ -5,8 +5,13 @@ realisations of each marginal, i.e. `U[:,i]`, are uniformly distributed on `[0,1
 marginals are determined by a given copula. See 'Copula Methods in Finance', U. Cherubini, E. Luciano, W. Vecchiato, Wiley 2004. 
 
 In terms of probabilistic the function `C: [0,1]ⁿ → [0,1]` is the 
-`n`-dimensional copula if it is a joint cumulantive distribution of
+`n`-dimensional copula if it is a joint cumulative distribution of
 `n`-dimensions random variable with all marginals uniformly distributed on `[0,1]`.
+
+This  module use following copula families to generate data:
+* Elliptical copulas (Gaussian, t-Student),
+* Archimedean copulas (Claytin, Frank, Gumbel, Ali-Mikhail-Haq)
+* Marshal-Olkin copula.
 
 ## Installation
 
@@ -18,7 +23,7 @@ julia> Pkg.clone("https://github.com/ZKSI/DatagenCopulaBased.jl")
 
 to install the files Julia 0.6 is required.
 
-## Elliptical Copulas
+## Elliptical copulas
 
 We use elliptical multivariate distribution (such as Gaussian or t-Student) to 
 construct a copula. Suppose `F(x₁, ..., xₙ)` is a cumulative density function 
@@ -31,7 +36,7 @@ copula is: `C(u₁, ..., uₙ) = F(F₁⁻¹(u₁), ..., Fₙ⁻¹(uₙ))`.
 
 ### Gaussian copula
 
-Gaussian copula, is parametrised by the symmetric correlation matrix `Σ` with 
+Gaussian copula is parametrised by the symmetric correlation matrix `Σ` with 
 diag. elements `σᵢᵢ=1` and off-diag. elements `-1 ≤ σᵢⱼ ≤ 1 `, number of 
 marginal variables `n = size(Σ, 1) = size(Σ, 2)`. 
 If the symmetric covariance matrix is imputed, it will be converted into a 
@@ -62,11 +67,11 @@ julia> gausscopulagen(10)
 
 ### t-Student copula
 
-t-Student copula, with `nu` degrees of freedom and `cormat` symmetric correlation matrix, see Gaussian copula for details. By default `cormat = [[1. 0.5];[0.5 1.]]` and `nu = 10`
+t-Student copula is parametrised by the symmetric correlation matrix `Σ` (as in the Gaussian copula case) and `ν ∈ N` degrees of freedom.
 
 
 ```julia
-julia> tstudentcopulagen(t::Int, cormat::Matrix{Float64}, nu::Int)
+julia> tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
 ```
 
 ```julia
@@ -89,13 +94,28 @@ julia> tstudentcopulagen(10)
 
 ### Product, independent copula
 
-To generate `t` realisations of `n` variate data from product (independent) copula run:
+The use of the product copula means that each marginal variable is generated 
+independently. 
 
 ```julia
 julia> productcopula(t::Int, n::Int)
 ```
 
 ## Archimedean copulas
+
+Archimedean bivariate copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by using 
+the continuous strictly 
+decreasing generation function parametrised by `θ`, such that `φ(t): [0,1] → [0, ∞)` and `φ⁻¹(s)` is the pseudo-inverse. In `n`-variare case 
+`C(u₁,..., uₙ) = φ⁻¹(φ(u₁)+...+φ(uₙ))` is also the copula, but constrains of 
+the `θ` parameter are more strict, since in this case `φ⁻¹(s)` 
+must be the inverse. For copula generators functions, their inverse, parameter 
+range and `n`-dimensional sampling algorithms see: 
+M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174.
+
+* Clayton copula: θ ∈ (0, ∞) for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -1]` for `n = 2`,
+* Frank copula: θ ∈ (0, ∞) for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -∞)` for `n = 2`,
+* Gumbel copula θ ∈ [1, ∞),
+* Ali-Mikhail-Haq copula θ ∈ [0, 1).
 
 ### Clayton copula
 
@@ -231,7 +251,10 @@ julia> gumbelcopulagen(10, 3, 3.5)
  0.326098  0.459547   0.117946
  ```
 
-## Marshall-Olkin Copula
+## Marshall-Olkin copula
+
+To generate data from the  Marshall-Olkin copula we use algorithm presented in M. Hofert, 
+'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174
 
 
 ## Helpers
