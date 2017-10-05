@@ -1,5 +1,5 @@
 
-# generated data using copulas
+# Archimedean copulas
 """
 
   claytoncopulagen(t::Int, n::Int, θ::Float64)
@@ -192,6 +192,41 @@ function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::B
     reverse? 1-U: U
 end
 
+## Elliptical copulas
+
+"""
+    gausscopulagen(t::Int, Σ::Matrix{Float64} = [[1. 0.5];[0.5 1.]])
+
+Returns: t x n matrix of t realisations of multivariate data generated
+using gaussian copula with Σ - correlation matrix. 
+
+```jldoctest
+
+julia> srand(43);
+
+julia> gausscopulagen(10)
+10×2 Array{Float64,2}:
+ 0.589188  0.815308
+ 0.708285  0.924962
+ 0.747341  0.156994
+ 0.227634  0.183116
+ 0.227575  0.957376
+ 0.271558  0.364803
+ 0.445691  0.52792
+ 0.585362  0.23135
+ 0.498593  0.48266
+ 0.190283  0.594451
+```
+"""
+
+function gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
+  z = transpose(rand(MvNormal(Σ),t))
+  for i in 1:size(Σ, 1)
+    d = Normal(0, sqrt.(Σ[i,i]))
+    z[:,i] = cdf(d, z[:,i])
+  end
+  z
+end
 
 """
   tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
@@ -228,39 +263,6 @@ function tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]]
   z
 end
 
-"""
-    gausscopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]])
-
-Returns: t x n matrix of t realisations of multivariate data generated
-using gaussian copula with correlation matrix - cormat
-
-```jldoctest
-
-julia> srand(43);
-
-julia> gausscopulagen(10)
-10×2 Array{Float64,2}:
- 0.589188  0.815308
- 0.708285  0.924962
- 0.747341  0.156994
- 0.227634  0.183116
- 0.227575  0.957376
- 0.271558  0.364803
- 0.445691  0.52792
- 0.585362  0.23135
- 0.498593  0.48266
- 0.190283  0.594451
-```
-"""
-
-function gausscopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]])
-  z = transpose(rand(MvNormal(cormat),t))
-  for i in 1:size(cormat, 1)
-    d = Normal(0, sqrt.(cormat[i,i]))
-    z[:,i] = cdf(d, z[:,i])
-  end
-  z
-end
 
 """
   productcopula(t::Int, n::Int)

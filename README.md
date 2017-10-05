@@ -1,9 +1,12 @@
 # DatagenCopulabased.jl
 
-Copula based generator of `t` realisations of `n`-variate data in a form of `t x n` matrix `U`.
-Realisations of each marginal `U[:,i]` are uniformly distributed on `[0,1]`, however the interdependence between 
-marginals are not simple and depends between copula. For copula definitions and properties see e.g. 
-`Copula Methods in Finance`, Umberto Cherubini, Elisa Luciano, Walter Vecchiato, Wiley 2004. 
+Copula based generator of `t` realisations of `n`-dimensions random variable. Data are returned in a form of matrix `U`: `size(U) = (t,n)`, where 
+realisations of each marginal, i.e. `U[:,i]`, are uniformly distributed on `[0,1]`. Interdependence between 
+marginals are determined by a given copula. See 'Copula Methods in Finance', U. Cherubini, E. Luciano, W. Vecchiato, Wiley 2004. 
+
+In terms of probabilistic the function `C: [0,1]ⁿ → [0,1]` is the 
+`n`-dimensional copula if it is a joint cumulantive distribution of
+`n`-dimensions random variable with all marginals uniformly distributed on `[0,1]`.
 
 ## Installation
 
@@ -15,52 +18,28 @@ julia> Pkg.clone("https://github.com/ZKSI/DatagenCopulaBased.jl")
 
 to install the files Julia 0.6 is required.
 
-## Functions
+## Elliptical Copulas
 
-### Correlation matrix generation
+We use elliptical multivariate distribution (such as Gaussian or t-Student) to 
+construct a copula. Suppose `F(x₁, ..., xₙ)` is a cumulative density function 
+(cdf.)
+of such multivariate distribution, and `Fᵢ(xᵢ)` is univariate cdf. of its `i` 
+th marginal. Hence `uᵢ = Fᵢ(xᵢ)` is from the uniform distribution on `[0,1]`, 
+and the elliptical 
+copula is: `C(u₁, ..., uₙ) = F(F₁⁻¹(u₁), ..., Fₙ⁻¹(uₙ))`.
 
-To generate a `n x n` correlation matrix with reference correlation `rho` run:
-
-```julia
-julia> cormatgen(n::Int, rho::Float64 = 0.5, ordered = false, altersing::Bool = true)
-```
-
-If `ordered = false` matrix correlation matrix elements varies around `rho`, 
-else it drops
-as a distance between marginal variables risis. If `altersing = true` some elements are positive
-and some negative, else all elements are positive.
-
-```julia
-julia> srand(43);
-
-julia> cormatgen(4, 0.5)
-4×4 Array{Float64,2}:
-  1.0        0.566747  -0.34848   -0.413496
-  0.566747   1.0       -0.496956  -0.575852
- -0.34848   -0.496956   1.0        0.612688
- -0.413496  -0.575852   0.612688   1.0
-```
-
-```julia
-julia> srand(43);
-
-julia> cormatgen(4, 0.5, true)
-4×4 Array{Float64,2}:
-  1.0        -0.39749   -0.422068  -0.0790561
- -0.39749     1.0        0.698496   0.380271 
- -0.422068    0.698496   1.0        0.518025 
- -0.0790561   0.380271   0.518025   1.0
-
-```
 
 ### Gaussian copula
 
-Gaussian copula, with the symmetric correlation matrix `cormat`. Number of marginal variables `n` will be deduced from the
-correlation matrix. If the covariance matrix with some diagonal entries other than `1.` it will be converted into a correlation matrix, if symmetric.
-By default `cormat = [[1. 0.5];[0.5 1.]]`.
+Gaussian copula, is parametrised by the symmetric correlation matrix `Σ` with 
+diag. elements `σᵢᵢ=1` and off-diag. elements `-1 ≤ σᵢⱼ ≤ 1 `, number of 
+marginal variables `n = size(Σ, 1) = size(Σ, 2)`. 
+If the symmetric covariance matrix is imputed, it will be converted into a 
+correlation matrix automatically.
+
 
 ```julia
-julia> gausscopulagen(t::Int, cormat::Matrix{Float64})
+julia> gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
 ```
 
 ```julia
@@ -107,7 +86,17 @@ julia> tstudentcopulagen(10)
  0.113788  0.633349 
 
 ```
- 
+
+### Product, independent copula
+
+To generate `t` realisations of `n` variate data from product (independent) copula run:
+
+```julia
+julia> productcopula(t::Int, n::Int)
+```
+
+## Archimedean copulas
+
 ### Clayton copula
 
 To generate `t` realisations of `n`-variate data from Clayton copula with 
@@ -242,13 +231,45 @@ julia> gumbelcopulagen(10, 3, 3.5)
  0.326098  0.459547   0.117946
  ```
 
+## Marshall-Olkin Copula
 
-### Product, independent copula
 
-To generate `t` realisations of `n` variate data from product (independent) copula run:
+## Helpers
+
+### Correlation matrix generation
+
+To generate a `n x n` correlation matrix with reference correlation `rho` run:
 
 ```julia
-julia> productcopula(t::Int, n::Int)
+julia> cormatgen(n::Int, rho::Float64 = 0.5, ordered = false, altersing::Bool = true)
+```
+
+If `ordered = false` matrix correlation matrix elements varies around `rho`, 
+else it drops
+as a distance between marginal variables risis. If `altersing = true` some elements are positive
+and some negative, else all elements are positive.
+
+```julia
+julia> srand(43);
+
+julia> cormatgen(4, 0.5)
+4×4 Array{Float64,2}:
+  1.0        0.566747  -0.34848   -0.413496
+  0.566747   1.0       -0.496956  -0.575852
+ -0.34848   -0.496956   1.0        0.612688
+ -0.413496  -0.575852   0.612688   1.0
+```
+
+```julia
+julia> srand(43);
+
+julia> cormatgen(4, 0.5, true)
+4×4 Array{Float64,2}:
+  1.0        -0.39749   -0.422068  -0.0790561
+ -0.39749     1.0        0.698496   0.380271 
+ -0.422068    0.698496   1.0        0.518025 
+ -0.0790561   0.380271   0.518025   1.0
+
 ```
 
 ### Converting marginals
