@@ -1,10 +1,10 @@
 """
   frankcopulagen(t::Int, θ::Vector{Float64})
 
-Returns: t x n Matrix{Float}, t realisations of length(θ)+1n-variate data, from
-Frank pairs copula. Each two neighbour marginals (i'th and i+1'th) are generated
-from bivariate Frank copula with parameter θ_i != 0. If pearsonrho parameters
-are Pearson correlation coefficents such that -1 > θ_i >= 1 ^ θ_i != 0.
+Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
+To generate data uses Frank bivariate sub-copulas with parameters θᵢ ≠ 0 for each
+neighbour marginals (i'th and i+1'th). If pearsonrho = true, parameters
+are Pearson correlation coefficents fulfilling (-1 > θᵢ > 1) ∧ (θᵢ ≠ 0).
 
 ```jldoctest
 julia> srand(43);
@@ -45,11 +45,11 @@ end
 
   claytoncopulagen(t::Int = 1000, θ::Vector{Float64}; pearsonrho, reverse)
 
-Returns: t x n Matrix{Float}, t realisations of length(θ)+1=n-variate data generated
-from Clayton pairs copula. Each neighbour marginals (i'th and i+1'th) are generated
-from bivariate Clayton copula with parameter θ_i >= -1 ^ θ_i != 0.
-If pearsonrho parameters are Pearson correlation coefficents such that
--1 > θ_i >= 1 ^ θ_i != 0 . If reversed returns data from reversed Clayton pairs copula.
+Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
+To generate data uses Clayton bivariate sub-copulas with parameters (θᵢ ≥ -1) ^ ∧ (θᵢ ≠ 0).
+If pearsonrho = true parameters are Pearson correlation coefficents
+fulfulling (-1 > θᵢ > 1) ∧ (θᵢ ≠ 0)
+If reversed = true, returns data from reversed Clayton bivariate subcopulas.
 
 ```jldoctest
 julia> srand(43);
@@ -72,7 +72,7 @@ function claytoncopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false,
   minimum(θ) >= -1 || throw(AssertionError("not supported for parameter < -1"))
   !(0. in θ) || throw(AssertionError("not supported for θ parameter = 0"))
   if pearsonrho
-    maximum(θ) <= 1 || throw(AssertionError("correlation coeficient must be in range (-1,1)"))
+    maximum(θ) < 1 || throw(AssertionError("correlation coeficient must be in range (-1,1)"))
     θ = map(claytonθ, θ)
   end
   u = rand(t,1)
@@ -88,12 +88,10 @@ end
 
   amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool, reverse::Bool)
 
-Returns: t x n Matrix{Float}, t realisations of length(θ)+1=n-variate data from
-Ali-Mikhail-Haq pairs copula.
-Each two neighbour marginals (i'th and i+1'th) are generated from bivariate
-Ali-Mikhail-Haq copula with parameters 0 > θ_i >= 1. If pearsonrho parameters
-are Pearson correlation coefficents such that 0 > θ_i >= .5.
- If reversed returns data from reversed Ali-Mikhail-Haq pairs copula.
+Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
+To generate data uses Ali-Mikhail-Haq bivariate sub-copulas with parameters -1 ≥ θᵢ ≥ 1.
+If pearsonrho = true parameters are Pearson correlation coefficents fulfilling -0.2816 > θᵢ >= .5.
+If reversed = true returns data from reversed Ali-Mikhail-Haq bivariate sub-copulas.
 
 ```jldoctest
 julia> srand(43);
@@ -114,10 +112,11 @@ julia> amhcopulagen(10, [1, 0.3])
 """
 
 function amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
-  minimum(θ) > 0 || throw(AssertionError("not supported for parameter <= 0"))
+  minimum(θ) >= -1 || throw(AssertionError("not supported for parameter < -1"))
   maximum(θ) <= 1 || throw(AssertionError("not supported for parameter > 1"))
   if pearsonrho
     maximum(θ) <= 0.5 || throw(AssertionError("not supported for correlation > 0.5"))
+    minimum(θ) > -0.2816 || throw(AssertionError("not supported for correlation <= -0.2816"))
     θ = map(AMHθ, θ)
   end
   u = rand(t,1)

@@ -2,7 +2,7 @@
 
 Copula based generator of `t` realisations of `n`-dimensions random variable. Data are returned in a form of matrix `U`: `size(U) = (t,n)`, where 
 realisations of each marginal, i.e. `U[:,i]`, are uniformly distributed on `[0,1]`. Interdependence between 
-marginals are determined by a given copula. See 'Copula Methods in Finance', U. Cherubini, E. Luciano, W. Vecchiato, Wiley 2004. 
+marginals are determined by a given copula. See U. Cherubini, E. Luciano, W. Vecchiato, 'Copula Methods in Finance', Wiley 2004. 
 
 In terms of probabilistic the function `C: [0,1]ⁿ → [0,1]` is the 
 `n`-dimensional copula if it is a joint cumulative distribution of
@@ -112,21 +112,21 @@ must be the inverse. For copula generators functions, their inverse, parameter
 range and `n`-dimensional sampling algorithms see: 
 M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174.
 
-* Clayton copula: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -1]` for `n = 2`,
-* Frank copula: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -∞)` for `n = 2`,
-* Gumbel copula `θ ∈ [1, ∞)`,
-* Ali-Mikhail-Haq copula `θ ∈ [0, 1)` for `n > 2` and  `θ ∈ [-1, 1]` for `n = 2`.
+ * Clayton copula: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -1]` for `n = 2`,
+ * Frank copula: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -∞)` for `n = 2`,
+ * Gumbel copula `θ ∈ [1, ∞)`,
+ * Ali-Mikhail-Haq copula `θ ∈ [0, 1)` for `n > 2` and  `θ ∈ [-1, 1]` for `n = 2`.
 
 The `2`-dimensional Ali-Mikhail-Haq copula is discussed in 
 P. Kumar, `Probability Distributions and Estimation
 of Ali-Mikhail-Haq Copula`, Applied Mathematical Sciences, Vol. 4, 2010, no. 14, 657 - 666.
 
-Following 'Copula Methods in Finance', U. Cherubini, E. Luciano, W. Vecchiato, Wiley 2004,
+Following R. Nelsen 'An Introduction to Copulas', Springer Science & Business Media, 1999 - 216,
 for bivariate Archimedean copulas `C(u₁,u₂)` data can be generated as follow:
-* draw `u₁ = rand()`,
-* define `w = ∂C(u₁, u₂)\∂u₁` and inverse `u₂ = f(w, u₁)`,
-* draw  `w = rand()`
-* return a pair u₁, u₂.
+ * draw `u₁ = rand()`,
+ * define `w = ∂C(u₁, u₂)\∂u₁` and inverse `u₂ = f(w, u₁)`,
+ * draw  `w = rand()`
+ * return a pair u₁, u₂.
 
 This method can be applied in practice for Clayton, Frank and Ali-Mikhail-Haq copula. If we use
 this method recursively, we can get `n`-variate data with uniform marginals on 
@@ -136,7 +136,7 @@ parameter `θᵢ`, the only condition for `θᵢ`
 is such as for a corresponding bivariate copula. 
 
 For each Archimedean copula the parameter `θ` can be determined by the expected Person `ρ` correlation coefficient for data
-or a vector of expected correlation coefficients `[ρ₁, ..., ρₙ₋₁]` if data are generated from a series of subcopulas with 
+or a vector of expected Pearson correlation coefficients `[ρ₁, ..., ρₙ₋₁]` if data are generated from a series of bivariate subcopulas with 
 parameters `[ϴ₁, ..., ϴₙ₋₁]`.
 
 For Clayton, Gumbel and Ali-Mikhail-Haq family, reversed copula is also possible. The reversed copula is introduced by the transformation `uᵢ → 1-uᵢ`
@@ -147,11 +147,10 @@ investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistica
 
 ### Clayton copula
 
-To generate `t` realisations of `n`-variate data from Clayton copula with 
-parameter `θ > 0` run
+To generate `t` realisations of `n`-variate data from Clayton copula with, parameter `θ > 0` run
 
 ```julia
-julia> claytoncopulagen(t::Int, n::Int = 2, θ::Union{Int, Float64} = 1; pearsonrho::Bool = false, reverse::Bool = false)
+julia> claytoncopulagen(t::Int, n::Int, θ::Union{Int, Float64}; pearsonrho::Bool = false, reverse::Bool = false)
 ```
 
 ```julia
@@ -172,21 +171,18 @@ julia> claytoncopulagen(10, 2, 1)
 
 ```
 
-If `pearsonrho` parameter `0 > θ >= 1` is taken as a Pearson correlation coefficent. If `reversed` returns data from reversed Clayton copula, 
-`claytoncopulagen(t, n, θ; reversed = true) = 1 .- claytoncopulagen(t, n, θ)`.
-For justification see: 'The use of copula functions for predictive analysis of correlations between extreme storm tides',
-K. Domino, T. Błachowicz, M. Ciupak, Physica A: Statistical Mechanics and its Applications 413, 489-497, 2014. 
+ * If `pearsonrho = true`, uses Pearson correlation coefficent `0 > ρ > 1` instead of `θ`. 
+ * If `reversed = true` returns data from reversed Clayton copula.
 
-
-To generate `n` - variate data given `n-1` parameters `θ_i` run:
+To generate `n` - variate data from a series of bivariate Clayton subcopulas with parameters `[ϴ₁, ..., ϴₙ₋₁]`, where `(θᵢ ≥ -1) ^ ∧ (θᵢ ≠ 0)` run:
 
 ```julia
 julia> claytoncopulagen(t::Int, θ::Array{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
 ```
 
-where `n = length(θ)`, here each two neighbour marginals (`i`'th and `i+1`'th) are generated from pair Clayton copula
-with parameter `θ_i >= -1 ^ θ_i != 0`. If `pearsonrho` parameters `-1 > θ_i >= 1 ^ θ_i != 0` are taken as Pearson correlation coefficients.
-If `reversed` returns data from reversed Clayton copula.
+ `θᵢ` is a parameter of the following Clayton subcopula `C(uᵢ, u_{i+1})`. If `pearsonrho = true` use vector of
+ Pearson correlation coefficients `[ρ₁, ..., ρₙ₋₁]`, where `(-1 > ρᵢ > 1) ∧ (ρᵢ ≠ 0)`.
+
 
 ```julia
 
@@ -219,48 +215,47 @@ parameter `θ > 0` run
 ```julia
 julia> frankcopulagen(t::Int, n::Int, θ::Union{Int, Float64}; pearsonrho::Bool = false)
 ```
-If `pearsonrho` parameter `0 > θ > 1` is taken as a Pearson correlation coefficent.
 
 ```julia
+
 julia> srand(43);
 
-julia> frankcopulagen(10, 3, 3)
+julia> @pyimport numpy.random as npr
+
+julia> npr.seed(43);
+
+julia> frankcopulagen(10, 3, 3.)
 10×3 Array{Float64,2}:
- 0.695637  0.894693   0.99902 
- 0.805495  0.319088   0.435302
- 0.907882  0.408464   0.982066
- 0.93598   0.378637   0.404066
- 0.311446  0.14014    0.340145
- 0.672887  0.405048   0.477145
- 0.877766  0.221463   0.71116 
- 0.306574  0.0587265  0.834648
- 0.902399  0.922309   0.89469 
- 0.881764  0.697738   0.637004
+ 0.596854  0.844052    0.998418
+ 0.740826  0.228423    0.33928 
+ 0.953641  0.585595    0.991504
+ 0.817122  0.115522    0.133532
+ 0.855289  0.735135    0.869024
+ 0.946599  0.850567    0.883339
+ 0.516219  0.00147225  0.245763
+ 0.159666  0.00928133  0.727792
+ 0.324894  0.386399    0.304321
+ 0.990873  0.96857     0.958152
 
 ```
+If `pearsonrho = true` uses a Pearson correlation coefficent `0 > ρ > 1`, instead of `θ`.
 
-To generate `n` - variate data given `n-1` parameters `θ_i` run:
+To generate `n` - variate data from a series of bivariate Frank subcopulas with parameters `[ϴ₁, ..., ϴₙ₋₁]`, where `θᵢ ≠ 0` run:
 
 ```julia
 julia> frankcopulagen(t::Int, θ::Array{Float64}; pearsonrho::Bool = false)
 ```
 
-where `n = length(θ)`, here each two neighbour marginals (`i`'th and `i+1`'th) are generated from pair Frank copula
-with parameter `θ_i != 0`. If `pearsonrho` parameters `-1 > θ_i > 1 ^ θ_i != 0` are taken as Pearson correlation coefficients.
+If `pearsonrho = true`, uses a Pearson correlation coefficent fulfilling `(-1 > ρᵢ > 1) ∧ (ρᵢ ≠ 0)`.
 
 ### Gumbel copula
 
-To generate `t` realisations of `n`-variate data from Clayton copula with 
-parameter `θ > 0` run
+To generate `t` realisations of `n`-variate data from Gumbel copula with 
+parameter `θ ≥ 1` run
 
 ```julia
 julia> gumbelcopulagen(t::Int, n::Int, θ::Union{Int, Float64}; pearsonrho::Bool = false, reverse::Bool = false)
 ```
-If `pearsonrho` parameter `0 > θ > 1` is taken as a Pearson correlation 
-coefficent. If `reversed` returns data from reversed Gumbel copula.
-For justification see: 'The use of copula functions for modeling the risk of 
-investment in shares traded on the Warsaw Stock Exchange',
-K. Domino, T. Błachowicz, Physica A: Statistical Mechanics and its Applications 413, 77-85, 2014. 
 
 ```julia
 julia> srand(43);
@@ -279,7 +274,78 @@ julia> gumbelcopulagen(10, 3, 3.5)
  0.326098  0.459547   0.117946
  ```
 
+ * If `pearsonrho = true` uses Pearson correlation ceoficient parameter `0 > ρ > 1`.
+ * If `reversed = true` returns data from reversed Gumbel copula.
+
+### Ali-Mikhail-Haq copula
+
+
+To generate `t` realisations of `n`-variate data from Ali-Mikhail-Haq copula with parameter `1 > θ > 0` run
+
+```julia
+julia> amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, reverse::Bool = false)
+```
+
+```julia
+
+julia> srand(43);
+
+julia> amhcopulagen(10, 2, 0.5)
+10×2 Array{Float64,2}:
+ 0.494523   0.993549
+ 0.266095   0.417142
+ 0.0669154  0.960595
+ 0.510007   0.541976
+ 0.0697899  0.292847
+ 0.754909   0.809849
+ 0.0352515  0.588425
+ 0.32647    0.973168
+ 0.352815   0.247616
+ 0.938565   0.918152
+```
+
+ * If `pearsonrho = true`, uses Pearson correlation coefficent `0 > ρ > 0.5` instead of `θ`. 
+ * If `reversed = true` returns data from reversed Ali-Mikhail-Haq copula.
+
+To generate `n` - variate data from a series of bivariate Ali-Mikhail-Haq subcopulas with parameters `[ϴ₁, ..., ϴₙ₋₁]`, where `1 ≥ θᵢ ≥ -1` run:
+
+```julia
+julia> amhcopulagen(t::Int, θ::Array{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
+```
+
+If `pearsonrho = true`, uses a Pearson correlation coefficent fulfilling `(0.5 ≥ ρᵢ > -0.2816)`.
+
 ## Marshall-Olkin copula
+
+To generate `t` realisations of `n`-variate data from Marshall-Olkin copula with parameter series `λ` of of non-negative elements `λₛ`, run:
+
+```julia
+julia> marshalolkincopulagen(t::Int, λ::Vector{Float64}; reverse::Bool = false)
+```
+
+Number of marginals is `n = ceil(Int, log(2, length(λ)-1))`.
+Parameters are ordered as follow: `λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]`
+If `reversed = true`, returns data from reversed Marshal-Olkin copula.
+
+
+```julia
+
+julia> srand(43);
+
+julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
+10×2 Array{Float64,2}:
+ 0.875948   0.813807  
+ 0.902229   0.852105  
+ 0.386377   0.22781   
+ 0.666248   0.381651  
+ 0.10115    0.0283248 
+ 0.0666898  0.00202552
+ 0.99636    0.994344  
+ 0.0926391  0.95373   
+ 0.50927    0.5957    
+ 0.782477   0.682792  
+
+```
 
 To generate data from the  Marshall-Olkin copula we use algorithm presented in M. Hofert, 
 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174

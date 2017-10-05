@@ -41,13 +41,12 @@ end
   x = gausscopulagen(500000, [1. 0.5; 0.5 1.])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   @test lefttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
 end
 @testset "t-student copula" begin
   srand(43)
-  @test tstudentcopulagen(2, [[1. 0.5];[0.5 1.]], 20) ≈ [0.581625 0.792144; 0.76935 0.968669] atol=1.0e-5
+  @test tstudentcopulagen(2, [1. 0.5; 0.5 1.], 20) ≈ [0.581625 0.792144; 0.76935 0.968669] atol=1.0e-5
   ν = 10
   dt = TDist(ν+1)
   rho = 0.5
@@ -56,11 +55,10 @@ end
   xt = tstudentcopulagen(500000, [1. 0.5; 0.5 1.], ν);
   @test pvalue(ExactOneSampleKSTest(xt[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(xt[:,2], Uniform(0,1))) > α
-  @test copuladeftest(xt[:,1], xt[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   @test lefttail(xt[:,1], xt[:,2]) ≈ λ atol=1.0e-1
   @test righttail(xt[:,1], xt[:,2]) ≈ λ atol=1.0e-1
   convertmarg!(xt, Normal)
-  @test cov(xt) ≈ [[1. 0.5]; [0.5 1.]] atol=1.0e-2
+  @test cov(xt) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
 end
 @testset "product copula" begin
   srand(43)
@@ -70,7 +68,6 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
   @test lefttail(x[:,1], x[:,3]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
-  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
 end
 @testset "gumbel copula" begin
   srand(43)
@@ -78,7 +75,6 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   @test righttail(x[:,1], x[:,2]) ≈ 0.5858 atol=1.0e-1
   @test righttail(x[:,1], x[:,2]) ≈ 0.5858 atol=1.0e-1
   @test lefttail(x[:,1], x[:,2]) ≈ 0. atol=1.0e-1
@@ -100,7 +96,7 @@ end
 end
 @testset "clayton copula" begin
   srand(43)
-  @test claytoncopulagen(2,2) ≈ [0.629041  0.182246; 0.950303  0.942292] atol=1.0e-5
+  @test claytoncopulagen(2,2,1) ≈ [0.629041  0.182246; 0.950303  0.942292] atol=1.0e-5
   srand(43)
   xc = claytoncopulagen(500000, 3, 1);
   @test pvalue(ExactOneSampleKSTest(xc[:,1], Uniform(0,1))) > α
@@ -109,7 +105,6 @@ end
   @test lefttail(xc[:,1], xc[:,2]) ≈ 0.5 atol=1.0e-1
   @test lefttail(xc[:,1], xc[:,3]) ≈ 0.5 atol=1.0e-1
   @test righttail(xc[:,1], xc[:,2]) ≈ 0 atol=1.0e-1
-  @test copuladeftest(xc[:,1], xc[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   srand(43)
   x = claytoncopulagen(500000, 3, 0.5; pearsonrho = true)
   convertmarg!(x, Normal)
@@ -122,18 +117,12 @@ end
   @test lefttail(xic[:,1], xic[:,3]) ≈ 0 atol=1.0e-1
   @test righttail(xic[:,1], xic[:,2]) ≈ 0.5 atol=1.0e-1
 end
-@testset "clayton pairs copula" begin
-  srand(43)
-  x = gausscopulagen(500000, [1. 0.5; 0.5 1.])
-  srand(43)
-  v = g2clsubcopula(x[:,2], 0.5)
-  @test pvalue(ExactOneSampleKSTest(v, Uniform(0,1))) > α
+@testset "clayton bivariate subcopulas" begin
   srand(43)
   x = claytoncopulagen(500000, [-0.9, 3., 2., 3., 0.5])
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
-  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   @test lefttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test lefttail(x[:,3], x[:,4]) ≈ 1/(2^(1/2)) atol=1.0e-1
   @test lefttail(x[:,4], x[:,5]) ≈ 1/(2^(1/3)) atol=1.0e-1
@@ -156,11 +145,11 @@ end
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,3], x[:,4]) ≈ 1/(2^(1/2)) atol=1.0e-1
   @test lefttail(x[:,3], x[:,4]) ≈ 0 atol=1.0e-1
-  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   convertmarg!(x, Normal)
   @test cor(x[:,1], x[:,2]) ≈ -0.959 atol=1.0e-1
 end
 @testset "frank copula" begin
+  npr.seed(43)
   srand(43)
   x = frankcopulagen(500000, 5, 0.8)
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -172,13 +161,12 @@ end
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,3], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,4], x[:,3]) ≈ 0 atol=1.0e-1
-  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   convertmarg!(x, Normal)
   @test cor(x[:,1], x[:,2]) ≈ 0.138 atol=1.0e-1
   @test cor(x[:,2], x[:,3]) ≈ 0.138 atol=1.0e-1
   @test cor(x[:,1], x[:,4]) ≈ 0.138 atol=1.0e-1
 end
-@testset "frank pairs copula" begin
+@testset "frank bivariate subcopulas" begin
   srand(43)
   x = frankcopulagen(500000, [4., 11., 0.5, -12.])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -191,7 +179,6 @@ end
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,3], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,4], x[:,3]) ≈ 0 atol=1.0e-1
-  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   convertmarg!(x, Normal)
   @test cor(x[:,1], x[:,2]) ≈ 0.5726 atol=1.0e-1
   @test cor(x[:,2], x[:,3]) ≈ 0.8843 atol=1.0e-1
@@ -213,11 +200,10 @@ end
   @test lefttail(x[:,2], x[:,3]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,2], x[:,3]) ≈ 0 atol=1.0e-1
-  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   convertmarg!(x, Normal)
   @test cor(x[:,1], x[:,2]) ≈ 0.359 atol=1.0e-1
 end
-@testset "Ali-Mikhail-Haq pairs copula" begin
+@testset "Ali-Mikhail-Haq bivariate subcopulas" begin
   srand(43)
   x = amhcopulagen(500000, [0.3, 0.6, 1.])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -230,7 +216,6 @@ end
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,2], x[:,3]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,3], x[:,4]) ≈ 0 atol=1.0e-1
-  @test copuladeftest(x[:,1], x[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   srand(43)
   x = amhcopulagen(500000, [0.45, 0.3]; pearsonrho = true)
   convertmarg!(x, Normal)
@@ -256,6 +241,11 @@ end
 @testset "subcopulas" begin
   @testset "generate data from subcopuls" begin
     srand(43)
+    x = gausscopulagen(500000, [1. 0.5; 0.5 1.])
+    srand(43)
+    v = g2clsubcopula(x[:,2], 0.5)
+    @test pvalue(ExactOneSampleKSTest(v, Uniform(0,1))) > α
+    srand(43)
     x = gausscopulagen(3, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.])
     x1 = copy(x)
     g2tsubcopula!(x1, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.], [1,2])
@@ -270,7 +260,6 @@ end
     g2tsubcopula!(y, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.], [1,2])
     @test pvalue(ExactOneSampleKSTest(y[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
-    @test copuladeftest(y[:,1], y[:,2], [0.5, 0.9], [0.2, 0.7]) > 0
   end
   @testset "test for std normal distribution of marginals of subcopdatagen" begin
     srand(43)

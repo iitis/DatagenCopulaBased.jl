@@ -1,204 +1,11 @@
-
-# Archimedean copulas
-"""
-
-  claytoncopulagen(t::Int, n::Int, θ::Float64)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
-copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
-Pearson correlation coefficent. If reversed returns data from reversed Clayton copula
-i.e. U -> 1-U
-
-```jldoctest
-julia> srand(43);
-
-julia> claytoncopulagen(10, 2, 1)
-10×2 Array{Float64,2}:
-  0.325965  0.984025
-  0.364814  0.484407
-  0.514236  0.990846
-  0.523757  0.55038
-  0.204864  0.398564
-  0.890124  0.916516
-  0.247198  0.746308
-  0.126174  0.882004
-  0.462986  0.377842
-  0.950937  0.934698
- ```
-"""
-
-function claytoncopulagen(t::Int, n::Int = 2, θ::Union{Float64, Int} = 1.0;
-                                            pearsonrho::Bool = false, reverse::Bool = false)
-  θ > 0 || throw(AssertionError("generaton not supported for θ <= 0"))
-  if pearsonrho
-    θ <= 1 || throw(AssertionError("correlation coeficient > 1"))
-    θ = claytonθ(θ)
-  end
-  v = quantile(Gamma(1/θ, θ), rand(t))
-  u = rand(t, n)
-  u = -log.(u)./v
-  u = (1 + θ.*u).^(-1/θ)
-  reverse? 1-u: u
-end
-
-"""
-  gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
-                                                          reverse::Bool = false)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Gumbel
-copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
-Pearson correlation coefficent. If reversed returns data from reversed Gumbel copula
-i.e. U -> 1-U.
-
-```jldoctest
-julia> srand(43);
-
-julia> gumbelcopulagen(10, 3, 3.5)
-10×3 Array{Float64,2}:
- 0.550199  0.574653   0.486977
- 0.352515  0.0621575  0.072297
- 0.31809   0.112819   0.375482
- 0.652536  0.691707   0.645668
- 0.988459  0.989946   0.986297
- 0.731589  0.532971   0.678277
- 0.62426   0.625661   0.851237
- 0.335811  0.117504   0.329193
- 0.504036  0.672722   0.561857
- 0.326098  0.459547   0.117946
- ```
- """
-
-function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
-                                                                 reverse::Bool = false)
-  if pearsonrho
-    0 < θ < 1 || throw(AssertionError("generaton not supported for correlation <= 0 v >= 1"))
-    θ = gumbelθ(θ)
-  else
-    θ > 1 || throw(AssertionError("generaton not supported for θ <= 1"))
-  end
-  v = rand(t)
-  g = -sin.(pi.*v.*(1 - 1/θ))./log.(rand(t))
-  v = g.^(θ-1).*sin.(pi.*v/θ)./sin.(pi.*v).^θ
-  u = rand(t, n)
-  u = -log.(u)./v
-  u = exp.(-u.^(1/θ))
-  reverse? 1-u : u
-end
-
-
-"""
-  frankcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Frank
-copula with parameter θ > 0. If pearsonrho = true parameter 0 >= θ >= 1 is taken as a
-Pearson correlation coefficent.
-
-```jldoctest
-
-julia> srand(43);
-
-julia> frankcopulagen(10, 3, 3)
-10×3 Array{Float64,2}:
- 0.695637  0.894693   0.99902
- 0.805495  0.319088   0.435302
- 0.907882  0.408464   0.982066
- 0.93598   0.378637   0.404066
- 0.311446  0.14014    0.340145
- 0.672887  0.405048   0.477145
- 0.877766  0.221463   0.71116
- 0.306574  0.0587265  0.834648
- 0.902399  0.922309   0.89469
- 0.881764  0.697738   0.637004
-
-```
-"""
-function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false)
-  θ > 0 || throw(AssertionError("generator not supported for θ <= 0"))
-  if pearsonrho
-    θ = Frankθ(θ)
-  end
-  v = npr.logseries((1-exp(-θ)), t)
-  u = rand(t, n)
-  u = -log.(u)./v
-  -log.(1+exp.(-u)*(exp(-θ)-1))/θ
-end
-
-"""
-  amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool, everse::Bool)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Frank
-copula with parameter 0 > θ_i > 1. If pearsonrho parameters
-are Pearson correlation coefficents such that 0 > θ_i > 0.5.
-If reversed returns data from reversed Ali-Mikhail-Haq copula, i.e. U -> 1-U.
-
-```jldoctest
-
-julia> srand(43);
-
-julia> amhcopulagen(10, 2, 0.5)
-10×2 Array{Float64,2}:
- 0.494523   0.993549
- 0.266095   0.417142
- 0.0669154  0.960595
- 0.510007   0.541976
- 0.0697899  0.292847
- 0.754909   0.809849
- 0.0352515  0.588425
- 0.32647    0.973168
- 0.352815   0.247616
- 0.938565   0.918152
-```
-"""
-
-function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, reverse::Bool = false)
-  1 > θ > 0 || throw(AssertionError("generator not supported for θ < 0 or θ > 1"))
-  if pearsonrho
-    maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation >= 0.5"))
-    θ = AMHθ(θ)
-  end
-  v = 1+rand(Geometric(1-θ), t)
-  u = rand(t, n)
-  u = -log.(u)./v
-  u = (1-θ)./(exp.(u)-θ)
-  reverse? 1-u : u
-end
-
-"""
-  marshalolkincopulagen(t::Int, λ::Vector{Float64})
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Marshal-Olkin
-copula with parameter vector λ with elements >= 0 and n = ceil(Int, log(2, length(λ)-1)).
-Parameters are ordered as follow:
-λ = [λ_1, λ_2, ..., λ_n, λ_{12}, λ_{13}, ..., λ_{1n}, λ_{23}, ..., λ_{n-1 n},... λ_{123}, ..., λ_{123...n}]
-If reversed returns data from reversed Marshal-Olkin copula, i.e. U -> 1-U.
-"""
-
-function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::Bool = false)
-  minimum(λ) >= 0 || throw(AssertionError("all parameters must by >= 0 "))
-  n = floor(Int, log(2, length(λ)+1))
-  s = collect(combinations(collect(1:n)))
-  l = length(s)
-  U = zeros(t, n)
-    for j in 1:t
-      v = rand(l)
-      for i in 1:n
-        inds = find([i in s[k] for k in 1:l])
-        ls = [-log(v[k])./(λ[k]) for k in inds]
-        x = minimum(ls)
-        Λ = sum(λ[inds])
-        U[j,i] = exp.(-Λ*x)
-      end
-    end
-    reverse? 1-U: U
-end
-
 ## Elliptical copulas
 
 """
-    gausscopulagen(t::Int, Σ::Matrix{Float64} = [[1. 0.5];[0.5 1.]])
+    gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
 
 Returns: t x n matrix of t realisations of multivariate data generated
-using gaussian copula with Σ - correlation matrix. 
+using gaussian copula with Σ - correlation matrix. If the symmetric covariance
+matrix is imputed, it will be converted into a correlation matrix automatically.
 
 ```jldoctest
 
@@ -229,9 +36,11 @@ function gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
 end
 
 """
-  tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]], nu::Int=10)
+  tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
 
-Generates data using t-student Copula given a correlation matrix cormat and nu degrees of freedom
+Generates data using t-student Copula given Σ - correlation matrix, ν - degrees of freedom.
+If the symmetric covariance matrix is imputed, it will be converted into a
+correlation matrix automatically.
 
 ```jldoctest
 julia> srand(43);
@@ -251,14 +60,12 @@ julia> tstudentcopulagen(10)
  ```
 """
 
-function tstudentcopulagen(t::Int, cormat::Matrix{Float64} = [[1. 0.5];[0.5 1.]],
-                                   nu::Int=10)
-  z = transpose(rand(MvNormal(cormat),t))
-  d = Chisq(nu)
-  U = rand(d, size(z, 1))
-  p = TDist(nu)
-  for i in 1:size(cormat, 1)
-    z[:,i] = cdf(p, z[:,i].*sqrt.(nu./U)./cormat[i,i])
+function tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
+  z = transpose(rand(MvNormal(Σ),t))
+  U = rand(Chisq(ν), size(z, 1))
+  for i in 1:size(Σ, 1)
+    x = z[:,i].*sqrt.(ν./U)./Σ[i,i]
+    z[:,i] = cdf(TDist(ν), x)
   end
   z
 end
@@ -287,6 +94,222 @@ julia> productcopula(10, 2)
 ```
 """
 productcopula(t::Int, n::Int) = rand(t,n)
+
+# Archimedean copulas
+"""
+
+  claytoncopulagen(t::Int, n::Int, θ::Float64)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
+copula with parameter θ > 0.
+If pearsonrho = true parameter is Pearson correlation coefficent fulfilling 0 ≥ θ > 1.
+If reversed returns data from reversed Clayton copula.
+
+```jldoctest
+julia> srand(43);
+
+julia> claytoncopulagen(10, 2, 1)
+10×2 Array{Float64,2}:
+  0.325965  0.984025
+  0.364814  0.484407
+  0.514236  0.990846
+  0.523757  0.55038
+  0.204864  0.398564
+  0.890124  0.916516
+  0.247198  0.746308
+  0.126174  0.882004
+  0.462986  0.377842
+  0.950937  0.934698
+ ```
+"""
+
+function claytoncopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
+                                                                  reverse::Bool = false)
+  θ > 0 || throw(AssertionError("generaton not supported for θ <= 0"))
+  if pearsonrho
+    θ < 1 || throw(AssertionError("correlation coeficient > 1"))
+    θ = claytonθ(θ)
+  end
+  v = quantile(Gamma(1/θ, θ), rand(t))
+  u = rand(t, n)
+  u = -log.(u)./v
+  u = (1 + θ.*u).^(-1/θ)
+  reverse? 1-u: u
+end
+
+
+"""
+  frankcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Frank
+copula with parameter θ > 0.
+If pearsonrho = true parameter is Pearson correlation coefficent fulfilling 0 > θ > 1.
+
+```jldoctest
+
+julia> srand(43);
+
+julia> @pyimport numpy.random as npr
+
+julia> npr.seed(43);
+
+julia> frankcopulagen(10, 3, 3.)
+10×3 Array{Float64,2}:
+ 0.596854  0.844052    0.998418
+ 0.740826  0.228423    0.33928
+ 0.953641  0.585595    0.991504
+ 0.817122  0.115522    0.133532
+ 0.855289  0.735135    0.869024
+ 0.946599  0.850567    0.883339
+ 0.516219  0.00147225  0.245763
+ 0.159666  0.00928133  0.727792
+ 0.324894  0.386399    0.304321
+ 0.990873  0.96857     0.958152
+
+```
+"""
+function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false)
+  θ > 0 || throw(AssertionError("generator not supported for θ <= 0"))
+  if pearsonrho
+    θ < 1 || throw(AssertionError("correlation coeficiant must fulfill < 1"))
+    θ = Frankθ(θ)
+  end
+  v = npr.logseries((1-exp(-θ)), t)
+  u = rand(t, n)
+  u = -log.(u)./v
+  -log.(1+exp.(-u)*(exp(-θ)-1))/θ
+end
+
+"""
+  amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool, everse::Bool)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Ali-Mikhail-Haq
+copula with parameter 0 > θ > 1.
+If pearsonrho = true, parameter is Pearson correlation coefficent fulfilling 0 > θ > 0.5.
+If reversed = true, returns data from reversed Ali-Mikhail-Haq copula.
+
+```jldoctest
+
+julia> srand(43);
+
+julia> amhcopulagen(10, 2, 0.5)
+10×2 Array{Float64,2}:
+ 0.494523   0.993549
+ 0.266095   0.417142
+ 0.0669154  0.960595
+ 0.510007   0.541976
+ 0.0697899  0.292847
+ 0.754909   0.809849
+ 0.0352515  0.588425
+ 0.32647    0.973168
+ 0.352815   0.247616
+ 0.938565   0.918152
+```
+"""
+
+function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, reverse::Bool = false)
+  1 > θ > 0 || throw(AssertionError("generator not supported for θ =< 0 or θ >= 1"))
+  if pearsonrho
+    maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation >= 0.5"))
+    θ = AMHθ(θ)
+  end
+  v = 1+rand(Geometric(1-θ), t)
+  u = rand(t, n)
+  u = -log.(u)./v
+  u = (1-θ)./(exp.(u)-θ)
+  reverse? 1-u : u
+end
+
+"""
+  gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
+                                                          reverse::Bool = false)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Gumbel
+copula with parameter θ ≥ 1.
+If pearsonrho = true, parameter is Pearson correlation coefficent fulfilling 0 >= θ >= 1.
+If reversed = true, returns data from reversed Gumbel copula.
+
+```jldoctest
+julia> srand(43);
+
+julia> gumbelcopulagen(10, 3, 3.5)
+10×3 Array{Float64,2}:
+ 0.550199  0.574653   0.486977
+ 0.352515  0.0621575  0.072297
+ 0.31809   0.112819   0.375482
+ 0.652536  0.691707   0.645668
+ 0.988459  0.989946   0.986297
+ 0.731589  0.532971   0.678277
+ 0.62426   0.625661   0.851237
+ 0.335811  0.117504   0.329193
+ 0.504036  0.672722   0.561857
+ 0.326098  0.459547   0.117946
+ ```
+ """
+
+function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
+                                                                 reverse::Bool = false)
+  if pearsonrho
+    0 < θ < 1 || throw(AssertionError("generaton not supported for correlation <= 0 v >= 1"))
+    θ = gumbelθ(θ)
+  else
+    θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
+  end
+  v = rand(t)
+  g = -sin.(pi.*v.*(1 - 1/θ))./log.(rand(t))
+  v = g.^(θ-1).*sin.(pi.*v/θ)./sin.(pi.*v).^θ
+  u = rand(t, n)
+  u = -log.(u)./v
+  u = exp.(-u.^(1/θ))
+  reverse? 1-u : u
+end
+
+"""
+  marshalolkincopulagen(t::Int, λ::Vector{Float64})
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Marshal-Olkin
+copula with parameter vector λ of non-negative elements λₛ.
+Number of marginals is n = ceil(Int, log(2, length(λ)-1)).
+Parameters are ordered as follow:
+λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]
+If reversed = true, returns data from reversed Marshal-Olkin copula.
+
+```jldoctest
+
+julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
+10×2 Array{Float64,2}:
+ 0.875948   0.813807
+ 0.902229   0.852105
+ 0.386377   0.22781
+ 0.666248   0.381651
+ 0.10115    0.0283248
+ 0.0666898  0.00202552
+ 0.99636    0.994344
+ 0.0926391  0.95373
+ 0.50927    0.5957
+ 0.782477   0.682792
+ ```
+"""
+
+function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::Bool = false)
+  minimum(λ) >= 0 || throw(AssertionError("all parameters must by >= 0 "))
+  n = floor(Int, log(2, length(λ)+1))
+  s = collect(combinations(collect(1:n)))
+  l = length(s)
+  U = zeros(t, n)
+    for j in 1:t
+      v = rand(l)
+      for i in 1:n
+        inds = find([i in s[k] for k in 1:l])
+        ls = [-log(v[k])./(λ[k]) for k in inds]
+        x = minimum(ls)
+        Λ = sum(λ[inds])
+        U[j,i] = exp.(-Λ*x)
+      end
+    end
+    reverse? 1-U: U
+end
+
 
 # transforms univariate distributions
 """
