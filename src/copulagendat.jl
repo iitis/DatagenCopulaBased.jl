@@ -125,7 +125,7 @@ julia> claytoncopulagen(10, 2, 1)
 
 function claytoncopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
                                                                   reverse::Bool = false)
-  θ > 0 || throw(AssertionError("generaton not supported for θ <= 0"))
+  θ > 0 || throw(AssertionError("generaton not supported for θ ≤ 0"))
   if pearsonrho
     θ < 1 || throw(AssertionError("correlation coeficient > 1"))
     θ = claytonθ(θ)
@@ -169,7 +169,7 @@ julia> frankcopulagen(10, 3, 3.)
 ```
 """
 function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false)
-  θ > 0 || throw(AssertionError("generator not supported for θ <= 0"))
+  θ > 0 || throw(AssertionError("generator not supported for θ ≤ 0"))
   if pearsonrho
     θ < 1 || throw(AssertionError("correlation coeficiant must fulfill < 1"))
     θ = Frankθ(θ)
@@ -208,9 +208,9 @@ julia> amhcopulagen(10, 2, 0.5)
 """
 
 function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, reverse::Bool = false)
-  1 > θ > 0 || throw(AssertionError("generator not supported for θ =< 0 or θ >= 1"))
+  1 > θ > 0 || throw(AssertionError("generator not supported for θ ≤ 0 or θ ≥ 1"))
   if pearsonrho
-    maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation >= 0.5"))
+    maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation ≥ 0.5"))
     θ = AMHθ(θ)
   end
   v = 1+rand(Geometric(1-θ), t)
@@ -226,7 +226,7 @@ end
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Gumbel
 copula with parameter θ ≥ 1.
-If pearsonrho = true, parameter is Pearson correlation coefficent fulfilling 0 >= θ >= 1.
+If pearsonrho = true, parameter is Pearson correlation coefficent fulfilling 0 ≥ θ ≥ 1.
 If reversed = true, returns data from reversed Gumbel copula.
 
 ```jldoctest
