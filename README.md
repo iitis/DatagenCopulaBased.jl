@@ -103,7 +103,7 @@ julia> productcopula(t::Int, n::Int)
 
 ## Archimedean copulas
 
-Archimedean bivariate copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by using 
+Archimedean one parameter bivariate copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by using 
 the continuous strictly 
 decreasing generation function parametrised by `θ`, such that `φ(t): [0,1] → [0, ∞)` and `φ⁻¹(s)` is the pseudo-inverse. In `n`-variare case 
 `C(u₁,..., uₙ) = φ⁻¹(φ(u₁)+...+φ(uₙ))` is also the copula, but constrains of 
@@ -112,10 +112,38 @@ must be the inverse. For copula generators functions, their inverse, parameter
 range and `n`-dimensional sampling algorithms see: 
 M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174.
 
-* Clayton copula: θ ∈ (0, ∞) for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -1]` for `n = 2`,
-* Frank copula: θ ∈ (0, ∞) for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -∞)` for `n = 2`,
-* Gumbel copula θ ∈ [1, ∞),
-* Ali-Mikhail-Haq copula θ ∈ [0, 1).
+* Clayton copula: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -1]` for `n = 2`,
+* Frank copula: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (0, ∞) ∪ (0, -∞)` for `n = 2`,
+* Gumbel copula `θ ∈ [1, ∞)`,
+* Ali-Mikhail-Haq copula `θ ∈ [0, 1)` for `n > 2` and  `θ ∈ [-1, 1]` for `n = 2`.
+
+The `2`-dimensional Ali-Mikhail-Haq copula is discussed in 
+P. Kumar, `Probability Distributions and Estimation
+of Ali-Mikhail-Haq Copula`, Applied Mathematical Sciences, Vol. 4, 2010, no. 14, 657 - 666.
+
+Following 'Copula Methods in Finance', U. Cherubini, E. Luciano, W. Vecchiato, Wiley 2004,
+for bivariate Archimedean copulas `C(u₁,u₂)` data can be generated as follow:
+* draw `u₁ = rand()`,
+* define `w = ∂C(u₁, u₂)\∂u₁` and inverse `u₂ = f(w, u₁)`,
+* draw  `w = rand()`
+* return a pair u₁, u₂.
+
+This method can be applied in practice for Clayton, Frank and Ali-Mikhail-Haq copula. If we use
+this method recursively, we can get `n`-variate data with uniform marginals on 
+`[0,1]`, where each neighbour pair
+of marginals `uᵢ uⱼ` for `j = i+1` are draw form a bivariate subcopula with 
+parameter `θᵢ`, the only condition for `θᵢ`
+is such as for a corresponding bivariate copula. 
+
+For each Archimedean copula the parameter `θ` can be determined by the expected Person `ρ` correlation coefficient for data
+or a vector of expected correlation coefficients `[ρ₁, ..., ρₙ₋₁]` if data are generated from a series of subcopulas with 
+parameters `[ϴ₁, ..., ϴₙ₋₁]`.
+
+For Clayton, Gumbel and Ali-Mikhail-Haq family, reversed copula is also possible. The reversed copula is introduced by the transformation `uᵢ → 1-uᵢ`
+for each marginal. For justification see: K. Domino, T. Błachowicz, M. Ciupak, 'The use of copula functions for predictive analysis of correlations between extreme storm tides',
+Physica A: Statistical Mechanics and its Applications 413, 489-497, 2014, and K. Domino, T. Błachowicz, 'The use of copula functions for modeling the risk of 
+investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistical Mechanics and its Applications 413, 77-85, 2014.
+
 
 ### Clayton copula
 
