@@ -356,16 +356,15 @@ To generate data from the  Marshall-Olkin copula we use algorithm presented in M
 
 ### Correlation matrix generation
 
-To generate a `n x n` correlation matrix with reference correlation `rho` run:
+To generate a `n x n` correlation matrix `Σ`, with reference correlation `0 > ρ > 1` run:
 
 ```julia
-julia> cormatgen(n::Int, rho::Float64 = 0.5, ordered = false, altersing::Bool = true)
+julia> cormatgen(n::Int, ρ::Float64 = 0.5, ordered = false, altersing::Bool = true)
 ```
 
-If `ordered = false` matrix correlation matrix elements varies around `rho`, 
-else it drops
-as a distance between marginal variables risis. If `altersing = true` some elements are positive
-and some negative, else all elements are positive.
+ * If `ordered = false` `Σ` elements varies around `ρ`, i.e. `σᵢⱼ ≈ ρ+δ`, else they drop
+as indices differences rise, i.e. `σᵢⱼ ≳ σᵢₖ` as `|i-j| < |i-k|`. 
+ * If `altersing = true`, some `σ` are positive and some negative, else `∀ᵢⱼ σᵢⱼ ≥ 0`.
 
 ```julia
 julia> srand(43);
@@ -392,13 +391,14 @@ julia> cormatgen(4, 0.5, true)
 
 ### Converting marginals
 
-To convert marginals of `U \in [0,1]^n` using one type univariate of distributions `dist` with parameters `p[i]` for `i` th marginal run:
+Takes matrix `X` of realisations of `size(X,2) = n` dimensional random variable, with uniform marginals numbered by `i`, and convert those marginals to common distribution
+`d` with parameters `p[i]`
 
 ```julia
-julia> convertmarg!(U::Matrix{T}, dist::Distribution, p::Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}; testunif::Bool = true)
+julia> convertmarg!(U::Matrix{T}, d::UnionAll, p::Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}; testunif::Bool = true)
 ```
 
-It `testunif` each marginal is tested for uniformity.
+If `testunif = true` each marginal is tested for uniformity.
 
 ```julia
 julia> using Distributions
@@ -424,12 +424,13 @@ julia> U
 
 ```
 
-To convert `i` th marginal to univariate distribution `dist` with parameters array `p` run 
+To convert `i` th marginal to univariate distribution `d` with parameters array 
+`p` run 
 ```julia
 
 julia> using Distributions
 
-julia> quantile(dist(p...), U[:,i])
+julia> quantile(d(p...), U[:,i])
 
 ```
 
@@ -447,12 +448,12 @@ julia> quantile(Levy(0, 1), u[:,2])
    2.02902 
    3.52799 
 ```
-To convert all marginals to the same `dist` with the same parameters `p` run
+To convert all marginals to the same `d` with the same parameters `p` run
 
 ```
 julia> using Distributions
 
-julia> quantile(dist(p...), U)
+julia> quantile(d(p...), U)
 ```
 
 ```julia

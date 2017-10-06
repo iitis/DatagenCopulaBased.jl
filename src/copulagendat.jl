@@ -313,11 +313,12 @@ end
 
 # transforms univariate distributions
 """
-  convertmarg!(X::Matrix, dist, p::Vector{Vector})
+  convertmarg!(X::Matrix, d::UnionAll, p::Vector{Vector})
 
-Takes t x n matrix of t realisations of n variate data with uniform marginals and
-convert marginals on [0,1] and convert i th marginals to those with distribution dist
-and parameters p[i]
+Takes matrix X of realisations of size(X,2) = n dimensional random variable, with
+uniform marginals numbered by i, and convert those marginals to common distribution
+d with parameters p[i].
+If `testunif = true` each marginal is tested for uniformity.
 
 ```jldoctest
 julia> srand(43);
@@ -342,26 +343,25 @@ julia> x
 """
 VecVec = Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}
 
-
-function convertmarg!(U::Matrix{T}, dist, p::VecVec = [fill([0,1], size(U, 2))...];
-                                          testunif::Bool = true) where T <: AbstractFloat
-  d = Uniform(0,1)
+function convertmarg!(U::Matrix{T}, d::UnionAll, p::VecVec = [fill([0,1], size(U, 2))...];
+                                                testunif::Bool = true) where T <: AbstractFloat
   for i = 1:size(U, 2)
-    pw = pvalue(ExactOneSampleKSTest(U[:,i],d))
-    testunif? pw > 0.0001 || throw(AssertionError("$i marginal not uniform")): ()
-    @inbounds U[:,i] = quantile(dist(p[i]...), U[:,i])
+    if testunif
+      pvalue(ExactOneSampleKSTest(U[:,i],Uniform(0,1)))>0.0001 || throw(AssertionError("$i marg. not unif."))
+    end
+    @inbounds U[:,i] = quantile(d(p[i]...), U[:,i])
   end
 end
 
   # generates covariance matrix
 
   """
-    cormatgen(n::Int, rho::Float64 = 0.5, ordered = false, altersing::Bool = true)
+    cormatgen(n::Int, ρ::Float64 = 0.5, ordered = false, altersing::Bool = true)
 
-Returns symmetric correlation matrix of size `n x n`, with reference correlation 0 < rho < 1.
-If ordered = false, matrix correlation matrix elements varies arround rho, else it drops
-as a distance between marginal variables risis. If altersing = true some elements are positive
-and some negative, else all pelements are postive.
+Returns symmetric correlation matrix Σ of size n x n, with reference correlation 0 < ρ < 1.
+If ordered = false, Σ elements varies arround ρ, i.e. σᵢⱼ ≈ ρ+δ else they drop
+as indices differences rise, i.e. σᵢⱼ ≳ σᵢₖ as |i-j| < |i-k|.
+If altersing = true, some σ are positive and some negative, else ∀ᵢⱼ σᵢⱼ ≥ 0.
 
 ```jldoctest
 julia> srand(43);
@@ -375,10 +375,10 @@ julia> cormatgen(4)
 ```
 """
 
-  function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
-    1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
-    ρ = ordered? [fill(ρ, (n-1))...]: ρ
-    x = claytoncopulagen(4*n, n, ρ; pearsonrho = true)
-    convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n])
-    altersing? cor(x): cor(x.*transpose(rand([-1, 1],n)))
-  end
+function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
+  1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
+  ρ = ordered? [fill(ρ, (n-1))...]: ρ
+  x = claytoncopulagen(4*n, n, ρ; pearsonrho = true)
+  convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n])
+  altersing? cor(x): cor(x.*transpose(rand([-1, 1],n)))
+end
