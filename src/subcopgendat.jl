@@ -166,18 +166,69 @@ Returns Matrix{Float} t x n of t realisations of n variate random variable with 
 with (0, std[i]) parameters. Data have generally gaussian copula, clayton subcopula at
 cli indices and tstudent copula at sti indices. Obviously 0 .< cli .<= n and  0 .< sli .<= n
 """
-function subcopdatagen(t::Int, n::Int = 30, cli::Array = [], sti::Array = [], std::Vector{Float64} = [fill(1., n)...])
-  cormat = cormatgen(n)
-  z = gausscopulagen(t, cormat)
+
+VVI = Vector{Vector{Int}}
+
+function copulamixgen(t::Int, n::Int = 30, cli::VVI = [[]], fi::VVI = [[]], amhi::VVI = [[]], ti::Array = [])
+  Σ = cormatgen(n, 0.8,true,true)
+  z = gausscopulagen(t, Σ)
   if cli !=[]
-    for i in 2:length(cli)
-      θ = ρ2θ(cormat[cli[i], cli[i-1]], "clayton")
-      z[:,cli[i]] = rand2cop(z[:,cli[i-1]], θ, "clayton")
+    for i in 1:length(cli)
+      j = cli[i]
+      θ = ρ2θ(Σ[j[1],j[2]], "clayton")
+      z[:,j[2]] = rand2cop(z[:,j[1]], θ, "clayton")
+    end
+    for i in 1:length(fi)
+      j = fi[i]
+      θ = ρ2θ(Σ[j[1],j[2]], "frank")
+      z[:,j[2]] = rand2cop(z[:,j[1]], θ, "frank")
+    end
+    for i in 1:length(amhi)
+      j = amhi[i]
+      ρ = Σ[j[1],j[2]]
+      θ = 1.
+      println(ρ)
+      if ρ < -0.28
+        θ = -1.
+      elseif ρ < 0.5
+        θ = ρ2θ(ρ, "amh")
+      end
+      println(θ)
+      z[:,j[2]] = rand2cop(z[:,j[1]], θ, "amh")
     end
   end
-  if sti !=[]
-      g2tsubcopula!(z, cormat, sti)
+  (ti == [])? (): g2tsubcopula!(z, Σ, tcinds)
+  z, Σ
+end
+
+function copulamixgenunif(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], fri::Array = [], amhi::Array = [], ti::Array = [])
+  Σ = cormatgen(n, 0.8, nunumfc, false)
+  x = transpose(rand(MvNormal(Σ),t))
+  v = -x*eig(Σ)[2][:,end]
+  z = cdf(Normal(0,1), x)
+  vx = cdf(Normal(0,std(v)), v)
+  if cli !=[]
+    for i in 1:length(cli)
+      θ = ρ2θ(cor(v, x[:,cli[i]]), "clayton")
+      z[:,cli[i]] = rand2cop(vx, θ, "clayton")
+    end
+    for i in 1:length(fri)
+      θ = ρ2θ(cor(v, x[:,fri[i]]), "frank")
+      z[:,fri[i]] = rand2cop(vx, θ, "frank")
+    end
+    for i in 1:length(amhi)
+      ρ = cor(v, x[:,amhi[i]])
+      θ = 1.
+      println(ρ)
+      if ρ < -0.28
+        θ = -1.
+      elseif ρ < 0.5
+        θ = ρ2θ(ρ, "amh")
+      end
+      println(θ)
+      z[:,amhi[i]] = rand2cop(vx, θ, "amh")
+    end
   end
-  convertmarg!(z, Normal, [[0, std[i]] for i in 1:n])
-  z
+  (ti == [])? (): g2tsubcopula!(z, Σ, ti)
+  z, Σ
 end

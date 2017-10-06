@@ -1,5 +1,16 @@
 α = 0.025
 
+@testset "copula mixture" begin
+  srand(43)
+  x = copulamixgen(100000, 5, [[1,2]], [[3,4]], [[4,5]])[1];
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+end
+
+
 @testset "heplers" begin
   @testset "axiliary functions" begin
     srand(43)
@@ -237,7 +248,7 @@ end
   @test cor(x[:,1], x[:,2]) ≈ 0.45 atol=1.0e-1
   @test cor(x[:,2], x[:,3]) ≈ 0.3 atol=1.0e-1
 end
-@testset "AMarhall-Olkin copula" begin
+@testset "Marhall-Olkin copula" begin
   srand(43)
   x = marshalolkincopulagen(100000, [1.1, 0.2, 0.6])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -264,14 +275,5 @@ end
     g2tsubcopula!(y, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.], [1,2])
     @test pvalue(ExactOneSampleKSTest(y[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
-  end
-  @testset "test for std normal distribution of marginals of subcopdatagen" begin
-    srand(43)
-    xs = subcopdatagen(100000, 5, [1,2], [4,5], [1., 1., 1., 1., 3.]);
-    @test pvalue(ExactOneSampleKSTest(xs[:,1], Normal(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(xs[:,2], Normal(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(xs[:,3], Normal(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(xs[:,4], Normal(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(xs[:,5],Normal(0,3))) > α
   end
 end

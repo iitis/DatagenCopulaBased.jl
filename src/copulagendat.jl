@@ -377,8 +377,7 @@ julia> cormatgen(4)
 
 function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
   1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
-  ρ = ordered? [fill(ρ, (n-1))...]: ρ
-  x = claytoncopulagen(4*n, n, ρ; pearsonrho = true)
+  x = ordered? claytoncopulagen(4*n, [fill(ρ, (n-1))...]; pearsonrho = true): claytoncopulagen(4*n, n, ρ; pearsonrho = true)
   convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n])
-  altersing? cor(x): cor(x.*transpose(rand([-1, 1],n)))
+  altersing? cor(x.*transpose(rand([-1, 1],n))): cor(x)
 end

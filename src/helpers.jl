@@ -14,8 +14,9 @@ function ρ2θ(ρ::Union{Float64, Int}, copula::String)
     return 1/0.25*tan(ρ/0.7)
   elseif copula == "amh"
     return AMHθ(ρ)
-  end
+  else
   return 0.
+  end
 end
 
 function AMHθ(ρ::Union{Float64, Int})
