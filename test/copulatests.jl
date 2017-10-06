@@ -4,7 +4,6 @@
   @testset "axiliary functions" begin
     srand(43)
     @test cormatgen(2) ≈ [1.0 -0.258883; -0.258883 1.0] atol=1.0e-5
-    @test claytonθ(.5) ≈ 1.
   end
   @testset "tail dependencies" begin
     v1 = vcat(zeros(5), 0.5*ones(5), zeros(5), 0.5*ones(70), ones(5), 0.5*ones(5), ones(5));
@@ -41,6 +40,12 @@
     @test pvalue(ExactOneSampleKSTest(x1[:,2],TDist(6))) > α
     srand(43)
     @test_throws AssertionError convertmarg!(randn(1000, 2), Normal)
+  end
+  @testset "correlations vs parameter" begin
+    @test ρ2θ(0.3090169943749474, "clayton") ≈ 0.5
+    @test ρ2θ(0.08694, "frank") ≈ 0.5 atol=1.0e-3
+    @test ρ2θ(0.5, "gumbel") ≈ 1.5
+    @test AMHθ(0.2) ≈ 0.4980977569203229
   end
 end
 

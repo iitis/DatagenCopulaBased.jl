@@ -5,31 +5,20 @@ lefttail(v1::Vector{T}, v2::Vector{T}, α::T = 0.001) where T <: AbstractFloat =
          sum((v1 .> α) .* (v2 .> α))./(length(v1)*(1-α))
 
 
-claytonθ(ρ::Union{Float64, Int}) = 4*asin(ρ)/(pi-2*asin(ρ))
+function ρ2θ(ρ::Union{Float64, Int}, copula::String)
+  if copula == "gumbel"
+    return 1/(1-2*asin(ρ)/pi)
+  elseif copula == "clayton"
+    return 4*asin(ρ)/(pi-2*asin(ρ))
+  elseif copula == "frank"
+    return 1/0.25*tan(ρ/0.7)
+  elseif copula == "amh"
+    return AMHθ(ρ)
+  end
+  return 0.
+end
 
-gumbelθ(ρ::Union{Float64, Int}) = 1/(1-2*asin(ρ)/pi)
-
-claytonθ2ρ(θ::Union{Float64, Int}) = sin(θ*pi/(4+2*θ))
-
-# for frank copula
-
-D(θ) = 1/θ*(quadgk(i -> i/(exp(i)-1), 0, θ)[1])
-
-frankτ(θ) = 1+4*(D(θ)-1)/θ
-
-frankρ(θ) = sin(pi*frankτ(θ)/2)
-
-# approx
-
-Frankθ2ρ(θ) = 0.69*atan.(0.28*θ)
-
-Frankθ(ρ) = 1/0.28*tan(ρ/0.69)
-
-#  Ali-Mikhail-Haq Copula
-
-AMHρ(θ) = sin(pi/2*(1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2)))
-
-function AMHθ(ρ::Float64)
+function AMHθ(ρ::Union{Float64, Int})
   if ρ == 0.5
     return 1.
   elseif -0.3 < ρ <0.5

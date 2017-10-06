@@ -1,7 +1,6 @@
 module DatagenCopulaBased
   using HypothesisTests
   using Distributions
-  #using QuadGK
   using NLsolve
   using PyCall
   using Combinatorics

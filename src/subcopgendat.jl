@@ -49,7 +49,7 @@ function frankcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false)
   !(0. in θ) || throw(AssertionError("not supported for θ parameter = 0"))
   if pearsonrho
     maximum(abs.(θ)) < 1 || throw(AssertionError("correlation must be in range (-1, 1)"))
-    θ = map(Frankθ, θ)
+    θ = map(r -> ρ2θ(r, "frank"), θ)
   end
   for i in 1:length(θ)
     u = hcat(u, rand2cop(u[:, i], θ[i], "frank"))
@@ -89,7 +89,7 @@ function claytoncopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false,
   !(0. in θ) || throw(AssertionError("not supported for θ parameter = 0"))
   if pearsonrho
     maximum(θ) < 1 || throw(AssertionError("correlation coeficient must be in range (-1,1)"))
-    θ = map(claytonθ, θ)
+    θ = map(r -> ρ2θ(r, "clayton"), θ)
   end
   u = rand(t,1)
   for i in 1:length(θ)
@@ -131,7 +131,7 @@ function amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, rev
   if pearsonrho
     maximum(θ) <= 0.5 || throw(AssertionError("not supported for correlation > 0.5"))
     minimum(θ) > -0.2816 || throw(AssertionError("not supported for correlation <= -0.2816"))
-    θ = map(AMHθ, θ)
+    θ = map(r -> ρ2θ(r, "amh"), θ)
   end
   u = rand(t,1)
   for i in 1:length(θ)
@@ -171,7 +171,7 @@ function subcopdatagen(t::Int, n::Int = 30, cli::Array = [], sti::Array = [], st
   z = gausscopulagen(t, cormat)
   if cli !=[]
     for i in 2:length(cli)
-      θ = claytonθ(cormat[cli[i], cli[i-1]])
+      θ = ρ2θ(cormat[cli[i], cli[i-1]], "clayton")
       z[:,cli[i]] = rand2cop(z[:,cli[i-1]], θ, "clayton")
     end
   end

@@ -128,7 +128,7 @@ function claytoncopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::B
   θ > 0 || throw(AssertionError("generaton not supported for θ ≤ 0"))
   if pearsonrho
     θ < 1 || throw(AssertionError("correlation coeficient > 1"))
-    θ = claytonθ(θ)
+    θ = θ = ρ2θ(θ, "clayton")
   end
   v = quantile(Gamma(1/θ, θ), rand(t))
   u = rand(t, n)
@@ -172,7 +172,7 @@ function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Boo
   θ > 0 || throw(AssertionError("generator not supported for θ ≤ 0"))
   if pearsonrho
     θ < 1 || throw(AssertionError("correlation coeficiant must fulfill < 1"))
-    θ = Frankθ(θ)
+    θ = ρ2θ(θ, "frank")
   end
   v = npr.logseries((1-exp(-θ)), t)
   u = rand(t, n)
@@ -211,7 +211,7 @@ function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, rev
   1 > θ > 0 || throw(AssertionError("generator not supported for θ ≤ 0 or θ ≥ 1"))
   if pearsonrho
     maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation ≥ 0.5"))
-    θ = AMHθ(θ)
+    θ = ρ2θ(θ, "amh")
   end
   v = 1+rand(Geometric(1-θ), t)
   u = rand(t, n)
@@ -251,7 +251,7 @@ function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bo
                                                                  reverse::Bool = false)
   if pearsonrho
     0 < θ < 1 || throw(AssertionError("generaton not supported for correlation <= 0 v >= 1"))
-    θ = gumbelθ(θ)
+    θ = ρ2θ(θ, "gumbel")
   else
     θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
   end
