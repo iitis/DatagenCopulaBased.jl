@@ -1,4 +1,25 @@
 """
+  rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
+
+Returns vector of data generated using copula::String given vector of uniformly
+distributed u1 and copula parameter θ.
+"""
+
+function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
+  w = rand(length(u1))
+  if copula == "clayton"
+    return (u1.^(-θ).*(w.^(-θ/(1+θ))-1)+1).^(-1/θ)
+  elseif copula == "frank"
+    return -1/θ*log.(1+(w*(1-exp(-θ)))./(w.*(exp.(-θ*u1)-1)-exp.(-θ*u1)))
+  elseif copula == "amh"
+    a = 1-u1
+    b = 1-θ.*(1+2*a.*w)+2*θ^2*a.^2.*w
+    c = 1-θ.*(2-4*w+4*a.*w)+θ.^2.*(1-4*a.*w+4*a.^2.*w)
+    return 2*w.*(a*θ-1).^2./(b+sqrt.(c))
+  end
+end
+
+"""
   frankcopulagen(t::Int, θ::Vector{Float64})
 
 Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
@@ -20,7 +41,7 @@ julia> frankcopulagen(10, [4., 11.])
  0.828727  0.0295759  0.0897796
  0.400537  0.0337673  0.27872
  0.429437  0.462771   0.425435
- 0.955881  0.953623   0.969038 
+ 0.955881  0.953623   0.969038
 ```
 """
 function frankcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false)
@@ -31,11 +52,7 @@ function frankcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false)
     θ = map(Frankθ, θ)
   end
   for i in 1:length(θ)
-    z = u[:,i]
-    w = rand(t)
-    α = θ[i]
-    v = -1/α*log.(1+(w*(1-exp(-α)))./(w.*(exp.(-α*z)-1)-exp.(-α*z)))
-    u = hcat(u, v)
+    u = hcat(u, rand2cop(u[:, i], θ[i], "frank"))
   end
   u
 end
@@ -76,10 +93,7 @@ function claytoncopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false,
   end
   u = rand(t,1)
   for i in 1:length(θ)
-    w = rand(t)
-    z = u[:, i]
-    v = (z.^(-θ[i]).*(w.^(-θ[i]/(1+θ[i]))-1)+1).^(-1/θ[i])
-    u = hcat(u, v)
+    u = hcat(u, rand2cop(u[:, i], θ[i], "clayton"))
   end
   reverse? 1-u : u
 end
@@ -121,13 +135,7 @@ function amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, rev
   end
   u = rand(t,1)
   for i in 1:length(θ)
-    w = rand(t)
-    z = u[:, i]
-    p = θ[i]
-    a = 1-z
-    b = 1-p.*(1+2*a.*w)+2*p^2*a.^2.*w
-    c = 1-p.*(2-4*w+4*a.*w)+p.^2.*(1-4*a.*w+4*a.^2.*w)
-    u = hcat(u, 2*w.*(a*p-1).^2./(b+sqrt.(c)))
+    u = hcat(u, rand2cop(u[:, i], θ[i], "amh"))
   end
   reverse? 1-u : u
 end
@@ -150,19 +158,6 @@ function g2tsubcopula!(z::Matrix{Float64}, cormat::Matrix{Float64}, subn::Array{
   end
 end
 
-"""
-  g2clsubcopula(U::Vector{Float}, ρ::Float)
-
-Returns vector of data generated using clayton (assymatric) copula accoriding to
-vector of data U at given pearson correlation coeficient ρ.
-"""
-function g2clsubcopula(U::Vector{Float64}, ρ::Float64)
-  θ = claytonθ(ρ)
-  W = rand(length(U))
-  U.*(W.^(-θ/(1 + θ)) - 1 + U.^θ).^(-1/θ)
-end
-
-
 
 """
   subcopdatagen(t::Int, n::Int, cli::Array, sti::Array, std::Vector)
@@ -176,7 +171,8 @@ function subcopdatagen(t::Int, n::Int = 30, cli::Array = [], sti::Array = [], st
   z = gausscopulagen(t, cormat)
   if cli !=[]
     for i in 2:length(cli)
-      z[:,cli[i]] = g2clsubcopula(z[:,cli[i-1]], cormat[cli[i], cli[i-1]])
+      θ = claytonθ(cormat[cli[i], cli[i-1]])
+      z[:,cli[i]] = rand2cop(z[:,cli[i-1]], θ, "clayton")
     end
   end
   if sti !=[]

@@ -12,6 +12,16 @@
     @test lefttail(v1, v2, 0.1) ≈ 0.5
     @test righttail(v1, v2, 0.9) ≈ 0.5
   end
+  @testset "archimedean copula helpers" begin
+    srand(43)
+    @test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "clayton"), Uniform(0,1))) > α
+    srand(43)
+    @test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "frank"), Uniform(0,1))) > α
+    srand(43)
+    @test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "amh"), Uniform(0,1))) > α
+    srand(43)
+    @test rand2cop([0.815308, 0.894269], 0.5, "clayton") ≈ [0.292041, 0.836167] atol=1.0e-5
+  end
   @testset "transform marginals" begin
     x = [0.2 0.4; 0.4 0.6; 0.6 0.8]
     x1 = [0.2 0.4; 0.4 0.6; 0.6 0.8]
@@ -239,22 +249,11 @@ end
 
 end
 @testset "subcopulas" begin
-  @testset "generate data from subcopuls" begin
-    srand(43)
-    x = gausscopulagen(500000, [1. 0.5; 0.5 1.])
-    srand(43)
-    v = g2clsubcopula(x[:,2], 0.5)
-    @test pvalue(ExactOneSampleKSTest(v, Uniform(0,1))) > α
+  @testset "t-student subcopula" begin
     srand(43)
     x = gausscopulagen(3, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.])
-    x1 = copy(x)
-    g2tsubcopula!(x1, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.], [1,2])
-    @test x1 ≈ [0.558652  0.719921  0.794493; 0.935573  0.922409  0.345177; 0.217512  0.174138  0.123049] atol=1.0e-5
-    v = g2clsubcopula(x[:,2], 0.5)
-    @test v ≈ [0.31555, 0.846364, 0.0132052] atol=1.0e-5
-  end
-  @testset "t-student subcopula" begin
-    co = [1. 0.5; 0.5 1.]
+    g2tsubcopula!(x, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.], [1,2])
+    @test x ≈ [0.558652  0.719921  0.794493; 0.935573  0.922409  0.345177; 0.217512  0.174138  0.123049] atol=1.0e-5
     srand(43)
     y = gausscopulagen(500000, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.])
     g2tsubcopula!(y, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.], [1,2])
