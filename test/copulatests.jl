@@ -10,6 +10,20 @@
   @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
 end
 
+@testset "copula mixture" begin
+  srand(43)
+  x ,s = copulamix1(100000, 5, true, [2,3,4,5]);
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+  λₗ = (2^(-1/ρ2θ(s[2,3], "clayton")))
+  @test lefttail(x[:,2], x[:,3]) ≈ λₗ atol=1.0e-1
+  @test lefttail(x[:,3], x[:,4]) ≈ λₗ atol=1.0e-1
+  @test lefttail(x[:,4], x[:,5]) ≈ λₗ atol=1.0e-1
+  @test lefttail(x[:,2], x[:,4]) ≈ λₗ atol=1.0e-1
+end
 
 @testset "heplers" begin
   @testset "axiliary functions" begin

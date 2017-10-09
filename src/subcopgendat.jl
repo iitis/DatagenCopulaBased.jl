@@ -187,19 +187,37 @@ function copulamixgen(t::Int, n::Int = 30, cli::VVI = [[]], fi::VVI = [[]], amhi
       j = amhi[i]
       ρ = Σ[j[1],j[2]]
       θ = 1.
-      println(ρ)
+      #println(ρ)
       if ρ < -0.28
         θ = -1.
       elseif ρ < 0.5
         θ = ρ2θ(ρ, "amh")
       end
-      println(θ)
+      #println(θ)
       z[:,j[2]] = rand2cop(z[:,j[1]], θ, "amh")
     end
   end
   (ti == [])? (): g2tsubcopula!(z, Σ, tcinds)
   z, Σ
 end
+
+
+function copulamix1(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], fri::Array = [], amhi::Array = [], ti::Array = [])
+  Σ = cormatgen(n, 0.8, nunumfc, false)
+  x = transpose(rand(MvNormal(Σ),t))
+  k = find(Σ[:, cli[1]] .== maximum(Σ[setdiff(collect(1:n),cli),cli[1]]))
+  cl = vcat(cli, k)
+  a, s = eig(Σ[cl, cl])
+  w = x[:, cl]*s./transpose(sqrt.(a))
+  x[:, cli] = w[:,[collect(1:length(cli))...]]
+  x = cdf(Normal(0,1), x)
+  v = cdf(Normal(0,1), -w[:, end])[:,1]
+  θ = ρ2θ(Σ[cli[1], cli[2]], "clayton")
+  x[:,cli] = copulagen(x[:,cli], v, θ, "clayton")
+  (ti == [])? (): g2tsubcopula!(x, Σ, ti)
+  x, Σ
+end
+
 
 function copulamixgenunif(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], fri::Array = [], amhi::Array = [], ti::Array = [])
   Σ = cormatgen(n, 0.8, nunumfc, false)

@@ -130,13 +130,17 @@ function claytoncopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::B
     θ < 1 || throw(AssertionError("correlation coeficient > 1"))
     θ = θ = ρ2θ(θ, "clayton")
   end
-  v = quantile(Gamma(1/θ, θ), rand(t))
-  u = rand(t, n)
-  u = -log.(u)./v
-  u = (1 + θ.*u).^(-1/θ)
+  v = rand(t)
+  u = copulagen(rand(t,n), v, θ, "clayton")
   reverse? 1-u: u
 end
 
+function copulagen(u::Matrix{T}, v::Vector{T}, θ::Union{Float64, Int}, copula::String) where T <:AbstractFloat
+  if copula == "clayton"
+    u = -log.(u)./quantile(Gamma(1/θ, θ), v)
+    return (1 + θ.*u).^(-1/θ)
+  end
+end
 
 """
   frankcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool)
