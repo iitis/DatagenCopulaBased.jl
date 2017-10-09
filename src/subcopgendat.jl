@@ -202,11 +202,14 @@ function copulamixgen(t::Int, n::Int = 30, cli::VVI = [[]], fi::VVI = [[]], amhi
 end
 
 
-function copulamix1(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], amhi::Array = [], fri::Array = [], ti::Array = [])
+function copulamix1(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], amhi::Array = [],
+                                                                                gi::Array = [],
+                                                                                fri::Array = [],
+                                                                                ti::Array = [])
   Σ = cormatgen(n, 0.5, nunumfc, false)
   x = transpose(rand(MvNormal(Σ),t))
   v = []
-  for ind in [cli, amhi]
+  for ind in [cli, amhi, gi]
     if ind != []
       k = find(Σ[:, ind[1]] .== maximum(Σ[setdiff(collect(1:n),ind),ind[1]]))
       i = vcat(ind, k)
@@ -218,12 +221,11 @@ function copulamix1(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], 
     end
   end
   x = cdf(Normal(0,1), x)
-  cop = ["clayton", "amh"]
+  cop = ["clayton", "amh", "gumbel"]
   j = 1
-  for ind in [cli, amhi]
+  for ind in [cli, amhi, gi]
     if ind != []
       θ = ρ2θ(Σ[ind[1], ind[2]], cop[j])
-      println(Σ[ind[1], ind[2]])
       x[:,ind] = copulagen(x[:,ind], v[:,j], θ, cop[j])
     end
     j += 1

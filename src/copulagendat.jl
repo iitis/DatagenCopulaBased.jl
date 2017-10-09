@@ -139,6 +139,11 @@ function copulagen(u::Matrix{T}, v::Vector{T}, θ::Union{Float64, Int}, copula::
   if copula == "clayton"
     u = -log.(u)./quantile(Gamma(1/θ, θ), v)
     return (1 + θ.*u).^(-1/θ)
+  elseif copula == "gumbel"
+    g = -sin.(pi.*v.*(1 - 1/θ))./log.(rand(size(u,1)))
+    v = g.^(θ-1).*sin.(pi.*v/θ)./sin.(pi.*v).^θ
+    u = -log.(u)./v
+    return exp.(-u.^(1/θ))
   elseif copula == "amh"
     u = -log.(u)./(1+quantile(Geometric(1-θ), v))
     return (1-θ)./(exp.(u)-θ)
@@ -261,11 +266,7 @@ function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bo
     θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
   end
   v = rand(t)
-  g = -sin.(pi.*v.*(1 - 1/θ))./log.(rand(t))
-  v = g.^(θ-1).*sin.(pi.*v/θ)./sin.(pi.*v).^θ
-  u = rand(t, n)
-  u = -log.(u)./v
-  u = exp.(-u.^(1/θ))
+  u = copulagen(rand(t,n), v, θ, "gumbel")
   reverse? 1-u : u
 end
 
