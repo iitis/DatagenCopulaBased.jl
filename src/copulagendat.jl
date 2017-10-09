@@ -139,6 +139,9 @@ function copulagen(u::Matrix{T}, v::Vector{T}, θ::Union{Float64, Int}, copula::
   if copula == "clayton"
     u = -log.(u)./quantile(Gamma(1/θ, θ), v)
     return (1 + θ.*u).^(-1/θ)
+  elseif copula == "amh"
+    u = -log.(u)./(1+quantile(Geometric(1-θ), v))
+    return (1-θ)./(exp.(u)-θ)
   end
 end
 
@@ -217,10 +220,8 @@ function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, rev
     maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation ≥ 0.5"))
     θ = ρ2θ(θ, "amh")
   end
-  v = 1+rand(Geometric(1-θ), t)
-  u = rand(t, n)
-  u = -log.(u)./v
-  u = (1-θ)./(exp.(u)-θ)
+  v = rand(t)
+  u = copulagen(rand(t,n), v, θ, "amh")
   reverse? 1-u : u
 end
 
