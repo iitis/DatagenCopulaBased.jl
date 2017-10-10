@@ -147,7 +147,11 @@ function copulagen(u::Matrix{T}, v::Vector{T}, θ::Union{Float64, Int}, copula::
   elseif copula == "amh"
     u = -log.(u)./(1+quantile(Geometric(1-θ), v))
     return (1-θ)./(exp.(u)-θ)
+  elseif copula == "frank"
+    u = -log.(u)./logseriesquantile(v, 1-exp(-θ))
+    return -log.(1+exp.(-u)*(exp(-θ)-1))/θ
   end
+  u
 end
 
 """
@@ -186,10 +190,8 @@ function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Boo
     θ < 1 || throw(AssertionError("correlation coeficiant must fulfill < 1"))
     θ = ρ2θ(θ, "frank")
   end
-  v = logseriesquantile(rand(t), 1-exp(-θ))
-  u = rand(t, n)
-  u = -log.(u)./v
-  -log.(1+exp.(-u)*(exp(-θ)-1))/θ
+  v = rand(t)
+  copulagen(rand(t,n), v, θ, "frank")
 end
 
 """
