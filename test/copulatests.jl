@@ -2,7 +2,7 @@
 
 @testset "copula mixture" begin
   srand(43)
-  x = copulamixgen(100000, 5, [[1,2]], [[3,4]], [[4,5]])[1];
+  x = copulamixbv(100000, 5, [[1,2]], [[3,4]], [[4,5]])[1];
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -12,7 +12,7 @@ end
 
 @testset "copula mixture" begin
   srand(43)
-  x ,s = copulamix1(100000, 20, false, [2,3,4,5,6], [1,20], [9,10], [7,8]);
+  x ,s = copulamix(100000, 20, false, [2,3,4,5,6], [1,20], [9,10], [7,8]);
   println(s[1,20])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α

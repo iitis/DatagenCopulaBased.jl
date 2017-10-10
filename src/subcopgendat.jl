@@ -169,7 +169,7 @@ cli indices and tstudent copula at sti indices. Obviously 0 .< cli .<= n and  0 
 
 VVI = Vector{Vector{Int}}
 
-function copulamixgen(t::Int, n::Int = 30, cli::VVI = [[]], fi::VVI = [[]], amhi::VVI = [[]], ti::Array = [])
+function copulamixbv(t::Int, n::Int = 30, cli::VVI = [[]], fi::VVI = [[]], amhi::VVI = [[]], ti::Array = [])
   Σ = cormatgen(n, 0.8,true,true)
   z = gausscopulagen(t, Σ)
   if cli !=[]
@@ -202,7 +202,7 @@ function copulamixgen(t::Int, n::Int = 30, cli::VVI = [[]], fi::VVI = [[]], amhi
 end
 
 
-function copulamix1(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], amhi::Array = [],
+function copulamix(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], amhi::Array = [],
                                                                                 gi::Array = [],
                                                                                 fri::Array = [],
                                                                                 ti::Array = [])
