@@ -186,7 +186,7 @@ function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Boo
     θ < 1 || throw(AssertionError("correlation coeficiant must fulfill < 1"))
     θ = ρ2θ(θ, "frank")
   end
-  v = npr.logseries((1-exp(-θ)), t)
+  v = logseriesquantile(rand(t), 1-exp(-θ))
   u = rand(t, n)
   u = -log.(u)./v
   -log.(1+exp.(-u)*(exp(-θ)-1))/θ

@@ -84,6 +84,16 @@ end
     @test ρ2θ(0.5, "gumbel") ≈ 1.5
     @test AMHθ(0.2) ≈ 0.4980977569203229
   end
+  @testset "logseries dist" begin
+    @test logseriescdf(0.01)[1:3] ≈ [0.0, 0.994992, 0.999967] atol=1.0e-5
+    @test logseriesquantile([0.25, 0.5, 0.75], 0.9) == [1, 2, 5]
+    srand(43)
+    v = logseriesquantile(rand(1000000), 0.4)
+    @test mean(v) ≈ 1.304 atol=1.0e-2
+    @test std(v) ≈ 0.687 atol=1.0e-2
+    @test skewness(v) ≈ 3.1 atol=1.0e-2
+    @test kurtosis(v) ≈ 13.5 atol=1.0
+  end
 end
 
 @testset "gaussian copula" begin

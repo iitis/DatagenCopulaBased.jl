@@ -29,3 +29,20 @@ function AMHθ(ρ::Union{Float64, Int})
     return nlsolve(f1!, [ρ]).zero[1]
   end
 end
+
+
+function logseriescdf(p::Float64)
+  cdfs = [0.]
+  for i in 1:100000000
+    @inbounds push!(cdfs, cdfs[i]-(p^i)/(i*log(1-p)))
+    if cdfs[i] ≈ 1.0
+      return cdfs
+    end
+  end
+  cdfs
+end
+
+function logseriesquantile(v::Vector{Float64}, p::Float64)
+  w = logseriescdf(p)
+  [findlast(w .< b) for b in v]
+end
