@@ -208,22 +208,24 @@ function copulamix1(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], 
                                                                                 ti::Array = [])
   Σ = cormatgen(n, 0.5, nunumfc, false)
   x = transpose(rand(MvNormal(Σ),t))
-  v = []
-  for ind in [cli, amhi, gi]
+  xgauss = copy(x)
+  v = zeros(t, 4)
+  j = 1
+  for ind in [cli, amhi, gi, fri]
     if ind != []
       k = find(Σ[:, ind[1]] .== maximum(Σ[setdiff(collect(1:n),ind),ind[1]]))
       i = vcat(ind, k)
       a, s = eig(Σ[i,i])
-      w = x[:, i]*s./transpose(sqrt.(a))
+      w = xgauss[:, i]*s./transpose(sqrt.(a))
       x[:, ind] = w[:,[collect(1:length(ind))...]]
-      temp = cdf(Normal(0,1), -w[:, end])
-      v = (v ==[])? temp: hcat(v, temp)
+      v[:,j] = cdf(Normal(0,1), -w[:, end])
     end
+    j += 1
   end
   x = cdf(Normal(0,1), x)
-  cop = ["clayton", "amh", "gumbel"]
+  cop = ["clayton", "amh", "gumbel", "frank"]
   j = 1
-  for ind in [cli, amhi, gi]
+  for ind in [cli, amhi, gi, fri]
     if ind != []
       θ = ρ2θ(Σ[ind[1], ind[2]], cop[j])
       x[:,ind] = copulagen(x[:,ind], v[:,j], θ, cop[j])

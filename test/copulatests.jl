@@ -211,7 +211,6 @@ end
   @test cor(x[:,1], x[:,2]) ≈ -0.959 atol=1.0e-1
 end
 @testset "frank copula" begin
-  npr.seed(43)
   srand(43)
   x = frankcopulagen(500000, 5, 0.8)
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
