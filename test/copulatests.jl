@@ -12,7 +12,7 @@ end
 
 @testset "copula mixture" begin
   srand(43)
-  x ,s = copulamix1(100000, 20, false, [2,3,4,5,6], [1,20], [9,10]);
+  x ,s = copulamix1(100000, 20, false, [2,3,4,5,6], [1,20], [9,10], [7,8]);
   println(s[1,20])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -20,6 +20,8 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,7], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,8], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,9], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,10], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,20], Uniform(0,1))) > α
@@ -33,8 +35,8 @@ end
   @test righttail(x[:,1], x[:,20]) ≈ 0 atol=1.0e-1
   @test lefttail(x[:,9], x[:,10]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,9], x[:,10]) ≈ λᵣ atol=1.0e-1
-  println(λᵣ)
-  println(righttail(x[:,9], x[:,10]))
+  @test righttail(x[:,7], x[:,8]) ≈ 0 atol=1.0e-1
+  @test lefttail(x[:,7], x[:,8]) ≈ 0 atol=1.0e-1
 end
 
 @testset "heplers" begin
