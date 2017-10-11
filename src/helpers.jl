@@ -19,6 +19,9 @@ function ρ2θ(ρ::Union{Float64, Int}, copula::String)
   end
 end
 
+τ2λ₁₂(τ::Float64, λ₁::Float64, λ₂::Float64) = (λ₁+λ₂)*τ/(1-τ)
+
+
 function AMHθ(ρ::Union{Float64, Int})
   if ρ >= 0.5
     return 0.999999

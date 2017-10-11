@@ -294,11 +294,12 @@ end
   a1 = 0.6/1.7
   @test corkendall(x)[1,2]≈ a1*a2/(a1+a2-a1*a2) atol=1.0e-2
   @test righttail(x[:,1], x[:,2]) ≈ a1 atol=1.0e-1
-  srand(43)
+  srand(42)
   x = marshalolkincopulagen(100000, [1.1, 0.2, 2.1, 0.6, 0.5, 3.2, 7.1, 2.1])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test τ2λ₁₂(0.405154, 4.2, 1.2) ≈ 3.7 atol=1.0e-1
 
 end
 @testset "subcopulas" begin

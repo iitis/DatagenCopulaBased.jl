@@ -202,33 +202,41 @@ function copulamixbv(t::Int, n::Int = 30, cli::VVI = [[]], fi::VVI = [[]], amhi:
 end
 
 
-function copulamix(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [], amhi::Array = [],
-                                                                                gi::Array = [],
-                                                                                fri::Array = [],
-                                                                                ti::Array = [])
+function copulamix(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [],
+                                                              amhi::Array = [],
+                                                              gi::Array = [],
+                                                              fri::Array = [],
+                                                              mo::Array = [],
+                                                              λ::Array = [0.8, 0.1],
+                                                              ti::Array = [])
   Σ = cormatgen(n, 0.5, nunumfc, false)
   x = transpose(rand(MvNormal(Σ),t))
   xgauss = copy(x)
-  v = zeros(t, 4)
+  v = zeros(t, 5)
   j = 1
-  for ind in [cli, amhi, gi, fri]
+  for ind in [cli, amhi, gi, fri, mo]
     if ind != []
       k = find(Σ[:, ind[1]] .== maximum(Σ[setdiff(collect(1:n),ind),ind[1]]))
       i = vcat(ind, k)
       a, s = eig(Σ[i,i])
       w = xgauss[:, i]*s./transpose(sqrt.(a))
       x[:, ind] = w[:,[collect(1:length(ind))...]]
-      v[:,j] = cdf(Normal(0,1), -w[:, end])
+      s = sign(cov(xgauss[:, ind[1]], w[:, end]))
+      v[:,j] = cdf(Normal(0,1), s*w[:, end])
     end
     j += 1
   end
   x = cdf(Normal(0,1), x)
-  cop = ["clayton", "amh", "gumbel", "frank"]
+  cop = ["clayton", "amh", "gumbel", "frank", "Marshal-Olkin"]
   j = 1
-  for ind in [cli, amhi, gi, fri]
-    if ind != []
+  for ind in [cli, amhi, gi, fri, mo]
+    if (ind != [])*(j != 5)
       θ = ρ2θ(Σ[ind[1], ind[2]], cop[j])
-      x[:,ind] = copulagen(x[:,ind], v[:,j], θ, cop[j])
+      x[:,ind] = copulagen(cop[j], x[:,ind], v[:,j], θ)
+    elseif (ind != [])*(j == 5)
+      λ₁₂ = τ2λ₁₂(2/pi*asin(Σ[ind[1], ind[2]]), λ...)
+      s = collect(combinations(collect(1:2)))
+      x[:,ind] = mocopula(hcat(x[:,ind],v[:,5]), 2, s, vcat(λ, λ₁₂))
     end
     j += 1
   end

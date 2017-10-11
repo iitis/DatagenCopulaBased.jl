@@ -131,11 +131,11 @@ function claytoncopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::B
     θ = θ = ρ2θ(θ, "clayton")
   end
   v = rand(t)
-  u = copulagen(rand(t,n), v, θ, "clayton")
+  u = copulagen("clayton", rand(t,n), v, θ)
   reverse? 1-u: u
 end
 
-function copulagen(u::Matrix{T}, v::Vector{T}, θ::Union{Float64, Int}, copula::String) where T <:AbstractFloat
+function copulagen(copula::String, u::Matrix{T}, v::Vector{T}, θ::Union{Float64, Int}) where T <:AbstractFloat
   if copula == "clayton"
     u = -log.(u)./quantile(Gamma(1/θ, θ), v)
     return (1 + θ.*u).^(-1/θ)
@@ -186,7 +186,7 @@ function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Boo
     θ = ρ2θ(θ, "frank")
   end
   v = rand(t)
-  copulagen(rand(t,n), v, θ, "frank")
+  copulagen("frank", rand(t,n), v, θ)
 end
 
 """
@@ -223,7 +223,7 @@ function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, rev
     θ = ρ2θ(θ, "amh")
   end
   v = rand(t)
-  u = copulagen(rand(t,n), v, θ, "amh")
+  u = copulagen("amh", rand(t,n), v, θ)
   reverse? 1-u : u
 end
 
@@ -263,7 +263,7 @@ function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bo
     θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
   end
   v = rand(t)
-  u = copulagen(rand(t,n), v, θ, "gumbel")
+  u = copulagen("gumbel", rand(t,n), v, θ)
   reverse? 1-u : u
 end
 
@@ -299,9 +299,15 @@ function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::B
   n = floor(Int, log(2, length(λ)+1))
   s = collect(combinations(collect(1:n)))
   l = length(s)
+  U = mocopula(rand(t,l), n, s, λ)
+  reverse? 1-U: U
+end
+
+function mocopula(u::Matrix{Float64}, n::Int, s::Vector{Vector{Int}}, λ::Vector{Float64})
+  t,l = size(u)
   U = zeros(t, n)
     for j in 1:t
-      v = rand(l)
+      v = u[j,:]
       for i in 1:n
         inds = find([i in s[k] for k in 1:l])
         ls = [-log(v[k])./(λ[k]) for k in inds]
@@ -310,9 +316,8 @@ function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::B
         U[j,i] = exp.(-Λ*x)
       end
     end
-    reverse? 1-U: U
+    U
 end
-
 
 # transforms univariate distributions
 """
