@@ -234,9 +234,8 @@ function copulamix(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [],
       θ = ρ2θ(Σ[ind[1], ind[2]], cop[j])
       x[:,ind] = copulagen(cop[j], x[:,ind], v[:,j], θ)
     elseif (ind != [])*(j == 5)
-      λ₁₂ = τ2λ₁₂(2/pi*asin(Σ[ind[1], ind[2]]), λ...)
-      s = collect(combinations(collect(1:2)))
-      x[:,ind] = mocopula(hcat(x[:,ind],v[:,5]), 2, s, vcat(λ, λ₁₂))
+      λ = τ2λ(2/pi*asin(Σ[ind[1], ind[2]]), λ)
+      x[:,ind] = mocopula(hcat(x[:,ind],v[:,5]), 2, λ)
     end
     j += 1
   end

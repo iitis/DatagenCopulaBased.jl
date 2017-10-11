@@ -294,16 +294,16 @@ julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
  ```
 """
 
+
 function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::Bool = false)
   minimum(λ) >= 0 || throw(AssertionError("all parameters must by >= 0 "))
   n = floor(Int, log(2, length(λ)+1))
-  s = collect(combinations(collect(1:n)))
-  l = length(s)
-  U = mocopula(rand(t,l), n, s, λ)
+  U = mocopula(rand(t,2^n-1), n, λ)
   reverse? 1-U: U
 end
 
-function mocopula(u::Matrix{Float64}, n::Int, s::Vector{Vector{Int}}, λ::Vector{Float64})
+function mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
+  s = collect(combinations(collect(1:n)))
   t,l = size(u)
   U = zeros(t, n)
     for j in 1:t

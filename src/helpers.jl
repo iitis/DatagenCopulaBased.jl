@@ -19,7 +19,34 @@ function ρ2θ(ρ::Union{Float64, Int}, copula::String)
   end
 end
 
-τ2λ₁₂(τ::Float64, λ₁::Float64, λ₂::Float64) = (λ₁+λ₂)*τ/(1-τ)
+τ2λ(τ::Float64, λ::Vector{Float64}) = [λ[1],λ[2],(λ[1]+λ[2])*τ/(1-τ)]
+
+function τ2λ(τ::Vector{Float64}, λ::Vector{Float64})
+  t = τ./(1-τ)
+  M = eye(3) -(ones(3,3)-eye(3)) .*t
+  fm = hcat([1. 1. 0.; 0. 1. 1.; 1. 0. 1.].*t, -[1.; 1.; 1.])
+  ret = map(x -> (x > 0)? (x): (0.01), inv(M)*fm*λ)
+  [λ[1:3]..., ret..., λ[end]]
+end
+
+function getmoλ(λ::Vector{Float64}, ind::Vector{Int})
+  n = floor(Int, log(2, length(λ)+1))
+  s = collect(combinations(collect(1:n)))
+  λ[[ind == a for a in s]]
+end
+
+function setmoλ!(λ::Vector{Float64}, ind::Vector{Int}, a::Float64)
+  n = floor(Int, log(2, length(λ)+1))
+  s = collect(combinations(collect(1:n)))
+  λ[[ind == a for a in s]] = a
+end
+
+
+using Combinatorics
+ind(k::Int, s::Vector{Vector{Int}}) = [k in s[i] for i in 1:size(s,1)]
+s = collect(combinations(collect(1:3)))
+s[[length(s[i]) == 2 for i in 1:size(s,1)]]
+τ2λ([0.1, 0.5, 0.8], [0.1, 0.2, .3, 1.0])
 
 
 function AMHθ(ρ::Union{Float64, Int})
@@ -32,6 +59,7 @@ function AMHθ(ρ::Union{Float64, Int})
     return nlsolve(f1!, [ρ]).zero[1]
   end
 end
+
 
 
 function logseriescdf(p::Float64)

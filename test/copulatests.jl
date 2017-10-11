@@ -12,7 +12,7 @@ end
 
 @testset "copula mixture" begin
   srand(43)
-  x ,s = copulamix(100000, 20, false, [2,3,4,5,6], [1,20], [9,10], [7,8]);
+  x ,s = copulamix(100000, 20, false, [2,3,4,5,6], [1,20], [9,10], [7,8], [11,12]);
   println(s[1,20])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -24,6 +24,8 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,8], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,9], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,10], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,11], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,12], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,20], Uniform(0,1))) > α
   λₗ = (2^(-1/ρ2θ(s[2,3], "clayton")))
   λᵣ = (2-2.^(1./ρ2θ(s[9,10], "gumbel")))
@@ -299,7 +301,7 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-  @test τ2λ₁₂(0.405154, 4.2, 1.2) ≈ 3.7 atol=1.0e-1
+  @test τ2λ(0.405154, [4.2, 1.2]) ≈ [4.2, 1.2, 3.7] atol=1.0e-1
 
 end
 @testset "subcopulas" begin
