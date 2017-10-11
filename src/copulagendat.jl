@@ -304,15 +304,13 @@ function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::B
 end
 
 function mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
-  s = collect(combinations(collect(1:n)))
+  s = collect(combinations(1:n))
   t,l = size(u)
   U = zeros(t, n)
     for j in 1:t
-      v = u[j,:]
       for i in 1:n
         inds = find([i in s[k] for k in 1:l])
-        ls = [-log(v[k])./(λ[k]) for k in inds]
-        x = minimum(ls)
+        x = minimum([-log(u[j,k])./(λ[k]) for k in inds])
         Λ = sum(λ[inds])
         U[j,i] = exp.(-Λ*x)
       end
