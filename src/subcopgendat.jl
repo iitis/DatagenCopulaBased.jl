@@ -212,30 +212,25 @@ function copulamix(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [],
   Σ = cormatgen(n, 0.5, nunumfc, false)
   x = transpose(rand(MvNormal(Σ),t))
   xgauss = copy(x)
-  v = zeros(t, 5)
+  x = cdf(Normal(0,1), x)
   j = 1
+  cop = ["clayton", "amh", "gumbel", "frank", "Marshal-Olkin"]
   for ind in [cli, amhi, gi, fri, mo]
     if ind != []
       k = find(Σ[:, ind[1]] .== maximum(Σ[setdiff(collect(1:n),ind),ind[1]]))
       i = vcat(ind, k)
       a, s = eig(Σ[i,i])
       w = xgauss[:, i]*s./transpose(sqrt.(a))
-      x[:, ind] = w[:,[collect(1:length(ind))...]]
+      x[:, ind] = cdf(Normal(0,1), w[:,[i for i in 1:length(ind)]])
       s = sign(cov(xgauss[:, ind[1]], w[:, end]))
-      v[:,j] = cdf(Normal(0,1), s*w[:, end])
+      v = cdf(Normal(0,1), s*w[:, end])
     end
-    j += 1
-  end
-  x = cdf(Normal(0,1), x)
-  cop = ["clayton", "amh", "gumbel", "frank", "Marshal-Olkin"]
-  j = 1
-  for ind in [cli, amhi, gi, fri, mo]
     if (ind != [])*(j != 5)
       θ = ρ2θ(Σ[ind[1], ind[2]], cop[j])
-      x[:,ind] = copulagen(cop[j], x[:,ind], v[:,j], θ)
+      x[:,ind] = copulagen(cop[j], x[:,ind], v, θ)
     elseif (ind != [])*(j == 5)
       λ = τ2λ(2/pi*asin(Σ[ind[1], ind[2]]), λ)
-      x[:,ind] = mocopula(hcat(x[:,ind],v[:,5]), 2, λ)
+      x[:,ind] = mocopula(hcat(x[:,ind],v), 2, λ)
     end
     j += 1
   end
