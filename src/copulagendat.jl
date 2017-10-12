@@ -263,6 +263,20 @@ function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bo
   reverse? 1-u : u
 end
 
+
+function nastedgumbelcopula(t::Int, n::Vector{Int}, θ::Vector{Float64}, θ₀::Float64)
+  θ₀ <= minimum(θ) || throw(AssertionError("wrong heirarchy of parameters"))
+  length(n) == length(θ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
+  θ = θ./θ₀
+  V0 = levygen(θ₀, rand(t))
+  X = copulagen("gumbel", rand(t,n[1]+1), θ[1])
+  for i in 2:length(n)
+    X = hcat(X, copulagen("gumbel", rand(t,n[i]+1), θ[i]))
+  end
+  u = -log.(X)./V0
+  exp.(-u.^(1/θ₀))
+end
+
 """
   marshalolkincopulagen(t::Int, λ::Vector{Float64})
 
