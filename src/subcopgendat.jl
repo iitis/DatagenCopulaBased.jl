@@ -219,7 +219,8 @@ function copulamix(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [],
     if ind != []
       l = length(ind)
       i = ind
-      lim =(cop[j] =="gumbel")? l+2: l+1
+      #lim =(cop[j] =="gumbel")? l+2: l+1
+      lim = l+1
       if cop[j] =="Marshal-Olkin"
         lim = 2^(length(ind))-1
       end

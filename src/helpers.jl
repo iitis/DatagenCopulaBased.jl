@@ -76,7 +76,22 @@ function logseriescdf(p::Float64)
   cdfs
 end
 
-function logseriesquantile(v::Vector{Float64}, p::Float64)
+function logseriesquantile(p::Float64, v::Vector{Float64})
   w = logseriescdf(p)
   [findlast(w .< b) for b in v]
+end
+
+"""
+  levygen(a::Vector{Float64}, θ)
+
+Generates data from Levy stable distribution woth parameters α = 1/θ, β = 1,
+γ = (cos(pi/(2*θ)))^θ and δ = 0
+"""
+
+function levygen(θ::Union{Int, Float64}, a::Vector{Float64})
+  ϕ = pi*a-pi/2
+  v = quantile(Exponential(1.), rand(length(a)))
+  γ = (cos(pi/(2*θ)))^θ
+  v = ((cos.(pi/(2*θ)+(1/θ-1).*ϕ))./v).^(θ-1)
+  γ*v.*sin.(1/θ.*(pi/2+ϕ)).*(cos(pi/(2*θ)).*cos.(ϕ)).^(-θ)
 end

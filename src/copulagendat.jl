@@ -144,15 +144,10 @@ function copulagen(copula::String, r::Matrix{T}, θ::Union{Float64, Int}) where 
     u = -log.(u)./(1+quantile(Geometric(1-θ), v))
     return (1-θ)./(exp.(u)-θ)
   elseif copula == "frank"
-    u = -log.(u)./logseriesquantile(v, 1-exp(-θ))
+    u = -log.(u)./logseriesquantile(1-exp(-θ), v)
     return -log.(1+exp.(-u)*(exp(-θ)-1))/θ
   elseif copula == "gumbel"
-    u = r[:,1:end-2]
-    ϕ = r[:,end-1]
-    v = r[:,end]
-    g = -sin.(pi.*ϕ.*(1 - 1/θ))./log.(v)
-    v = g.^(θ-1).*sin.(pi.*ϕ/θ)./sin.(pi.*ϕ).^θ
-    u = -log.(u)./v
+    u = -log.(u)./levygen(θ, v)
     return exp.(-u.^(1/θ))
   end
   u
@@ -225,7 +220,7 @@ function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, rev
     maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation ≥ 0.5"))
     θ = ρ2θ(θ, "amh")
   end
-  u = copulagen("amh", rand(t,n_1), θ)
+  u = copulagen("amh", rand(t,n+1), θ)
   reverse? 1-u : u
 end
 
@@ -264,7 +259,7 @@ function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bo
   else
     θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
   end
-  u = copulagen("gumbel", rand(t,n+2), θ)
+  u = copulagen("gumbel", rand(t,n+1), θ)
   reverse? 1-u : u
 end
 
