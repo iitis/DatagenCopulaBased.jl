@@ -11,7 +11,7 @@
 end
 
 @testset "copula mixture" begin
-  srand(43)
+  srand(44)
   x ,s = copulamix(100000, 20, false, [2,3,4,5,6], [1,20], [9,10], [7,8], [11,12]);
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -45,7 +45,7 @@ end
 @testset "heplers" begin
   @testset "axiliary functions" begin
     srand(43)
-    @test cormatgen(2) ≈ [1.0 -0.258883; -0.258883 1.0] atol=1.0e-5
+    @test cormatgen(2) ≈ [1.0 0.903212; 0.903212 1.0] atol=1.0e-5
   end
   @testset "tail dependencies" begin
     v1 = vcat(zeros(5), 0.5*ones(5), zeros(5), 0.5*ones(70), ones(5), 0.5*ones(5), ones(5));

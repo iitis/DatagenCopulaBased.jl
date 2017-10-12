@@ -236,7 +236,7 @@ function copulamix(t::Int, n::Int = 30, nunumfc::Bool = true, cli::Array = [],
         x[:,ind] = mocopula(v, l, τ2λ(ρ, λ))
       else
         θ = ρ2θ(Σ[ind[1], ind[2]], cop[j])
-        x[:,ind] = copulagen(cop[j], v[:,1:l], v[:,end:-1:(l+1)], θ)
+        x[:,ind] = copulagen(cop[j], v, θ)
       end
     end
     j += 1

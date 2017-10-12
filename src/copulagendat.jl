@@ -130,27 +130,30 @@ function claytoncopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::B
     θ < 1 || throw(AssertionError("correlation coeficient > 1"))
     θ = θ = ρ2θ(θ, "clayton")
   end
-  v = rand(t,1)
-  u = copulagen("clayton", rand(t,n), v, θ)
+  u = copulagen("clayton", rand(t,n+1), θ)
   reverse? 1-u: u
 end
 
-function copulagen(copula::String, u::Matrix{T}, w::Matrix{T}, θ::Union{Float64, Int}) where T <:AbstractFloat
-  v = w[:,1]
+function copulagen(copula::String, r::Matrix{T}, θ::Union{Float64, Int}) where T <:AbstractFloat
+  u = r[:,1:end-1]
+  v = r[:,end]
   if copula == "clayton"
     u = -log.(u)./quantile(Gamma(1/θ, θ), v)
     return (1 + θ.*u).^(-1/θ)
-  elseif copula == "gumbel"
-    g = -sin.(pi.*v.*(1 - 1/θ))./log.(w[:,2])
-    v = g.^(θ-1).*sin.(pi.*v/θ)./sin.(pi.*v).^θ
-    u = -log.(u)./v
-    return exp.(-u.^(1/θ))
   elseif copula == "amh"
     u = -log.(u)./(1+quantile(Geometric(1-θ), v))
     return (1-θ)./(exp.(u)-θ)
   elseif copula == "frank"
     u = -log.(u)./logseriesquantile(v, 1-exp(-θ))
     return -log.(1+exp.(-u)*(exp(-θ)-1))/θ
+  elseif copula == "gumbel"
+    u = r[:,1:end-2]
+    ϕ = r[:,end-1]
+    v = r[:,end]
+    g = -sin.(pi.*ϕ.*(1 - 1/θ))./log.(v)
+    v = g.^(θ-1).*sin.(pi.*ϕ/θ)./sin.(pi.*ϕ).^θ
+    u = -log.(u)./v
+    return exp.(-u.^(1/θ))
   end
   u
 end
@@ -186,8 +189,7 @@ function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Boo
     θ < 1 || throw(AssertionError("correlation coeficiant must fulfill < 1"))
     θ = ρ2θ(θ, "frank")
   end
-  v = rand(t,1)
-  copulagen("frank", rand(t,n), v, θ)
+  copulagen("frank", rand(t,n+1), θ)
 end
 
 """
@@ -223,8 +225,7 @@ function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, rev
     maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation ≥ 0.5"))
     θ = ρ2θ(θ, "amh")
   end
-  v = rand(t,1)
-  u = copulagen("amh", rand(t,n), v, θ)
+  u = copulagen("amh", rand(t,n_1), θ)
   reverse? 1-u : u
 end
 
@@ -263,8 +264,7 @@ function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bo
   else
     θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
   end
-  v = rand(t,2)
-  u = copulagen("gumbel", rand(t,n), v, θ)
+  u = copulagen("gumbel", rand(t,n+2), θ)
   reverse? 1-u : u
 end
 
