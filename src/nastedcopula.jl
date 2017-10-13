@@ -97,6 +97,9 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
       map = collect(combinations(1:length(ind),2))
       ρ = [Σ[ind[k[1]], ind[k[2]]] for k in map]
       x[:,ind] = mocopula(v, length(ind), τ2λ(ρ, λ))
+    elseif (p[1] == "gumbel") & (length(ind) > 2)
+      θ = [ρ2θ(Σ[ind[i], ind[i+1]], p[1]) for i in 1:(length(ind)-1)]
+      x[:,ind] = copulagen(p[1], v, sort(θ; rev = true))
     elseif p[1] == "t-student"
       g2tsubcopula!(x, Σ, ind, ν)
     else
@@ -120,6 +123,8 @@ function makeind(Σ::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
   lim = l+1
   if ind[1] =="Marshal-Olkin"
     lim = 2^l-1
+  elseif ind[1] =="gumbel"
+    lim = 2*l-1
   end
   for p in 0:(lim-l-1)
     k = p%l+1

@@ -70,6 +70,7 @@ end
   srand(44)
   Σ = cormatgen(20, 0.5, false, false)
   d=["clayton" => [2,3,4,5,6], "amh" => [1,20], "gumbel" => [9,10], "frank" => [7,8], "Marshal-Olkin" => [11,12]]
+  srand(44)
   x = copulamix(100000, Σ, d)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -97,4 +98,14 @@ end
   @test righttail(x[:,9], x[:,10]) ≈ λᵣ atol=1.0e-1
   @test righttail(x[:,7], x[:,8]) ≈ 0 atol=1.0e-1
   @test lefttail(x[:,7], x[:,8]) ≈ 0 atol=1.0e-1
+  d=["gumbel" => [1,2,3,4], "Marshal-Olkin" => [5,6,7]]
+  srand(44)
+  x = copulamix(100000, Σ, d, [2., 1.8, 1.3, 0.6])
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,7], Uniform(0,1))) > α
 end
