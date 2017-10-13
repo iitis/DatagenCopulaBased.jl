@@ -8,5 +8,5 @@ import DatagenCopulaBased: lefttail, righttail, ρ2θ, AMHθ, rand2cop, g2tsubco
 import DatagenCopulaBased: logseriescdf, logseriesquantile, τ2λ, norm2unifind, makeind
 
 include("bivariatecopulas.jl")
-include("nastedcopulas.jl")
 include("copulatests.jl")
+include("nastedcopulas.jl")
