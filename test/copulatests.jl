@@ -17,12 +17,12 @@
     @test ρ2θ(0.5, "gumbel") ≈ 1.5
     @test AMHθ(0.2) ≈ 0.4980977569203229
   end
+  @testset "marshal olkin copula" begin
+    @test τ2λ([0.405154], [4.2, 1.2]) ≈ [4.2, 1.2, 3.7] atol=1.0e-1
+  end
   @testset "transform marginals" begin
-    x = [0.2 0.4; 0.4 0.6; 0.6 0.8]
     x1 = [0.2 0.4; 0.4 0.6; 0.6 0.8]
-    convertmarg!(x, Normal)
     convertmarg!(x1, TDist, [[10],[10]])
-    @test x ≈ [-0.841621 -0.253347; -0.253347 0.253347; 0.253347 0.841621] atol=1.0e-5
     @test x1 ≈ [-0.879058  -0.260185; -0.260185 0.260185; 0.260185 0.879058] atol=1.0e-5
     srand(43)
     x = rand(10000, 2)
@@ -54,8 +54,6 @@ end
 
 @testset "gaussian copula" begin
   srand(43)
-  @test gausscopulagen(2, [[1. 0.5];[0.5 1.]]) ≈ [0.589188 0.815308; 0.708285 0.924962] atol=1.0e-5
-  srand(43)
   x = gausscopulagen(500000, [1. 0.5; 0.5 1.])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -63,8 +61,6 @@ end
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
 end
 @testset "t-student copula" begin
-  srand(43)
-  @test tstudentcopulagen(2, [1. 0.5; 0.5 1.], 20) ≈ [0.581625 0.792144; 0.76935 0.968669] atol=1.0e-5
   ν = 10
   dt = TDist(ν+1)
   rho = 0.5
@@ -76,14 +72,12 @@ end
   @test lefttail(xt[:,1], xt[:,2]) ≈ λ atol=1.0e-1
   @test righttail(xt[:,1], xt[:,2]) ≈ λ atol=1.0e-1
   convertmarg!(xt, Normal)
-  @test cov(xt) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
+  @test cor(xt) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
 end
 @testset "product copula" begin
   srand(43)
   x = productcopula(500000, 3);
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
   @test lefttail(x[:,1], x[:,3]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
 end
@@ -97,41 +91,36 @@ end
   @test righttail(x[:,1], x[:,2]) ≈ 0.5858 atol=1.0e-1
   @test lefttail(x[:,1], x[:,2]) ≈ 0. atol=1.0e-1
   @test lefttail(x[:,1], x[:,3]) ≈ 0. atol=1.0e-1
+  @test corkendall(x) ≈ [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.] atol=1.0e-3
   srand(44)
   x = gumbelcopulagen(500000, 3, 1.5; reverse = true);
   @test lefttail(x[:,1], x[:,2]) ≈ 0.4126 atol=1.0e-1
-  @test lefttail(x[:,1], x[:,2]) ≈ 0.4126 atol=1.0e-1
-  @test righttail(x[:,1], x[:,2]) ≈ 0. atol=1.0e-1
   @test righttail(x[:,1], x[:,3]) ≈ 0. atol=1.0e-1
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   srand(43)
   x = gumbelcopulagen(500000, 3, 0.5; pearsonrho = true)
   convertmarg!(x, Normal)
-  @test cov(x) ≈ [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.] atol=1.0e-1
-  x = gumbelcopulagen(500000, 3, 0.3; pearsonrho = true, reverse = true)
-  convertmarg!(x, Normal)
-  @test cov(x) ≈ [1. 0.3 0.3; 0.3 1. 0.3; 0.3 0.3 1.] atol=1.0e-1
+  @test cor(x) ≈ [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.] atol=1.0e-1
 end
 @testset "clayton copula" begin
   srand(43)
-  xc = claytoncopulagen(500000, 3, 1);
-  @test pvalue(ExactOneSampleKSTest(xc[:,1], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(xc[:,2], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(xc[:,3], Uniform(0,1))) > α
-  @test lefttail(xc[:,1], xc[:,2]) ≈ 0.5 atol=1.0e-1
-  @test lefttail(xc[:,1], xc[:,3]) ≈ 0.5 atol=1.0e-1
-  @test righttail(xc[:,1], xc[:,2]) ≈ 0 atol=1.0e-1
-  srand(43)
-  x = claytoncopulagen(500000, 3, 0.5; pearsonrho = true)
-  convertmarg!(x, Normal)
-  @test cov(x) ≈ [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.] atol=1.0e-2
+  x = claytoncopulagen(500000, 3, 1);
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test lefttail(x[:,1], x[:,2]) ≈ 0.5 atol=1.0e-1
+  @test lefttail(x[:,1], x[:,3]) ≈ 0.5 atol=1.0e-1
+  @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
+  @test corkendall(x) ≈ [1. 1/3 1/3; 1/3 1. 1/3; 1/3 1/3 1.] atol=1.0e-2
   srand(43)
   xic = claytoncopulagen(500000, 3, 1; reverse = true);
   @test pvalue(ExactOneSampleKSTest(xic[:,1], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(xic[:,2], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(xic[:,3], Uniform(0,1))) > α
   @test lefttail(xic[:,1], xic[:,3]) ≈ 0 atol=1.0e-1
   @test righttail(xic[:,1], xic[:,2]) ≈ 0.5 atol=1.0e-1
+  srand(43)
+  x = claytoncopulagen(500000, 3, 0.5; pearsonrho = true)
+  convertmarg!(x, Normal)
+  @test cor(x) ≈ [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.] atol=1.0e-2
 end
 @testset "frank copula" begin
   srand(43)
@@ -141,14 +130,10 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
   @test lefttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test lefttail(x[:,2], x[:,3]) ≈ 0 atol=1.0e-1
-  @test lefttail(x[:,3], x[:,4]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,3], x[:,2]) ≈ 0 atol=1.0e-1
-  @test righttail(x[:,4], x[:,3]) ≈ 0 atol=1.0e-1
   convertmarg!(x, Normal)
-  @test cor(x[:,1], x[:,2]) ≈ 0.138 atol=1.0e-1
-  @test cor(x[:,2], x[:,3]) ≈ 0.138 atol=1.0e-1
-  @test cor(x[:,1], x[:,4]) ≈ 0.138 atol=1.0e-1
+  @test cor(x)[1:3, 1:3] ≈ [1. 0.138 0.138; 0.138 1. 0.138; 0.138 0.138 1.] atol=1.0e-1
 end
 @testset "Ali-Mikhail-Haq copula" begin
   srand(43)
@@ -161,8 +146,7 @@ end
   @test lefttail(x[:,2], x[:,3]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,1], x[:,2]) ≈ 0 atol=1.0e-1
   @test righttail(x[:,2], x[:,3]) ≈ 0 atol=1.0e-1
-  convertmarg!(x, Normal)
-  @test cor(x[:,1], x[:,2]) ≈ 0.359 atol=1.0e-1
+  @test corkendall(x)[1:2, 1:2] ≈ [1. 0.23373; 0.23373 1.] atol=1.0e-3
 end
 @testset "Marhall-Olkin copula" begin
   srand(43)
@@ -171,12 +155,11 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   a2 = 0.6/0.8
   a1 = 0.6/1.7
-  @test corkendall(x)[1,2]≈ a1*a2/(a1+a2-a1*a2) atol=1.0e-2
+  @test corkendall(x)[1,2]≈ a1*a2/(a1+a2-a1*a2) atol=1.0e-3
   @test righttail(x[:,1], x[:,2]) ≈ a1 atol=1.0e-1
   srand(42)
   x = marshalolkincopulagen(100000, [1.1, 0.2, 2.1, 0.6, 0.5, 3.2, 7.1, 2.1])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-  @test τ2λ([0.405154], [4.2, 1.2]) ≈ [4.2, 1.2, 3.7] atol=1.0e-1
 end
