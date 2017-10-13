@@ -20,22 +20,9 @@
   @testset "marshal olkin copula" begin
     @test τ2λ([0.405154], [4.2, 1.2]) ≈ [4.2, 1.2, 3.7] atol=1.0e-1
   end
-  @testset "transform marginals" begin
-    x1 = [0.2 0.4; 0.4 0.6; 0.6 0.8]
-    convertmarg!(x1, TDist, [[10],[10]])
-    @test x1 ≈ [-0.879058  -0.260185; -0.260185 0.260185; 0.260185 0.879058] atol=1.0e-5
-    srand(43)
-    x = rand(10000, 2)
-    srand(43)
-    x1 = rand(10000, 2)
-    convertmarg!(x, Normal, [[0., 2.],[0., 3.]])
-    convertmarg!(x1, TDist, [[10],[6]])
-    @test pvalue(ExactOneSampleKSTest(x[:,1],Normal(0,2))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,2],Normal(0,3))) > α
-    @test pvalue(ExactOneSampleKSTest(x1[:,1],TDist(10))) > α
-    @test pvalue(ExactOneSampleKSTest(x1[:,2],TDist(6))) > α
-    srand(43)
-    @test_throws AssertionError convertmarg!(randn(1000, 2), Normal)
+  @testset "copula gen" begin
+  c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
+  @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
   end
 end
 
@@ -50,6 +37,24 @@ end
     @test skewness(v) ≈ 3.1 atol=1.0e-2
     @test kurtosis(v) ≈ 13.5 atol=1.0
   end
+end
+
+@testset "transform marginals" begin
+  x1 = [0.2 0.4; 0.4 0.6; 0.6 0.8]
+  convertmarg!(x1, TDist, [[10],[10]])
+  @test x1 ≈ [-0.879058  -0.260185; -0.260185 0.260185; 0.260185 0.879058] atol=1.0e-5
+  srand(43)
+  x = rand(10000, 2)
+  srand(43)
+  x1 = rand(10000, 2)
+  convertmarg!(x, Normal, [[0., 2.],[0., 3.]])
+  convertmarg!(x1, TDist, [[10],[6]])
+  @test pvalue(ExactOneSampleKSTest(x[:,1],Normal(0,2))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2],Normal(0,3))) > α
+  @test pvalue(ExactOneSampleKSTest(x1[:,1],TDist(10))) > α
+  @test pvalue(ExactOneSampleKSTest(x1[:,2],TDist(6))) > α
+  srand(43)
+  @test_throws AssertionError convertmarg!(randn(1000, 2), Normal)
 end
 
 @testset "gaussian copula" begin

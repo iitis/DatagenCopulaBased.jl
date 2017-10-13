@@ -96,6 +96,35 @@ julia> productcopula(10, 2)
 productcopula(t::Int, n::Int) = rand(t,n)
 
 # Archimedean copulas
+
+"""
+  copulagen(copula::String, r::Matrix{Float}, θ::Union{Float64, Int})
+
+Auxiliary function used to generate data from clayton, gumbel, frank or amh copula
+parametrised by a single parameter θ given a matrix of independent [0,1] distributerd
+random vectors.
+
+"""
+
+function copulagen(copula::String, r::Matrix{T}, θ::Union{Float64, Int}) where T <:AbstractFloat
+  u = r[:,1:end-1]
+  v = r[:,end]
+  if copula == "clayton"
+    u = -log.(u)./quantile(Gamma(1/θ, θ), v)
+    return (1 + θ.*u).^(-1/θ)
+  elseif copula == "amh"
+    u = -log.(u)./(1+quantile(Geometric(1-θ), v))
+    return (1-θ)./(exp.(u)-θ)
+  elseif copula == "frank"
+    u = -log.(u)./logseriesquantile(1-exp(-θ), v)
+    return -log.(1+exp.(-u)*(exp(-θ)-1))/θ
+  elseif copula == "gumbel"
+    u = -log.(u)./levygen(θ, v)
+    return exp.(-u.^(1/θ))
+  end
+  u
+end
+
 """
 
   claytoncopulagen(t::Int, n::Int, θ::Float64)
@@ -134,24 +163,6 @@ function claytoncopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::B
   reverse? 1-u: u
 end
 
-function copulagen(copula::String, r::Matrix{T}, θ::Union{Float64, Int}) where T <:AbstractFloat
-  u = r[:,1:end-1]
-  v = r[:,end]
-  if copula == "clayton"
-    u = -log.(u)./quantile(Gamma(1/θ, θ), v)
-    return (1 + θ.*u).^(-1/θ)
-  elseif copula == "amh"
-    u = -log.(u)./(1+quantile(Geometric(1-θ), v))
-    return (1-θ)./(exp.(u)-θ)
-  elseif copula == "frank"
-    u = -log.(u)./logseriesquantile(1-exp(-θ), v)
-    return -log.(1+exp.(-u)*(exp(-θ)-1))/θ
-  elseif copula == "gumbel"
-    u = -log.(u)./levygen(θ, v)
-    return exp.(-u.^(1/θ))
-  end
-  u
-end
 
 """
   frankcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool)
@@ -261,46 +272,6 @@ function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bo
   end
   u = copulagen("gumbel", rand(t,n+1), θ)
   reverse? 1-u : u
-end
-
-
-function nastedgumbelcopula(t::Int, n::Vector{Int}, θ::Vector{Float64}, θ₀::Float64, c::Float64 = 1.)
-  θ₀ <= minimum(θ) || throw(AssertionError("wrong heirarchy of parameters"))
-  length(n) == length(θ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
-  θ = θ./θ₀./c
-  V0 = levygen(θ₀, rand(t))
-  X = copulagen("gumbel", rand(t,n[1]+1), θ[1])
-  for i in 2:length(n)
-    X = hcat(X, copulagen("gumbel", rand(t,n[i]+1), θ[i]))
-  end
-  u = -log.(X)./V0
-  exp.(-u.^(1/θ₀))
-end
-
-function nngumbelcopula(t::Int, n::Vector{Vector{Int}}, ϴ₂::Vector{Vector{Float64}}, θ₁::Vector{Float64}, θ₀::Float64)
-  println(ϴ₂)
-  θ₀ <= minimum(θ₁) || throw(AssertionError("wrong heirarchy of parameters"))
-  V0 = levygen(θ₀, rand(t))
-  θ₁ = θ₁./θ₀
-  X = nastedgumbelcopula(t, n[1], ϴ₂[1], θ₁[1], θ₀)
-  for i in 2:length(n)
-    X = hcat(X, nastedgumbelcopula(t, n[i], ϴ₂[i], θ₁[i], θ₀))
-  end
-  u = -log.(X)./V0
-  exp.(-u.^(1/θ₀))
-end
-
-
-function nastedhiergumbelcopula(t::Int, θ::Vector{Float64})
-  θ = vcat(θ, [1.])
-  X = copulagen("gumbel", rand(t,3), θ[1]/θ[2])
-  for i in 2:length(θ)-1
-    V0 = levygen(θ[i]/θ[i+1], rand(t))
-    X = hcat(X, rand(t,1))
-    X = -log.(X)./V0
-    X = exp.(-X.^(θ[i+1]/θ[i]))
-  end
-  X
 end
 
 """

@@ -12,9 +12,65 @@
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
 end
 
+@testset "nasted gumbel copula" begin
+  @testset "hierarchical" begin
+    srand(43)
+    x = nastedgumbelcopula(500000, [4.2, 3.6, 1.1])
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test corkendall(x)[1:2,:] ≈ [1. 0.7619 0.72222 0.0909; 0.7619 1. 0.72222 0.0909] atol=1.0e-2
+    @test righttail(x[:,1], x[:,2]) ≈ 0.8206 atol=1.0e-1
+    @test righttail(x[:,2], x[:,3]) ≈ 0.7877 atol=1.0e-1
+    @test righttail(x[:,3], x[:,4]) ≈ 0.1221 atol=1.0e-2
+  end
+  @testset "single nasted" begin
+    srand(43)
+    x = nastedgumbelcopula(600000, [2,2], [4.2, 6.1], 2.1)
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test corkendall(x)[1:3,:] ≈ [1. 0.7619 0.52380 0.52380; 0.7619 1. 0.52380 0.52380; 0.52380 0.52380 1. 0.83606] atol=1.0e-2
+    @test righttail(x[:,1], x[:,2]) ≈ 0.82056 atol=1.0e-1
+    @test righttail(x[:,2], x[:,3]) ≈ 0.6089 atol=1.0e-1
+    @test righttail(x[:,3], x[:,4]) ≈ 0.87966 atol=1.0e-1
+  end
+  @testset "double nasted" begin
+    srand(43)
+    x = nastedgumbelcopula(200000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2)
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test corkendall(x)[1,:] ≈ [1., 0.7560, 0.47368, 0.47368, 0.16666, 0.16666, 0.16666, 0.16666] atol=1.0e-1
+    @test righttail(x[:,1], x[:,2]) ≈ 0.8158 atol=1.0e-1
+    @test righttail(x[:,2], x[:,3]) ≈ 0.5597 atol=1.0e-2
+    @test righttail(x[:,1], x[:,3]) ≈ 0.5597 atol=1.0e-2
+    @test righttail(x[:,3], x[:,4]) ≈ 0.7999 atol=1.0e-1
+    @test righttail(x[:,1], x[:,5]) ≈ 0.2182 atol=1.0e-1
+  end
+end
+
+
+@testset "copula mixture helpers" begin
+  Σ = [1 0.5 0.5 0.6; 0.5 1 0.5 0.6; 0.5 0.5 1. 0.6; 0.6 0.6 0.6 1.]
+  srand(43)
+  x = transpose(rand(MvNormal(Σ),500000))
+  y = norm2unifind(x, Σ, [1,2])
+  @test pvalue(ExactOneSampleKSTest(y[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
+  @test cor(y)≈ [1. 0.; 0. 1.] atol=1.0e-3
+  @test makeind(Σ, "clayton" => [1,2]) == [1,2,4]
+end
+
+
 @testset "copula mixture" begin
   srand(44)
-  x ,s = copulamix(100000, 20, false, [2,3,4,5,6], [1,20], [9,10], [7,8], [11,12]);
+  Σ = cormatgen(20, 0.5, false, false)
+  d=["clayton" => [2,3,4,5,6], "amh" => [1,20], "gumbel" => [9,10], "frank" => [7,8], "Marshal-Olkin" => [11,12]]
+  x = copulamix(100000, Σ, d)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -28,9 +84,9 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,11], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,12], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,20], Uniform(0,1))) > α
-  λₗ = (2^(-1/ρ2θ(s[2,3], "clayton")))
-  λᵣ = (2-2.^(1./ρ2θ(s[9,10], "gumbel")))
-  λamh = (s[1,20] >= 0.5)? 0.5 : 0.
+  λₗ = (2^(-1/ρ2θ(Σ[2,3], "clayton")))
+  λᵣ = (2-2.^(1./ρ2θ(Σ[9,10], "gumbel")))
+  λamh = (Σ[1,20] >= 0.5)? 0.5 : 0.
   @test lefttail(x[:,2], x[:,3]) ≈ λₗ atol=1.0e-1
   @test lefttail(x[:,3], x[:,4]) ≈ λₗ atol=1.0e-1
   @test lefttail(x[:,4], x[:,5]) ≈ λₗ atol=1.0e-1
