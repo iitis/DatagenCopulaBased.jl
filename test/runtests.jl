@@ -6,4 +6,6 @@ using StatsBase
 
 import DatagenCopulaBased: lefttail, righttail, ρ2θ, AMHθ, rand2cop, g2tsubcopula!, logseriescdf, logseriesquantile, τ2λ
 
+include("bivariatecopulas.jl")
+include("nastedcopulas.jl")
 include("copulatests.jl")
