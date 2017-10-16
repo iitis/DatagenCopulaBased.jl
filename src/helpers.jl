@@ -5,6 +5,26 @@ lefttail(v1::Vector{T}, v2::Vector{T}, α::T = 0.002) where T <: AbstractFloat =
          sum((v1 .> α) .* (v2 .> α))./(length(v1)*(1-α))
 
 
+D(θ) = 1/θ*(quadgk(i -> i/(exp(i)-1), 0, θ)[1])
+
+function frankθ(τ::Float64)
+  function f1!(θ, fvec)
+    fvec[1] = 1+4*(D(θ[1])-1)/θ[1] - τ
+  end
+  return nlsolve(f1!, [τ]).zero[1]
+end
+
+function AMHτ2θ(τ::Float64)
+  if τ >= 1/3
+    return 0.999999
+  elseif -2/11 < τ <1/3
+    function f1!(θ, fvec)
+      fvec[1] = (1 - 2*(*(1-θ[1])*(1-θ[1])log(1-θ[1]) + θ[1])/(3*θ[1]^2))-τ
+    end
+    return nlsolve(f1!, [τ]).zero[1]
+  end
+end
+
 function ρ2θ(ρ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
     return 1/(1-2*asin(ρ)/pi)
@@ -19,6 +39,19 @@ function ρ2θ(ρ::Union{Float64, Int}, copula::String)
   end
 end
 
+function τ2θ(τ::Float64, copula::String)
+  if copula == "gumbel"
+    return 1/(1-τ)
+  elseif copula == "clayton"
+    return 2*τ/(1-τ)
+  elseif copula == "frank"
+    return frankθ(τ)
+  elseif copula == "amh"
+    return AMHτ2θ(τ)
+  else
+  return 0.
+  end
+end
 
 function τ2λ(τ::Vector{Float64}, λ::Vector{Float64})
   if length(τ) == 1
@@ -45,11 +78,11 @@ function setmoλ!(λ::Vector{Float64}, ind::Vector{Int}, a::Float64)
 end
 
 
-using Combinatorics
-ind(k::Int, s::Vector{Vector{Int}}) = [k in s[i] for i in 1:size(s,1)]
-s = collect(combinations(1:3))
-s[[length(s[i]) == 2 for i in 1:size(s,1)]]
-τ2λ([0.1, 0.5, 0.8], [0.1, 0.2, .3, 1.0])
+#using Combinatorics
+#ind(k::Int, s::Vector{Vector{Int}}) = [k in s[i] for i in 1:size(s,1)]
+#s = collect(combinations(1:3))
+#s[[length(s[i]) == 2 for i in 1:size(s,1)]]
+#τ2λ([0.1, 0.5, 0.8], [0.1, 0.2, .3, 1.0])
 
 
 function AMHθ(ρ::Union{Float64, Int})
@@ -89,9 +122,18 @@ Generates data from Levy stable distribution woth parameters α = 1/θ, β = 1,
 """
 
 function levygen(θ::Union{Int, Float64}, a::Vector{Float64})
-  ϕ = pi*a-pi/2
+  p = invperm(sortperm(a))
+  ϕ = pi*rand(length(a))-pi/2
   v = quantile(Exponential(1.), rand(length(a)))
   γ = (cos(pi/(2*θ)))^θ
   v = ((cos.(pi/(2*θ)+(1/θ-1).*ϕ))./v).^(θ-1)
-  γ*v.*sin.(1/θ.*(pi/2+ϕ)).*(cos(pi/(2*θ)).*cos.(ϕ)).^(-θ)
+  v = γ*v.*sin.(1/θ.*(pi/2+ϕ)).*(cos(pi/(2*θ)).*cos.(ϕ)).^(-θ)
+  sort(v)[p]
 end
+
+
+AMHτ(θ) = (1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2))
+
+AMHτ(-0.9999999)
+
+2/11

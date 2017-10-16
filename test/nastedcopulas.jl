@@ -46,8 +46,8 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
     @test corkendall(x)[1,:] ≈ [1., 0.7560, 0.47368, 0.47368, 0.16666, 0.16666, 0.16666, 0.16666] atol=1.0e-1
     @test righttail(x[:,1], x[:,2]) ≈ 0.8158 atol=1.0e-1
-    @test righttail(x[:,2], x[:,3]) ≈ 0.5597 atol=1.0e-2
-    @test righttail(x[:,1], x[:,3]) ≈ 0.5597 atol=1.0e-2
+    @test righttail(x[:,2], x[:,3]) ≈ 0.5597 atol=1.0e-1
+    @test righttail(x[:,1], x[:,3]) ≈ 0.5597 atol=1.0e-1
     @test righttail(x[:,3], x[:,4]) ≈ 0.7999 atol=1.0e-1
     @test righttail(x[:,1], x[:,5]) ≈ 0.2182 atol=1.0e-1
   end

@@ -17,8 +17,12 @@
     @test ρ2θ(0.5, "gumbel") ≈ 1.5
     @test AMHθ(0.2) ≈ 0.4980977569203229
   end
-  @testset "marshal olkin copula" begin
+  @testset "getting parameter" begin
     @test τ2λ([0.405154], [4.2, 1.2]) ≈ [4.2, 1.2, 3.7] atol=1.0e-1
+    @test τ2θ(0.6, "frank") ≈ 7.929642284264058
+    @test τ2θ(0.5, "gumbel") ≈ 2.
+    @test τ2θ(1/3, "clayton") ≈ 1.
+    @test τ2θ(1/4, "amh") ≈ 0.8384520912688538
   end
   @testset "copula gen" begin
   c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
