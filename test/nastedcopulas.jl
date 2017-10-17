@@ -21,9 +21,9 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
     @test corkendall(x)[1:2,:] ≈ [1. 0.7619 0.72222 0.0909; 0.7619 1. 0.72222 0.0909] atol=1.0e-2
-    @test righttail(x[:,1], x[:,2]) ≈ 0.8206 atol=1.0e-1
-    @test righttail(x[:,2], x[:,3]) ≈ 0.7877 atol=1.0e-1
-    @test righttail(x[:,3], x[:,4]) ≈ 0.1221 atol=1.0e-2
+    @test tail(x[:,1], x[:,2], "r") ≈ 0.8206 atol=1.0e-1
+    @test tail(x[:,2], x[:,3], "r") ≈ 0.7877 atol=1.0e-1
+    @test tail(x[:,3], x[:,4], "r") ≈ 0.1221 atol=1.0e-2
   end
   @testset "single nasted" begin
     srand(43)
@@ -33,9 +33,9 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
     @test corkendall(x)[1:3,:] ≈ [1. 0.7619 0.52380 0.52380; 0.7619 1. 0.52380 0.52380; 0.52380 0.52380 1. 0.83606] atol=1.0e-2
-    @test righttail(x[:,1], x[:,2]) ≈ 0.82056 atol=1.0e-1
-    @test righttail(x[:,2], x[:,3]) ≈ 0.6089 atol=1.0e-1
-    @test righttail(x[:,3], x[:,4]) ≈ 0.87966 atol=1.0e-1
+    @test tail(x[:,1], x[:,2], "r") ≈ 0.82056 atol=1.0e-1
+    @test tail(x[:,2], x[:,3], "r") ≈ 0.6089 atol=1.0e-1
+    @test tail(x[:,3], x[:,4], "r") ≈ 0.87966 atol=1.0e-1
   end
   @testset "double nasted" begin
     srand(43)
@@ -45,11 +45,11 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
     @test corkendall(x)[1,:] ≈ [1., 0.7560, 0.47368, 0.47368, 0.16666, 0.16666, 0.16666, 0.16666] atol=1.0e-1
-    @test righttail(x[:,1], x[:,2]) ≈ 0.8158 atol=1.0e-1
-    @test righttail(x[:,2], x[:,3]) ≈ 0.5597 atol=1.0e-1
-    @test righttail(x[:,1], x[:,3]) ≈ 0.5597 atol=1.0e-1
-    @test righttail(x[:,3], x[:,4]) ≈ 0.7999 atol=1.0e-1
-    @test righttail(x[:,1], x[:,5]) ≈ 0.2182 atol=1.0e-1
+    @test tail(x[:,1], x[:,2], "r") ≈ 0.8158 atol=1.0e-1
+    @test tail(x[:,2], x[:,3], "r") ≈ 0.5597 atol=1.0e-1
+    @test tail(x[:,1], x[:,3], "r") ≈ 0.5597 atol=1.0e-1
+    @test tail(x[:,3], x[:,4], "r") ≈ 0.7999 atol=1.0e-1
+    @test tail(x[:,1], x[:,5], "r") ≈ 0.2182 atol=1.0e-1
   end
 end
 
@@ -88,16 +88,16 @@ end
   λₗ = (2^(-1/ρ2θ(Σ[2,3], "clayton")))
   λᵣ = (2-2.^(1./ρ2θ(Σ[9,10], "gumbel")))
   λamh = (Σ[1,20] >= 0.5)? 0.5 : 0.
-  @test lefttail(x[:,2], x[:,3]) ≈ λₗ atol=1.0e-1
-  @test lefttail(x[:,3], x[:,4]) ≈ λₗ atol=1.0e-1
-  @test lefttail(x[:,4], x[:,5]) ≈ λₗ atol=1.0e-1
-  @test lefttail(x[:,2], x[:,4]) ≈ λₗ atol=1.0e-1
-  @test lefttail(x[:,1], x[:,20]) ≈ λamh atol=1.0e-1
-  @test righttail(x[:,1], x[:,20]) ≈ 0 atol=1.0e-1
-  @test lefttail(x[:,9], x[:,10]) ≈ 0 atol=1.0e-1
-  @test righttail(x[:,9], x[:,10]) ≈ λᵣ atol=1.0e-1
-  @test righttail(x[:,7], x[:,8]) ≈ 0 atol=1.0e-1
-  @test lefttail(x[:,7], x[:,8]) ≈ 0 atol=1.0e-1
+  @test tail(x[:,2], x[:,3], "l") ≈ λₗ atol=1.0e-1
+  @test tail(x[:,3], x[:,4], "l") ≈ λₗ atol=1.0e-1
+  @test tail(x[:,4], x[:,5], "l") ≈ λₗ atol=1.0e-1
+  @test tail(x[:,2], x[:,4], "l") ≈ λₗ atol=1.0e-1
+  @test tail(x[:,1], x[:,20], "l") ≈ λamh atol=1.0e-1
+  @test tail(x[:,1], x[:,20], "r") ≈ 0 atol=1.0e-1
+  @test tail(x[:,9], x[:,10], "l") ≈ 0 atol=1.0e-1
+  @test tail(x[:,9], x[:,10], "r") ≈ λᵣ atol=1.0e-1
+  @test tail(x[:,7], x[:,8], "r") ≈ 0 atol=1.0e-1
+  @test tail(x[:,7], x[:,8], "l") ≈ 0 atol=1.0e-1
   d=["gumbel" => [1,2,3,4], "Marshal-Olkin" => [5,6,7]]
   srand(44)
   x = copulamix(100000, Σ, d, [2., 1.8, 1.3, 0.6])
