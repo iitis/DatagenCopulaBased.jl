@@ -15,7 +15,7 @@
     @test ρ2θ(0.3090169943749474, "clayton") ≈ 0.5
     @test ρ2θ(0.08694, "frank") ≈ 0.5 atol=1.0e-3
     @test ρ2θ(0.5, "gumbel") ≈ 1.5
-    @test AMHθ(0.2) ≈ 0.4980977569203229
+    @test AMHθ(0.2) ≈ 0.5 atol=1.0e-1
   end
   @testset "getting parameter" begin
     @test τ2λ([0.405154], [4.2, 1.2]) ≈ [4.2, 1.2, 3.7] atol=1.0e-1

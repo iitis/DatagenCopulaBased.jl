@@ -5,7 +5,7 @@ lefttail(v1::Vector{T}, v2::Vector{T}, α::T = 0.002) where T <: AbstractFloat =
          sum((v1 .> α) .* (v2 .> α))./(length(v1)*(1-α))
 
 
-D(θ) = 1/θ*(quadgk(i -> i/(exp(i)-1), 0, θ)[1])
+D(θ::Float64) = 1/θ*(quadgk(i -> i/(exp(i)-1), 0, θ)[1])
 
 function frankθ(τ::Float64)
   function f1!(θ, fvec)
@@ -84,18 +84,25 @@ end
 #s[[length(s[i]) == 2 for i in 1:size(s,1)]]
 #τ2λ([0.1, 0.5, 0.8], [0.1, 0.2, .3, 1.0])
 
+using QuadGK
+using NLsolve
 
-function AMHθ(ρ::Union{Float64, Int})
-  if ρ >= 0.5
-    return 0.999999
-  elseif -0.3 < ρ <0.5
+
+dilog(x::Float64) = quadgk(t -> log(t)/(1-t), 1, x)[1]
+
+
+function AMHθ(ρ::Float64)
+  if ρ == 0.
+    return 0.
+  elseif -0.272 < ρ < 0.475
     function f1!(θ, fvec)
-      fvec[1] = sin(pi/2*(1 - 2*(*(1-θ[1])*(1-θ[1])log(1-θ[1]) + θ[1])/(3*θ[1]^2)))-ρ
+      p = θ[1]
+      fvec[1] = (12*(1+p)*dilog(1-p)-24*(1-p)*log(1-p))/p^2-3*(p+12)/p-ρ
     end
     return nlsolve(f1!, [ρ]).zero[1]
   end
+  0.99999999
 end
-
 
 
 function logseriescdf(p::Float64)
@@ -108,6 +115,8 @@ function logseriescdf(p::Float64)
   end
   cdfs
 end
+0.0001*log(0.0001)
+
 
 function logseriesquantile(p::Float64, v::Vector{Float64})
   w = logseriescdf(p)
