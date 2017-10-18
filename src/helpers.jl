@@ -158,7 +158,7 @@ function ρ2θ(ρ::Union{Float64, Int}, copula::String)
     τ = (ρ < 0)? -ρ2τ(-ρ): ρ2τ(ρ)
     return 2*τ/(1-τ)
   elseif copula == "frank"
-    return Frankθ(ρ)
+    return frankθ(ρ)
   elseif copula == "amh"
     return AMHθ(ρ)
   end
@@ -181,7 +181,7 @@ function AMHθ(ρ::Float64)
   0.99999999
 end
 
-function Frankθ(ρ::Float64)
+function frankθ(ρ::Float64)
   function f1!(θ, fvec)
     fvec[1] = 1+12*(Debye(θ[1], 2)- Debye(θ[1]))/θ[1]-ρ
   end

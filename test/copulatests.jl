@@ -11,26 +11,32 @@
     @test tail(v1, v2,  "l", 0.1) ≈ 0.5
     @test tail(v1, v2, "r", 0.1) ≈ 0.5
   end
-  @testset "correlations vs parameter" begin
-    @test ρ2θ(0.3090169943749474, "clayton") ≈ 0.5227066824282697
-    @test ρ2θ(1/3, "frank") ≈ 2.116 atol=1.0e-3
-    @test ρ2θ(0.5, "gumbel") ≈ 1.5390534821085031
-    @test AMHθ(0.2) ≈ 0.5 atol=1.0e-1
-  end
-  @testset "getting parameter" begin
-    @test τ2λ([0.405154], [4.2, 1.2]) ≈ [4.2, 1.2, 3.7] atol=1.0e-1
+  @testset "parameter formo kendall's cor" begin
+    @test Debye(0.5, 1) ≈ 0.8819271567906056
+    @test τ2λ([0.4], [4.2, 1.2]) ≈ [4.2, 1.2, 3.6]
     @test τ2θ(0.6, "frank") ≈ 7.929642284264058
+    @test frankτ2θ(0.6) ≈ 7.929642284264058
     @test τ2θ(0.5, "gumbel") ≈ 2.
     @test τ2θ(1/3, "clayton") ≈ 1.
     @test τ2θ(1/4, "amh") ≈ 0.8384520912688538
+    @test AMHτ2θ(1/4) ≈ 0.8384520912688538
   end
-  @testset "copula gen" begin
-  c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
-  @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
+  @testset "parameter from pearson cor" begin
+    @test dilog(0.5) ≈ 0.5822405264650125
+    @test ρ2θ(1/3, "clayton") ≈ 0.5799054034685394
+    @test ρ2θ(1/3, "frank") ≈ 2.1164969117225363
+    @test ρ2θ(0.5, "gumbel") ≈ 1.5390534821085031
+    @test ρ2θ(0.2, "amh") ≈ 0.5168580913147318
+    @test frankθ(1/3) ≈ 2.1164969117225363
+    @test AMHθ(0.2) ≈ 0.5168580913147318
   end
 end
 
 @testset "data generators" begin
+  @testset "copula gen" begin
+    c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
+    @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
+  end
   @testset "logseries dist" begin
     @test logseriescdf(0.01)[1:3] ≈ [0.0, 0.994992, 0.999967] atol=1.0e-5
     @test logseriesquantile(0.9, [0.25, 0.5, 0.75]) == [1, 2, 5]
@@ -40,6 +46,10 @@ end
     @test std(v) ≈ 0.687 atol=1.0e-2
     @test skewness(v) ≈ 3.1 atol=1.0e-2
     @test kurtosis(v) ≈ 13.5 atol=1.0
+  end
+  @testset "stable levy dist" begin
+    srand(43)
+    @test levygen(2., [0.2, 0.4, 0.6, 0.8]) ≈ [0.517123, 0.858979, 4.70249, 35.2474] atol=1.0e-4
   end
 end
 
