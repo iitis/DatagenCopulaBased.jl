@@ -170,11 +170,10 @@ end
 function testθ(θ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
     θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
+  elseif copula == "amh"
+    1 > θ > 0 || throw(AssertionError("generator not supported for θ ≥ 1 or θ ≤ 0"))
   else
     θ > 0 || throw(AssertionError("generaton not supported for θ ≤ 0"))
-    if copula == "amh"
-      1 > θ || throw(AssertionError("generator not supported for θ ≥ 1"))
-    end
   end
 end
 

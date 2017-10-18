@@ -30,7 +30,7 @@ are Pearson correlation coefficents fulfilling
 ```jldoctest
 julia> srand(43);
 
-julia> archcopulagen(10, [4., 11.])
+julia> archcopulagen(10, [4., 11.], "frank")
 10×3 Array{Float64,2}:
  0.180975  0.386303   0.879254
  0.775377  0.247895   0.144803
@@ -47,6 +47,11 @@ julia> archcopulagen(10, [4., 11.])
 
 function archcopulagen(t::Int, θ::Vector{Float64}, copula::String; rev::Bool = false,
                                                                    cor::String = "")
+  if ((cor == "pearson") | (cor == "kendall"))
+    θ = map(i -> usebivρ(i, copula, cor), θ)
+  else
+    map(i -> testbivθ(i, copula), θ)
+  end
   u = rand(t,1)
   for i in 1:length(θ)
     u = hcat(u, rand2cop(u[:, i], θ[i], copula))
@@ -54,101 +59,38 @@ function archcopulagen(t::Int, θ::Vector{Float64}, copula::String; rev::Bool = 
   rev? 1-u : u
 end
 
-#=
-function frankcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false)
-  u = rand(t, 1)
-  !(0. in θ) || throw(AssertionError("not supported for θ parameter = 0"))
-  if pearsonrho
-    maximum(abs.(θ)) < 1 || throw(AssertionError("correlation must be in range (-1, 1)"))
-    θ = map(r -> ρ2θ(r, "frank"), θ)
+"""
+
+Clayton bivariate sub-copulas with parameters (θᵢ ≥ -1) ^ ∧ (θᵢ ≠ 0).
+Ali-Mikhail-Haq bivariate sub-copulas with parameters -1 ≥ θᵢ ≥ 1
+Frank bivariate sub-copulas with parameters (θᵢ ≠ 0)
+"""
+function testbivθ(θ::Union{Float64}, copula::String)
+  !(0. in θ) || throw(AssertionError("not supported for θ = 0"))
+  if copula == "clayton"
+    θ >= -1 || throw(AssertionError("not supported for θ < -1"))
+  elseif copula == "amh"
+    -1 <= θ <= 1|| throw(AssertionError("not supported for θ < -1 or > 1"))
   end
-  for i in 1:length(θ)
-    u = hcat(u, rand2cop(u[:, i], θ[i], "frank"))
-  end
-  u
 end
 
 """
 
-  claytoncopulagen(t::Int = 1000, θ::Vector{Float64}; pearsonrho, reverse)
-
-Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
-To generate data uses Clayton bivariate sub-copulas with parameters (θᵢ ≥ -1) ^ ∧ (θᵢ ≠ 0).
-If pearsonrho = true parameters are Pearson correlation coefficents
-fulfulling (-1 > θᵢ > 1) ∧ (θᵢ ≠ 0)
-If reversed = true, returns data from reversed Clayton bivariate subcopulas.
-
-```jldoctest
-julia> srand(43);
-
-julia> claytoncopulagen(9, [-0.9, 0.9, .7]; pearsonrho = true)
-9×4 Array{Float64,2}:
- 0.180975  0.942164   0.872673   0.970384
- 0.775377  0.230724   0.340819   0.347218
- 0.888934  0.0579034  0.190519   0.441244
- 0.924876  0.0360802  0.0294198  0.0368123
- 0.408278  0.461712   0.889275   0.850588
- 0.912603  0.0433313  0.0315759  0.0300926
- 0.828727  0.270476   0.274191   0.381278
- 0.400537  0.469634   0.633396   0.405873
- 0.429437  0.440285   0.478058   0.640165
-```
+Clayton, Frank Pearson/Kendall correlation coefficents fulfulling (-1 > θᵢ > 1) ∧ (θᵢ ≠ 0)
+Ali-Mikhail-Haq Pearson correlation coefficents fulfilling -0.2816 > θᵢ >= .5.
 """
 
-function claytoncopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
-  minimum(θ) >= -1 || throw(AssertionError("not supported for parameter < -1"))
-  !(0. in θ) || throw(AssertionError("not supported for θ parameter = 0"))
-  if pearsonrho
-    maximum(θ) < 1 || throw(AssertionError("correlation coeficient must be in range (-1,1)"))
-    θ = map(r -> ρ2θ(r, "clayton"), θ)
+function usebivρ(ρ::Float64, copula::String, cor::String)
+  if copula == "amh"
+      -0.2816 < ρ <= 0.5 || throw(AssertionError("correlation coeficiant must fulfill -0.2816 < ρ <= 0.5"))
+    if cor == "kendall"
+      -0.18 < ρ < 1/3 || throw(AssertionError("correlation coeficiant must fulfill -0.2816 < ρ <= 1/3"))
+    end
+  else
+    -1 < ρ < 1 || throw(AssertionError("correlation coeficiant must fulfill -1 < ρ < 1"))
+    !(0. in ρ) || throw(AssertionError("not supported for ρ = 0"))
   end
-  u = rand(t,1)
-  for i in 1:length(θ)
-    u = hcat(u, rand2cop(u[:, i], θ[i], "clayton"))
-  end
-  reverse? 1-u : u
-end
-
-"""
-
-  amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool, reverse::Bool)
-
-Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
-To generate data uses Ali-Mikhail-Haq bivariate sub-copulas with parameters -1 ≥ θᵢ ≥ 1.
-If pearsonrho = true parameters are Pearson correlation coefficents fulfilling -0.2816 > θᵢ >= .5.
-If reversed = true returns data from reversed Ali-Mikhail-Haq bivariate sub-copulas.
-
-```jldoctest
-julia> srand(43);
-
-julia> amhcopulagen(10, [1, 0.3])
-10×3 Array{Float64,2}:
- 0.180975  0.441152   0.996646
- 0.775377  0.225086   0.177177
- 0.888934  0.327726   0.977642
- 0.924876  0.291837   0.108233
- 0.408278  0.187564   0.402945
- 0.912603  0.848985   0.830843
- 0.828727  0.0571042  0.471947
- 0.400537  0.0758159  0.913208
- 0.429437  0.527526   0.405125
- 0.955881  0.919363   0.838458
-```
-"""
-=#
-function amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
-  minimum(θ) >= -1 || throw(AssertionError("not supported for parameter < -1"))
-  maximum(θ) <= 1 || throw(AssertionError("not supported for parameter > 1"))
-  if pearsonrho
-    maximum(θ) <= 0.5 || throw(AssertionError("not supported for correlation > 0.5"))
-    minimum(θ) > -0.2816 || throw(AssertionError("not supported for correlation <= -0.2816"))
-    θ = map(r -> ρ2θ(r, "amh"), θ)
-  end
-  u = rand(t,1)
-  for i in 1:length(θ)
-    u = hcat(u, rand2cop(u[:, i], θ[i], "amh"))
-  end
-  reverse? 1-u : u
+  (cor == "pearson")? ρ2θ(ρ, copula): τ2θ(ρ, copula)
 end
 
 
@@ -171,7 +113,7 @@ end
 
 
 """
-  subcopdatagen(t::Int, n::Int, cli::Array, sti::Array, std::Vector)
+  copulamixbv(t::Int, n::Int, cli::Array, sti::Array, std::Vector)
 
 Returns Matrix{Float} t x n of t realisations of n variate random variable with gaussian marginals
 with (0, std[i]) parameters. Data have generally gaussian copula, clayton subcopula at
