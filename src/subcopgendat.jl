@@ -20,17 +20,17 @@ function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
 end
 
 """
-  frankcopulagen(t::Int, θ::Vector{Float64})
+  archcopulagen(t::Int, θ::Vector{Float64})
 
 Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
-To generate data uses Frank bivariate sub-copulas with parameters θᵢ ≠ 0 for each
-neighbour marginals (i'th and i+1'th). If pearsonrho = true, parameters
-are Pearson correlation coefficents fulfilling (-1 > θᵢ > 1) ∧ (θᵢ ≠ 0).
+To generate data uses Archimedean one parameter bivariate sub-copulas with parameters θᵢ ≠ 0 for each
+neighbour marginals (i'th and i+1'th). If cor == "pearson", parameters
+are Pearson correlation coefficents fulfilling
 
 ```jldoctest
 julia> srand(43);
 
-julia> frankcopulagen(10, [4., 11.])
+julia> archcopulagen(10, [4., 11.])
 10×3 Array{Float64,2}:
  0.180975  0.386303   0.879254
  0.775377  0.247895   0.144803
@@ -44,6 +44,17 @@ julia> frankcopulagen(10, [4., 11.])
  0.955881  0.953623   0.969038
 ```
 """
+
+function archcopulagen(t::Int, θ::Vector{Float64}, copula::String; rev::Bool = false,
+                                                                   cor::String = "")
+  u = rand(t,1)
+  for i in 1:length(θ)
+    u = hcat(u, rand2cop(u[:, i], θ[i], copula))
+  end
+  rev? 1-u : u
+end
+
+#=
 function frankcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false)
   u = rand(t, 1)
   !(0. in θ) || throw(AssertionError("not supported for θ parameter = 0"))
@@ -124,7 +135,7 @@ julia> amhcopulagen(10, [1, 0.3])
  0.955881  0.919363   0.838458
 ```
 """
-
+=#
 function amhcopulagen(t::Int, θ::Vector{Float64}; pearsonrho::Bool = false, reverse::Bool = false)
   minimum(θ) >= -1 || throw(AssertionError("not supported for parameter < -1"))
   maximum(θ) <= 1 || throw(AssertionError("not supported for parameter > 1"))

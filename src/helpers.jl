@@ -129,14 +129,15 @@ Returns Ali-Mikhail-Haq copula θ parameter, givem Kendall's τ
 
 
 function AMHτ2θ(τ::Float64)
-  if τ >= 1/3
+  if τ >= 0.28
     return 0.999999
-  elseif -2/11 < τ <1/3
+  elseif -2/11 < τ < 0.28
     function f1!(θ, fvec)
       fvec[1] = (1 - 2*(*(1-θ[1])*(1-θ[1])log(1-θ[1]) + θ[1])/(3*θ[1]^2))-τ
     end
     return nlsolve(f1!, [τ]).zero[1]
   end
+  -0.999999999
 end
 
 # pearson ρ to copulas parameter

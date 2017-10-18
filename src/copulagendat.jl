@@ -127,17 +127,17 @@ end
 
 """
 
-  claytoncopulagen(t::Int, n::Int, θ::Float64)
+  archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String; rev::Bool = false)
 
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Clayton
-copula with parameter θ > 0.
-If pearsonrho = true parameter is Pearson correlation coefficent fulfilling 0 ≥ θ > 1.
-If reversed returns data from reversed Clayton copula.
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Archimedean
+one parameter copula.
+
+If reversed returns data from reversed copula.
 
 ```jldoctest
 julia> srand(43);
 
-julia> claytoncopulagen(10, 2, 1)
+julia> archcopulagen(10, 2, 1, "clayton")
 10×2 Array{Float64,2}:
   0.325965  0.984025
   0.364814  0.484407
@@ -152,127 +152,51 @@ julia> claytoncopulagen(10, 2, 1)
  ```
 """
 
-function claytoncopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
-                                                                  reverse::Bool = false)
-  θ > 0 || throw(AssertionError("generaton not supported for θ ≤ 0"))
-  if pearsonrho
-    θ < 1 || throw(AssertionError("correlation coeficient > 1"))
-    θ = θ = ρ2θ(θ, "clayton")
-  end
-  u = copulagen("clayton", rand(t,n+1), θ)
-  reverse? 1-u: u
-end
-
-
-"""
-  frankcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Frank
-copula with parameter θ > 0.
-If pearsonrho = true parameter is Pearson correlation coefficent fulfilling 0 > θ > 1.
-
-```jldoctest
-
-julia> srand(43);
-
-julia> frankcopulagen(10, 3, 3.)
-10×3 Array{Float64,2}:
- 0.330367   0.980024  0.197786
- 0.386703   0.503187  0.784147
- 0.585595   0.991504  0.711856
- 0.609814   0.632656  0.853511
- 0.14014    0.340145  0.179834
- 0.908379   0.929926  0.876022
- 0.291556   0.766821  0.938477
- 0.0587265  0.834648  0.557912
- 0.386399   0.304321  0.155315
- 0.962869   0.950704  0.759655
-```
-"""
-function frankcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false)
-  θ > 0 || throw(AssertionError("generator not supported for θ ≤ 0"))
-  if pearsonrho
-    θ < 1 || throw(AssertionError("correlation coeficiant must fulfill < 1"))
-    θ = ρ2θ(θ, "frank")
-  end
-  copulagen("frank", rand(t,n+1), θ)
-end
-
-"""
-  amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool, everse::Bool)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Ali-Mikhail-Haq
-copula with parameter 0 > θ > 1.
-If pearsonrho = true, parameter is Pearson correlation coefficent fulfilling 0 > θ > 0.5.
-If reversed = true, returns data from reversed Ali-Mikhail-Haq copula.
-
-```jldoctest
-
-julia> srand(43);
-
-julia> amhcopulagen(10, 2, 0.5)
-10×2 Array{Float64,2}:
- 0.494523   0.993549
- 0.266095   0.417142
- 0.0669154  0.960595
- 0.510007   0.541976
- 0.0697899  0.292847
- 0.754909   0.809849
- 0.0352515  0.588425
- 0.32647    0.973168
- 0.352815   0.247616
- 0.938565   0.918152
-```
-"""
-
-function amhcopulagen(t::Int, n::Int, θ::Float64; pearsonrho::Bool = false, reverse::Bool = false)
-  1 > θ > 0 || throw(AssertionError("generator not supported for θ ≤ 0 or θ ≥ 1"))
-  if pearsonrho
-    maximum(θ) < 0.5 || throw(AssertionError("not supported for correlation ≥ 0.5"))
-    θ = ρ2θ(θ, "amh")
-  end
-  u = copulagen("amh", rand(t,n+1), θ)
-  reverse? 1-u : u
-end
-
-"""
-  gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
-                                                          reverse::Bool = false)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Gumbel
-copula with parameter θ ≥ 1.
-If pearsonrho = true, parameter is Pearson correlation coefficent fulfilling 0 ≥ θ ≥ 1.
-If reversed = true, returns data from reversed Gumbel copula.
-
-```jldoctest
-julia> srand(43);
-
-julia> gumbelcopulagen(10, 3, 3.5)
-10×3 Array{Float64,2}:
- 0.550199  0.574653   0.486977
- 0.352515  0.0621575  0.072297
- 0.31809   0.112819   0.375482
- 0.652536  0.691707   0.645668
- 0.988459  0.989946   0.986297
- 0.731589  0.532971   0.678277
- 0.62426   0.625661   0.851237
- 0.335811  0.117504   0.329193
- 0.504036  0.672722   0.561857
- 0.326098  0.459547   0.117946
- ```
- """
-
-function gumbelcopulagen(t::Int, n::Int, θ::Union{Float64, Int}; pearsonrho::Bool = false,
-                                                                 reverse::Bool = false)
-  if pearsonrho
-    0 < θ < 1 || throw(AssertionError("generaton not supported for correlation <= 0 v >= 1"))
-    θ = ρ2θ(θ, "gumbel")
+function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
+                                                              rev::Bool = false,
+                                                              cor::String = "")
+  if cor == "pearson"
+    θ = useρ(θ , copula)
+  elseif cor == "kendall"
+    θ = useτ(θ , copula)
   else
-    θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
+    testθ(θ, copula)
   end
-  u = copulagen("gumbel", rand(t,n+1), θ)
-  reverse? 1-u : u
+  u = copulagen(copula, rand(t,n+1), θ)
+  rev? 1-u: u
 end
+
+
+function testθ(θ::Union{Float64, Int}, copula::String)
+  if copula == "gumbel"
+    θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
+  else
+    θ > 0 || throw(AssertionError("generaton not supported for θ ≤ 0"))
+    if copula == "amh"
+      1 > θ || throw(AssertionError("generator not supported for θ ≥ 1"))
+    end
+  end
+end
+
+function useρ(ρ::Float64, copula::String)
+  0 < ρ < 1 || throw(AssertionError("correlation coeficiant must fulfill 0 < ρ < 1"))
+  if copula == "amh"
+    0 < ρ < 0.5 || throw(AssertionError("correlation coeficiant must fulfill 0 < ρ < 0.5"))
+  end
+  ρ2θ(ρ, copula)
+end
+
+
+function useτ(τ::Float64, copula::String)
+  0 < τ < 1 || throw(AssertionError("correlation coeficiant must fulfill 0 < τ < 1"))
+  if copula == "amh"
+    0 < τ < 1/3 || throw(AssertionError("correlation coeficiant must fulfill 0 < τ < 1/3"))
+  end
+  τ2θ(τ, copula)
+end
+
+
+
 
 """
   marshalolkincopulagen(t::Int, λ::Vector{Float64})
@@ -390,7 +314,8 @@ julia> cormatgen(4)
 
 function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
   1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
-  x = ordered? claytoncopulagen(4*n, [fill(ρ, (n-1))...]; pearsonrho = true): claytoncopulagen(4*n, n, ρ; pearsonrho = true)
+  ρar = [fill(ρ, (n-1))...]
+  x = ordered? archcopulagen(4*n, ρar, "clayton"; cor = "pearson"): archcopulagen(4*n, n, ρ, "clayton"; cor = "pearson")
   convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n])
   altersing? cor(x.*transpose(rand([-1, 1],n))): cor(x)
 end
