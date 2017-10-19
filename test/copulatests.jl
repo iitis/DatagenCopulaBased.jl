@@ -98,13 +98,14 @@ end
   @test cor(x) ≈ [1. 0.3 0.3; 0.3 1. 0.3; 0.3 0.3 1.] atol=1.0e-2
   x = frechetcopulagen(500000, 3, 1.)
   ret = (x[:, 1] .<  0.2).*(x[:, 2] .<  0.3).*(x[:, 3] .<  0.5)
-  @test length(find(ret))/size(x,1) ≈ 0.2 atol=1.0e-2
+  @test length(find(ret))/size(x,1) ≈ 0.2 atol=1.0e-3
   ret = (x[:, 1] .<  0.8).*(x[:, 2] .<  0.3).*(x[:, 3] .<  0.5)
-  @test length(find(ret))/size(x,1) ≈ 0.3 atol=1.0e-2
+  @test length(find(ret))/size(x,1) ≈ 0.3 atol=1.0e-3
   ret = (x[:, 1] .<  0.8).*(x[:, 2] .<  0.9).*(x[:, 3] .<  0.5)
-  @test length(find(ret))/size(x,1) ≈ 0.5 atol=1.0e-2
+  @test length(find(ret))/size(x,1) ≈ 0.5 atol=1.0e-3
+  srand(43)
   x = frechetcopulagen(500000, 2, .0)
-  @test cor(x) ≈ [1. 0.; 0. 1.] atol=1.0e-3
+  @test cor(x) ≈ [1. 0.; 0. 1.] atol=1.0e-2
 end
 @testset "gumbel copula" begin
   srand(43)

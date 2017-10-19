@@ -106,6 +106,8 @@ function frechetcopulagen(t::Int, n::Int, α::Float64)
   end
   u[p,:]
 end
+
+
 # Archimedean copulas
 
 """

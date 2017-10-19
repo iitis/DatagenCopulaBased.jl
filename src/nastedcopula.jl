@@ -81,6 +81,26 @@ function copulagen(copula::String, r::Matrix{T}, θ::Vector{Float64}) where T <:
   r
 end
 
+"""
+  nastedfrechetcopulagen(t::Int, α::Vector{Float64})
+
+Retenares data from nasted hierarchical frechet copula
+"""
+function nastedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
+  α = vcat([0.], α)
+  β = vcat([0.], β)
+  n = length(α)
+  u = rand(t, n)
+  p = invperm(sortperm(u[:,1]))
+  l = floor.(Int, t.*α)
+  lb = floor.(Int, t.*β)
+  for i in 2:n
+    u[1:l[i],i] = u[1:l[i], i-1]
+    r = l[i]+1:lb[i]+l[i]
+    u[r,i] = 1-u[r,i-1]
+  end
+  u[p,:]
+end
 
 # copula mix
 

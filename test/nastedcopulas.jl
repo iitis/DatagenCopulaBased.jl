@@ -50,6 +50,30 @@ end
   end
 end
 
+@testset "nasted frechet copula" begin
+  srand(43)
+  x = nastedfrechetcopulagen(500000, [0.9, 0.6, 0.2])
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test cor(x) ≈ [1. 0.9 0.6 0.2; 0.9 1. 0.6 0.2; 0.6 0.6 1. 0.2; 0.2 0.2 0.2 1.] atol=1.0e-2
+  @test tail(x[:,1], x[:,2], "r") ≈ 0.9 atol=1.0e-1
+  @test tail(x[:,1], x[:,2], "l") ≈ 0.9 atol=1.0e-1
+  @test tail(x[:,1], x[:,4], "r") ≈ 0.2 atol=1.0e-1
+  srand(43)
+  x = nastedfrechetcopulagen(500000, [0.8, 0.5], [0.2, 0.3]);
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  cor(x) ≈ [1. 0.6 0.2; 0.6 1. 0.2; 0.2 0.2 1.]
+  @test tail(x[:,1], x[:,2], "r") ≈ 0.8 atol=1.0e-1
+  @test tail(x[:,2], x[:,3], "r") ≈ 0.5 atol=1.0e-1
+  srand(43)
+  x = nastedfrechetcopulagen(500000, [0., 0.], [1., 1.])
+  @test cor(x[:,1], x[:,2]) ≈ -1 atol=1.0e-3
+  @test length(find((x[:, 1] .<  0.9).*(x[:, 2] .<  0.4)))/length(x[:,1]) ≈ 0.3 atol=1.0e-3
+  @test length(find((x[:, 2] .<  0.8).*(x[:, 3] .<  0.4)))/length(x[:,1]) ≈ 0.2 atol=1.0e-3
+end
 
 @testset "copula mixture helpers" begin
   Σ = [1 0.5 0.5 0.6; 0.5 1 0.5 0.6; 0.5 0.5 1. 0.6; 0.6 0.6 0.6 1.]
