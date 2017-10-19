@@ -4,6 +4,10 @@
   @testset "axiliary functions" begin
     srand(43)
     @test cormatgen(2) ≈ [1.0 0.911683; 0.911683 1.0] atol=1.0e-5
+    srand(44)
+    @test cormatgen(3, 0.8, true, false) ≈ [ 1.0 0.586417 0.461157; 0.586417 1.0 0.732091; 0.461157 0.732091 1.0] atol=1.0e-5
+    srand(44)
+    @test cormatgen(3, 0.8, true, true) ≈ [ 1.0 0.586417 -0.461157; 0.586417 1.0 -0.732091; -0.461157 -0.732091 1.0] atol=1.0e-5
   end
   @testset "tail dependencies" begin
     v1 = vcat(zeros(5), 0.5*ones(5), zeros(5), 0.5*ones(70), ones(5), 0.5*ones(5), ones(5));

@@ -326,8 +326,12 @@ julia> cormatgen(4)
 
 function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
   1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
-  ρar = [fill(ρ, (n-1))...]
-  x = ordered? archcopulagen(4*n, ρar, "clayton"; cor = "pearson"): archcopulagen(4*n, n, ρ, "clayton"; cor = "pearson")
+  x = zeros(4*n,n)
+  if ordered
+    x = archcopulagen(4*n, [fill(ρ, (n-1))...], "clayton"; cor = "pearson")
+  else
+    x = archcopulagen(4*n, n, ρ, "clayton"; cor = "pearson")
+  end
   convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n])
   altersing? cor(x.*transpose(rand([-1, 1],n))): cor(x)
 end
