@@ -82,7 +82,7 @@ function copulagen(copula::String, r::Matrix{T}, θ::Vector{Float64}) where T <:
 end
 
 """
-  nastedfrechetcopulagen(t::Int, α::Vector{Float64})
+  nastedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64})
 
 Retenares data from nasted hierarchical frechet copula
 """
