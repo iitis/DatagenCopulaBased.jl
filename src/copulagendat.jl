@@ -72,14 +72,15 @@ end
 
 
 """
-  productcopula(t::Int, n::Int)
+  function frechetcopula(t::Int, n::Int, α::Float64
 
-Returns t realisation of n variate data generated from produce (independent) copula
+Returns t realisation of n variate data generated from one parameter frechet copula
+being a combination of maximal copla with  weight α and independent copula with  weight 1-α
 
 ```jldoctest
 julia> srand(43);
 
-julia> productcopula(10, 2)
+julia> frechetcopula(10, 2, 0.)
 10×2 Array{Float64,2}:
  0.180975  0.661781
  0.775377  0.0742681
@@ -93,8 +94,18 @@ julia> productcopula(10, 2)
  0.955881  0.851275
 ```
 """
-productcopula(t::Int, n::Int) = rand(t,n)
 
+
+function frechetcopulagen(t::Int, n::Int, α::Float64)
+  0 <= α <=1 || throw(AssertionError("generaton not supported for α ∉ [0,1]"))
+  u = rand(t, n)
+  p = invperm(sortperm(u[:,1]))
+  l = floor(Int, t*α)
+  for i in 1:n
+    u[1:l,i] = u[1:l, 1]
+  end
+  u[p,:]
+end
 # Archimedean copulas
 
 """

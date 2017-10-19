@@ -87,12 +87,24 @@ end
   convertmarg!(xt, Normal)
   @test cor(xt) ≈ [1. rho; rho 1.] atol=1.0e-2
 end
-@testset "product copula" begin
+@testset "frechet copula" begin
   srand(43)
-  x = productcopula(500000, 2);
+  x = frechetcopulagen(500000, 3, 0.3);
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-  @test tail(x[:,1], x[:,2], "l") ≈ 0 atol=1.0e-2
-  @test tail(x[:,1], x[:,2], "r") ≈ 0 atol=1.0e-2
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test tail(x[:,1], x[:,2], "l") ≈ 0.3 atol=1.0e-1
+  @test tail(x[:,1], x[:,2], "r") ≈ 0.3 atol=1.0e-1
+  @test cor(x) ≈ [1. 0.3 0.3; 0.3 1. 0.3; 0.3 0.3 1.] atol=1.0e-2
+  x = frechetcopulagen(500000, 3, 1.)
+  ret = (x[:, 1] .<  0.2).*(x[:, 2] .<  0.3).*(x[:, 3] .<  0.5)
+  @test length(find(ret))/size(x,1) ≈ 0.2 atol=1.0e-2
+  ret = (x[:, 1] .<  0.8).*(x[:, 2] .<  0.3).*(x[:, 3] .<  0.5)
+  @test length(find(ret))/size(x,1) ≈ 0.3 atol=1.0e-2
+  ret = (x[:, 1] .<  0.8).*(x[:, 2] .<  0.9).*(x[:, 3] .<  0.5)
+  @test length(find(ret))/size(x,1) ≈ 0.5 atol=1.0e-2
+  x = frechetcopulagen(500000, 2, .0)
+  @test cor(x) ≈ [1. 0.; 0. 1.] atol=1.0e-3
 end
 @testset "gumbel copula" begin
   srand(43)

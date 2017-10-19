@@ -9,5 +9,5 @@ import DatagenCopulaBased: logseriescdf, logseriesquantile, τ2λ, norm2unifind,
 import DatagenCopulaBased: frankτ2θ, dilog, frankθ
 
 include("copulatests.jl")
-include("bivariatecopulas.jl")
-include("nastedcopulas.jl")
+#include("bivariatecopulas.jl")
+#include("nastedcopulas.jl")
