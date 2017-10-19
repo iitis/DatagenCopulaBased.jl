@@ -113,43 +113,22 @@ end
 
 
 """
-  copulamixbv(t::Int, n::Int, cli::Array, sti::Array, std::Vector)
+  ccopulamixbv(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
 
-Returns Matrix{Float} t x n of t realisations of n variate random variable with gaussian marginals
-with (0, std[i]) parameters. Data have generally gaussian copula, clayton subcopula at
-cli indices and tstudent copula at sti indices. Obviously 0 .< cli .<= n and  0 .< sli .<= n
+Returns Matrix{Float} t x n of t realisations of n variate uniform random variable
+given a correlation matrix. Other than Gaussian copulas subcopulas are indicated in inds =
+[copulaname::String, number_of_marginal_vatiables::Vector{Int}]
 """
 
-VVI = Vector{Vector{Int}}
 
-function copulamixbv(t::Int, n::Int = 30, cli::VVI = [[]], fi::VVI = [[]], amhi::VVI = [[]], ti::Array = [])
-  Σ = cormatgen(n, 0.8,true,true)
+function copulamixbv(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
   z = gausscopulagen(t, Σ)
-  if cli !=[]
-    for i in 1:length(cli)
-      j = cli[i]
-      θ = ρ2θ(Σ[j[1],j[2]], "clayton")
-      z[:,j[2]] = rand2cop(z[:,j[1]], θ, "clayton")
-    end
-    for i in 1:length(fi)
-      j = fi[i]
-      θ = ρ2θ(Σ[j[1],j[2]], "frank")
-      z[:,j[2]] = rand2cop(z[:,j[1]], θ, "frank")
-    end
-    for i in 1:length(amhi)
-      j = amhi[i]
-      ρ = Σ[j[1],j[2]]
-      θ = 1.
-      #println(ρ)
-      if ρ < -0.28
-        θ = -1.
-      elseif ρ < 0.5
-        θ = ρ2θ(ρ, "amh")
-      end
-      #println(θ)
-      z[:,j[2]] = rand2cop(z[:,j[1]], θ, "amh")
+  for p in inds
+    j = p[2]
+    for i in 2:length(j)
+      θ = ρ2θ(Σ[j[i-1],j[i]], p[1])
+      z[:,j[i]] = rand2cop(z[:,j[i-1]], θ, p[1])
     end
   end
-  (ti == [])? (): g2tsubcopula!(z, Σ, tcinds)
-  z, Σ
+  z
 end

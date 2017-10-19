@@ -67,7 +67,9 @@ end
 
 @testset "copula mixture" begin
   srand(43)
-  x = copulamixbv(100000, 5, [[1,2]], [[3,4]], [[4,5]])[1];
+  Σ = cormatgen(15, 0.8, true,true)
+  d=["clayton" => [2,3,4,5,6], "amh" => [1,14], "frank" => [7,8]]
+  x = copulamixbv(100000, Σ, d);
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
