@@ -50,7 +50,7 @@ end
   end
 end
 
-@testset "nasted gumbel copula" begin
+@testset "nasted Ali-Mikhail-Haq copula" begin
   @testset "single nasted" begin
     srand(43)
     x = nastedamhcopula(200000, [3, 2], [0.8, 0.7], 0.5)

@@ -69,14 +69,15 @@ function nastedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float6
   v = rand(t)
   V0 = 1+quantile(Geometric(1-θ), v)
   u = rand(t, n[1])
-  u = -log.(u)./amhnastedgen(rand(t), V0, θ, ϕ[1])
+  u = -log.(u)./(V0 + [quantile(NegativeBinomial(v, (1-ϕ[1])/(1-θ)), rand()) for v in V0])
+  #u = -log.(u)./amhnastedgen(rand(t), V0, θ, ϕ[1])
   X = ((exp.(u)-ϕ[1])*(1-θ)+θ*(1-ϕ[1]))/(1-ϕ[1])
   for i in 2:length(n)
     u = rand(t, n[i])
-    u = -log.(u)./amhnastedgen(rand(t), V0, θ, ϕ[i])
+    u = -log.(u)./(V0 + [quantile(NegativeBinomial(v, (1-ϕ[i])/(1-θ)), rand()) for v in V0])
+    #u = -log.(u)./amhnastedgen(rand(t), V0, θ, ϕ[i])
     X = hcat(X, ((exp.(u)-ϕ[i])*(1-θ)+θ*(1-ϕ[i]))/(1-ϕ[i]))
   end
-  println(size(X,2))
   for i in 1:size(X,2)
     X[:,i] = X[:,i].^(-V0)
   end
