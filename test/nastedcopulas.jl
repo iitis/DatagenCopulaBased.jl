@@ -50,6 +50,25 @@ end
   end
 end
 
+@testset "nasted gumbel copula" begin
+  @testset "single nasted" begin
+    srand(43)
+    x = nastedamhcopula(200000, [3, 2], [0.8, 0.7], 0.5)
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+    @test corkendall(x)[1:3,1] ≈ [1., 0.23373, 0.23373] atol=1.0e-2
+    @test corkendall(x)[3:5,4] ≈ [0.1288, 1., 0.19505] atol=1.0e-2
+    @test tail(x[:,4], x[:,5], "r") ≈ 0 atol=1.0e-1
+    @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
+    @test tail(x[:,4], x[:,5], "l") ≈ 0 atol=1.0e-1
+    @test tail(x[:,1], x[:,5], "l") ≈ 0 atol=1.0e-1
+  end
+end
+
+
 @testset "nasted frechet copula" begin
   srand(43)
   x = nastedfrechetcopulagen(500000, [0.9, 0.6, 0.2])

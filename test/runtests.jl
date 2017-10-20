@@ -8,6 +8,6 @@ import DatagenCopulaBased: tail, ρ2θ, AMHθ, rand2cop, g2tsubcopula!, copulage
 import DatagenCopulaBased: logseriescdf, logseriesquantile, τ2λ, norm2unifind, makeind, τ2θ, AMHτ2θ
 import DatagenCopulaBased: frankτ2θ, dilog, frankθ
 
-include("copulatests.jl")
-include("bivariatecopulas.jl")
+#include("copulatests.jl")
+#include("bivariatecopulas.jl")
 include("nastedcopulas.jl")

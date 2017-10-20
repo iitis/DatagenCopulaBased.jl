@@ -63,6 +63,27 @@ parametrised by a single parameter θ given a matrix of independent [0,1] distri
 random vectors.
 
 """
+function nastedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+  θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
+  length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
+  v = rand(t)
+  V0 = 1+quantile(Geometric(1-θ), v)
+  u = rand(t, n[1])
+  u = -log.(u)./amhnastedgen(rand(t), V0, θ, ϕ[1])
+  X = ((exp.(u)-ϕ[1])*(1-θ)+θ*(1-ϕ[1]))/(1-ϕ[1])
+  for i in 2:length(n)
+    u = rand(t, n[i])
+    u = -log.(u)./amhnastedgen(rand(t), V0, θ, ϕ[i])
+    X = hcat(X, ((exp.(u)-ϕ[i])*(1-θ)+θ*(1-ϕ[i]))/(1-ϕ[i]))
+  end
+  println(size(X,2))
+  for i in 1:size(X,2)
+    X[:,i] = X[:,i].^(-V0)
+  end
+  u = -log.(X)./V0
+  (1-θ)./(exp.(u)-θ)
+end
+
 
 function copulagen(copula::String, r::Matrix{T}, θ::Vector{Float64}) where T <:AbstractFloat
   if copula == "gumbel"

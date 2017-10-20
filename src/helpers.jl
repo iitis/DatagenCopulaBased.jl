@@ -45,6 +45,17 @@ function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
 end
 
 
+function amhnastedgen(u::Vector{Float64}, Vos::Vector{Float64}, θ₀::Float64, θ₁::Float64)
+  c1 = (1-θ₀)/(1-θ₁)
+  c2 = (θ₁-θ₀)/(1-θ₁)
+  w = copy(u)
+  for i in 1:length(u)
+    @inbounds V0 = Vos[i]
+    @inbounds y = cumsum([c2^(k-V0)/c1^(k)*factorial(k-1)/(factorial(k-V0)*factorial(V0-1)) for k in V0:200])
+    @inbounds w[i] = findlast(y .< u[i])+V0
+  end
+  w
+end
 
 """
   function tail(v1::Vector{Float}, v2::Vector{Float}, α::Float = 0.002, tail::String)
