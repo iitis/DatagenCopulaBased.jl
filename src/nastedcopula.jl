@@ -70,12 +70,10 @@ function nastedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float6
   V0 = 1+quantile(Geometric(1-θ), v)
   u = rand(t, n[1])
   u = -log.(u)./(V0 + [quantile(NegativeBinomial(v, (1-ϕ[1])/(1-θ)), rand()) for v in V0])
-  #u = -log.(u)./amhnastedgen(rand(t), V0, θ, ϕ[1])
   X = ((exp.(u)-ϕ[1])*(1-θ)+θ*(1-ϕ[1]))/(1-ϕ[1])
   for i in 2:length(n)
     u = rand(t, n[i])
     u = -log.(u)./(V0 + [quantile(NegativeBinomial(v, (1-ϕ[i])/(1-θ)), rand()) for v in V0])
-    #u = -log.(u)./amhnastedgen(rand(t), V0, θ, ϕ[i])
     X = hcat(X, ((exp.(u)-ϕ[i])*(1-θ)+θ*(1-ϕ[i]))/(1-ϕ[i]))
   end
   for i in 1:size(X,2)
@@ -83,6 +81,24 @@ function nastedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float6
   end
   u = -log.(X)./V0
   (1-θ)./(exp.(u)-θ)
+end
+
+function nastedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+  v = rand(t)
+  V0 = logseriesquantile(1-exp(-θ), v)
+  u = rand(t, n[1])
+  u = -log.(u)./frankngen(ϕ[1], θ, rand(t))
+  X = ((1+exp.(-u)*(exp(-ϕ[1])-1)).^(θ/ϕ[1])-1)./(exp(-θ)-1)
+  for i in 2:length(n)
+    u = rand(t, n[i])
+    u = -log.(u)./frankngen(ϕ[i], θ, rand(t))
+    X = hcat(X,((1+exp.(-u)*(exp(-ϕ[i])-1)).^(θ/ϕ[i])-1)./(exp(-θ)-1))
+  end
+  for i in 1:size(X,2)
+    X[:,i] = X[:,i].^(V0)
+  end
+  u = -log.(X)./V0
+  -log.(1+exp.(-u)*(exp(-θ)-1))/θ
 end
 
 

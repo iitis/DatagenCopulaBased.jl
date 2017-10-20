@@ -45,6 +45,43 @@ function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
 end
 
 
+Ginv(y::Float64, α::Float64) = ((1-y)*gamma(1-α))^(-1/α)
+
+F(n::Int, α::Float64) = 1-1/(n*beta(n, 1-α))
+
+function joeF(α::Float64, v::Float64)
+  if v <= α
+    return 1
+  else
+    G = Ginv(v, α)
+    return (F(floor(Int, G), α) < v)? ceil(Int, G): floor(Int, G)
+  end
+end
+
+
+function frankngen(θ₁::Float64, θ₀::Float64, v::Vector{Float64})
+  c1 = 1-exp(-θ₁)
+  α = θ₀/θ₁
+  u = zeros(v)
+  for i in 1:length(v)
+    if θ₀ <= 1
+      X = logseriesquantile(c1, rand(1))[1]
+      while v[i] > 1/((X-α)*beta(X, 1-α))
+        X = logseriesquantile(c1, rand(1))[1]
+      end
+      u[i] = X
+    else
+      X = joeF(α, rand())
+      while v[i] > c1^(X-1)
+        X = joeF(α, rand())
+      end
+      u[i] = X
+    end
+  end
+  u
+end
+
+
 """
   function tail(v1::Vector{Float}, v2::Vector{Float}, α::Float = 0.002, tail::String)
 
