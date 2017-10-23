@@ -1,4 +1,7 @@
 # nasted copulas
+# Algorithms from M. Hofert, `Efficiently sampling nested Archimedean copulas`
+# Computational Statistics and Data Analysis 55 (2011) 57–70
+
 
 """
   nastedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64)
@@ -87,17 +90,14 @@ function nastedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Floa
   v = rand(t)
   V0 = logseriesquantile(1-exp(-θ), v)
   u = rand(t, n[1])
-  u = -log.(u)./frankngen(ϕ[1], θ, rand(t))
-  X = ((1+exp.(-u)*(exp(-ϕ[1])-1)).^(θ/ϕ[1])-1)./(exp(-θ)-1)
+  u = -log.(u)./frankgen(ϕ[1], θ, V0)
+  X = (1-(1-exp.(-u)*(1-exp(-ϕ[1]))).^(θ/ϕ[1]))./(1-exp(-θ))
   for i in 2:length(n)
     u = rand(t, n[i])
-    u = -log.(u)./frankngen(ϕ[i], θ, rand(t))
-    X = hcat(X,((1+exp.(-u)*(exp(-ϕ[i])-1)).^(θ/ϕ[i])-1)./(exp(-θ)-1))
+    u = -log.(u)./frankgen(ϕ[i], θ, V0)
+    X = hcat(X,(1-(1-exp.(-u)*(1-exp(-ϕ[i]))).^(θ/ϕ[i]))./(1-exp(-θ)))
   end
-  for i in 1:size(X,2)
-    X[:,i] = X[:,i].^(V0)
-  end
-  u = -log.(X)./V0
+  u = -log.(X)
   -log.(1+exp.(-u)*(exp(-θ)-1))/θ
 end
 

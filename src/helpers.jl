@@ -44,39 +44,80 @@ function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
   sort(v)[p]
 end
 
+"""
+  Ginv(y::Float64, α::Float64)
 
+Returns Float64, helper for the joe/frank nasted copula generator
+"""
 Ginv(y::Float64, α::Float64) = ((1-y)*gamma(1-α))^(-1/α)
 
-F(n::Int, α::Float64) = 1-1/(n*beta(n, 1-α))
+"""
+  InvlaJ(n::Int, α::Float64)
 
-function joeF(α::Float64, v::Float64)
+Returns Float64, n-th element of the inverse laplacea transform of generator of Joe nasted copula
+"""
+InvlaJ(n::Int, α::Float64) = 1-1/(n*beta(n, 1-α))
+
+"""
+  sampleInvlaJ(α::Float64, v::Float64)
+
+Returns Int, a sample of inverce laplacea transform of generator of Joe nasted copula,
+given a parameter α and a random numver v ∈ [0,1]
+"""
+
+function sampleInvlaJ(α::Float64, v::Float64)
   if v <= α
     return 1
   else
     G = Ginv(v, α)
-    return (F(floor(Int, G), α) < v)? ceil(Int, G): floor(Int, G)
+    if G > 2^62
+      return 2^62
+    else
+      return (InvlaJ(floor(Int, G), α) < v)? ceil(Int, G): floor(Int, G)
+    end
   end
 end
 
+"""
+  elInvlaF(θ₁::Float64, θ₀::Float64)
 
-function frankngen(θ₁::Float64, θ₀::Float64, v::Vector{Float64})
+Returns Int, a single sample of the inverse laplacea transform of the generator
+of nasted Frank copula
+"""
+
+function elInvlaF(θ₁::Float64, θ₀::Float64)
   c1 = 1-exp(-θ₁)
   α = θ₀/θ₁
-  u = zeros(v)
-  for i in 1:length(v)
-    if θ₀ <= 1
+  if θ₀ <= 1
+    v = rand()
+    X = logseriesquantile(c1, rand(1))[1]
+    while v > 1/((X-α)*beta(X, 1-α))
+      v = rand()
       X = logseriesquantile(c1, rand(1))[1]
-      while v[i] > 1/((X-α)*beta(X, 1-α))
-        X = logseriesquantile(c1, rand(1))[1]
-      end
-      u[i] = X
-    else
-      X = joeF(α, rand())
-      while v[i] > c1^(X-1)
-        X = joeF(α, rand())
-      end
-      u[i] = X
     end
+    return X
+  else
+    v = rand()
+    X = sampleInvlaJ(α, rand())
+    while v > c1^(X-1)
+      X = sampleInvlaJ(α, rand())
+      v = rand()
+    end
+    return X
+  end
+end
+
+"""
+  frankngen(θ₁::Float64, θ₀::Float64, V0::Vector{Int})
+
+Return vector of int, samples of inverse laplacea trensform of nasted
+Frak copula given parametes and V0 - vector of samples if invlaplace of perents copula
+"""
+
+function frankgen(θ₁::Float64, θ₀::Float64, V0::Vector{Int})
+  u = zeros(V0)
+  for i in 1:length(V0)
+    u[i] = sum([elInvlaF(θ₁, θ₀) for j in 1:V0[i]])
   end
   u
 end

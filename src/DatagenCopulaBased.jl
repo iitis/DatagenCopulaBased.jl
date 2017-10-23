@@ -12,5 +12,5 @@ module DatagenCopulaBased
 
   export tstudentcopulagen, gausscopulagen, convertmarg!, marshalolkincopulagen, archcopulagen
   export cormatgen, copulamixbv, g2tsubcopula!, copulamix, nastedgumbelcopula, frechetcopulagen
-  export nastedfrechetcopulagen, nastedamhcopula, nastedfrankcopula
+  export nastedfrechetcopulagen, nastedamhcopula, nastedfrankcopula, frankgen
 end

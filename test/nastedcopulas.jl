@@ -1,5 +1,18 @@
 α = 0.025
 
+@testset "helpers" begin
+  @test Ginv(0.5, 0.5) ≈ 1.2732395447351625
+  @test InvlaJ(4, 0.5) ≈ 0.7265625
+  @test sampleInvlaJ(0.5, 0.5) == 1
+  @test sampleInvlaJ(0.5, 0.8) == 8
+  srand(43)
+  @test elInvlaF(4., 2.) == 7
+  srand(43)
+  @test elInvlaF(4., .5) == 16
+  srand(43)
+  @test frankgen(5., 3., [1, 1, 2]) == [3, 1, 49]
+end
+
 @testset "t-student subcopula" begin
   srand(43)
   x = gausscopulagen(3, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.])
@@ -65,6 +78,31 @@ end
     @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
     @test tail(x[:,4], x[:,5], "l") ≈ 0 atol=1.0e-1
     @test tail(x[:,1], x[:,5], "l") ≈ 0 atol=1.0e-1
+  end
+end
+
+@testset "nasted Frank copula" begin
+  @testset "single nasted" begin
+    srand(43)
+    x = nastedfrankcopula(500000, [3, 2],  [8., 10.], 2.)
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+    @test corkendall(x)[1:4,1] ≈ [1.0, 0.60262, 0.60262, 0.2139] atol=1.0e-2
+    @test corkendall(x)[3:5,4] ≈ [0.2139, 1.0, 0.6658] atol=1.0e-2
+    @test tail(x[:,4], x[:,5], "r") ≈ 0 atol=1.0e-1
+    @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
+    @test tail(x[:,4], x[:,5], "l") ≈ 0 atol=1.0e-1
+    @test tail(x[:,1], x[:,5], "l") ≈ 0 atol=1.0e-1
+    srand(43)
+    x = nastedfrankcopula(100000, [2, 2],  [2., 3.], .8)
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test tail(x[:,1], x[:,3], "r") ≈ 0 atol=1.0e-2
+    @test tail(x[:,1], x[:,3], "l") ≈ 0 atol=1.0e-2
+    @test corkendall(x)[:,1] ≈ [1.0, 0.2139, 0.088327, 0.088327] atol=1.0e-2
   end
 end
 
