@@ -11,6 +11,6 @@ module DatagenCopulaBased
   include("nastedcopula.jl")
 
   export tstudentcopulagen, gausscopulagen, convertmarg!, marshalolkincopulagen, archcopulagen
-  export cormatgen, copulamixbv, g2tsubcopula!, copulamix, nastedgumbelcopula, frechetcopulagen
+  export cormatgen, copulamixbv, g2tsubcopula!, copulamix, nastedgumbelcopula, frechetcopulagen, nastedclaytoncopula
   export nastedfrechetcopulagen, nastedamhcopula, nastedfrankcopula, frankgen
 end

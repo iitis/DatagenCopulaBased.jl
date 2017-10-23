@@ -58,14 +58,22 @@ function nastedgumbelcopula(t::Int, θ::Vector{Float64})
   copulagen("gumbel", rand(t, 2*length(θ)+1), θ)
 end
 
-"""
-  copulagen(copula::String, r::Matrix{Float}, θ::Vector{Float64})
+function nastedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+  v = rand(t)
+  V0 = quantile(Gamma(1/θ, θ), v)
+  u = rand(t, n[1])
+  u = -log.(u)./(V0.^(ϕ[1]) + levygen1(ϕ[1], rand(t), V0))
+  X = exp.(V0.-(V0.^(θ/ϕ[1]).+u).^(ϕ[1]/θ))
+  for i in 2:length(n)
+    u = rand(t, n[i])
+    u = -log.(u)./(V0.^(ϕ[i]) + levygen1(ϕ[i], rand(t), V0))
+    X = hcat(X, exp.(V0.-(V0.^(θ/ϕ[i]).+u).^(ϕ[i]/θ)))
+  end
+  X
+  #u = -log.(X)./V0
+  #(1 + θ.*u).^(-1/θ)
+end
 
-Auxiliary function used to generate data from nasted (hiererchical) gumbel copula
-parametrised by a single parameter θ given a matrix of independent [0,1] distributerd
-random vectors.
-
-"""
 function nastedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
   θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
   length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
@@ -101,6 +109,14 @@ function nastedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Floa
   -log.(1+exp.(-u)*(exp(-θ)-1))/θ
 end
 
+"""
+  copulagen(copula::String, r::Matrix{Float}, θ::Vector{Float64})
+
+Auxiliary function used to generate data from nasted (hiererchical) gumbel copula
+parametrised by a single parameter θ given a matrix of independent [0,1] distributerd
+random vectors.
+
+"""
 
 function copulagen(copula::String, r::Matrix{T}, θ::Vector{Float64}) where T <:AbstractFloat
   if copula == "gumbel"
