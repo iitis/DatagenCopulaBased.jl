@@ -44,14 +44,26 @@ function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
   sort(v)[p]
 end
 
-function levygen1(θ::Union{Int, Float64}, u::Vector{Float64}, V0 = ones(u))
-  p = invperm(sortperm(u))
-  ϕ = pi*rand(length(u))-pi/2
-  v = quantile(Exponential(1.), rand(length(u)))
-  γ = (cos(pi/(2*θ)).*V0).^θ
-  v = ((cos.(pi/(2*θ)+(1/θ-1).*ϕ))./v).^(θ-1)
-  v = γ.*v.*sin.(1/θ.*(pi/2+ϕ)).*(cos(pi/(2*θ)).*cos.(ϕ)).^(-θ)
-  sort(v)[p]
+
+
+function rgen(V0::Float64, α::Float64, j::Int, u::Vector{Float64})
+  γ = sum(u[1:j])
+  w = quantile(Exponential(1.), rand())
+  minimum([(V0/(gamma(1-α)*γ))^(1/α), w*(rand())^(1/α)])
+end
+
+function gens(V0::Vector{Float64}, α::Float64)
+  m = floor(Int, 50/α^4)
+  ret = zeros(V0)
+  for i in 1:length(V0)
+    u = quantile(Exponential(1.), rand(m))
+    temp = 0.
+    for k in 1:m
+      @inbounds temp += rgen(V0[i], α, k, u)
+    end
+    @inbounds ret[i] = temp
+  end
+  ret
 end
 """
   Ginv(y::Float64, α::Float64)

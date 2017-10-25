@@ -61,18 +61,16 @@ end
 function nastedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
   v = rand(t)
   V0 = quantile(Gamma(1/θ, θ), v)
-  u = rand(t, n[1])
-  u = -log.(u)./(V0.^(ϕ[1]) + levygen1(ϕ[1], rand(t), V0))
-  X = exp.(V0.-(V0.^(θ/ϕ[1]).+u).^(ϕ[1]/θ))
+  u = -log.(rand(t, n[1]))./gens(V0, θ/ϕ[1])
+  X = exp.(V0.-V0.*(1.+u).^(θ/ϕ[1]))
   for i in 2:length(n)
-    u = rand(t, n[i])
-    u = -log.(u)./(V0.^(ϕ[i]) + levygen1(ϕ[i], rand(t), V0))
-    X = hcat(X, exp.(V0.-(V0.^(θ/ϕ[i]).+u).^(ϕ[i]/θ)))
+    u = -log.(rand(t, n[i]))./gens(V0, θ/ϕ[i])
+    X = hcat(X, exp.(V0.-V0.*(1.+u).^(θ/ϕ[i])))
   end
-  X
-  #u = -log.(X)./V0
-  #(1 + θ.*u).^(-1/θ)
+  u = -log.(X)./V0
+  (1 + θ.*u).^(-1/θ)
 end
+
 
 function nastedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
   θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
