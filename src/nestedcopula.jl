@@ -13,8 +13,7 @@ M. Hofert, 'Sampling  Archimedean copulas', Computational Statistics & Data Anal
 """
 
 function nestedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64; c::Float64 = 1.)
-  θ <= minimum(Φ) || throw(AssertionError("wrong heirarchy of parameters"))
-  length(n) == length(Φ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
+  testnestedpars(θ, Φ, n)
   Φ = Φ./θ./c
   X = copulagen("gumbel", rand(t,n[1]+1), Φ[1])
   for i in 2:length(n)
@@ -58,54 +57,64 @@ function nestedgumbelcopula(t::Int, θ::Vector{Float64})
   copulagen("gumbel", rand(t, 2*length(θ)+1), θ)
 end
 
+function testnestedpars(θ::Float64, ϕ::Vector{Float64}, n::Vector{Int})
+  θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
+  length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
+end
+
+function nestedstep(copula::String, u::Matrix{Float64}, v::Vector{Float64},
+                                                        V0::Union{Vector{Float64}, Vector{Int}},
+                                                        ϕ::Float64, θ::Float64)
+  if copula == "amh"
+    t = length(V0)
+    w = [quantile(NegativeBinomial(V0[i], (1-ϕ)/(1-θ)), v[i]) for i in 1:t]
+    u = -log.(u)./(V0 + w)
+    return ((exp.(u)-ϕ)*(1-θ)+θ*(1-ϕ))/(1-ϕ)
+  elseif copula == "frank"
+    u = -log.(u)./frankgen(ϕ, θ, V0)
+    return (1-(1-exp.(-u)*(1-exp(-ϕ))).^(θ/ϕ))./(1-exp(-θ))
+  elseif copula == "clayton"
+    u = -log.(u)./gens(V0, θ/ϕ)
+    return exp.(V0.-V0.*(1.+u).^(θ/ϕ))
+  end
+  u
+end
+
 function nestedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+  testnestedpars(θ, ϕ, n)
   v = rand(t)
   V0 = quantile(Gamma(1/θ, θ), v)
-  u = -log.(rand(t, n[1]))./gens(V0, θ/ϕ[1])
-  X = exp.(V0.-V0.*(1.+u).^(θ/ϕ[1]))
+  X = nestedstep("clayton", rand(t, n[1]), rand(t), V0, ϕ[1], θ)
   for i in 2:length(n)
-    u = -log.(rand(t, n[i]))./gens(V0, θ/ϕ[i])
-    X = hcat(X, exp.(V0.-V0.*(1.+u).^(θ/ϕ[i])))
+    X = hcat(X, nestedstep("clayton", rand(t, n[i]), rand(t), V0, ϕ[i], θ))
   end
   u = -log.(X)./V0
   (1 + θ.*u).^(-1/θ)
 end
 
-
 function nestedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
-  θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
-  length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
+  testnestedpars(θ, ϕ, n)
   v = rand(t)
   V0 = 1+quantile(Geometric(1-θ), v)
-  u = rand(t, n[1])
-  u = -log.(u)./(V0 + [quantile(NegativeBinomial(v, (1-ϕ[1])/(1-θ)), rand()) for v in V0])
-  X = ((exp.(u)-ϕ[1])*(1-θ)+θ*(1-ϕ[1]))/(1-ϕ[1])
+  X = nestedstep("amh", rand(t, n[1]), rand(t), V0, ϕ[1], θ)
   for i in 2:length(n)
-    u = rand(t, n[i])
-    u = -log.(u)./(V0 + [quantile(NegativeBinomial(v, (1-ϕ[i])/(1-θ)), rand()) for v in V0])
-    X = hcat(X, ((exp.(u)-ϕ[i])*(1-θ)+θ*(1-ϕ[i]))/(1-ϕ[i]))
+    X = hcat(X, nestedstep("amh", rand(t, n[i]), rand(t), V0, ϕ[i], θ))
   end
-  for i in 1:size(X,2)
-    X[:,i] = X[:,i].^(-V0)
-  end
-  u = -log.(X)./V0
-  (1-θ)./(exp.(u)-θ)
+  (1-θ)./(X-θ)
 end
 
+
 function nestedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+  testnestedpars(θ, ϕ, n)
   v = rand(t)
   V0 = logseriesquantile(1-exp(-θ), v)
-  u = rand(t, n[1])
-  u = -log.(u)./frankgen(ϕ[1], θ, V0)
-  X = (1-(1-exp.(-u)*(1-exp(-ϕ[1]))).^(θ/ϕ[1]))./(1-exp(-θ))
+  X = nestedstep("frank", rand(t, n[1]), rand(t), V0, ϕ[1], θ)
   for i in 2:length(n)
-    u = rand(t, n[i])
-    u = -log.(u)./frankgen(ϕ[i], θ, V0)
-    X = hcat(X,(1-(1-exp.(-u)*(1-exp(-ϕ[i]))).^(θ/ϕ[i]))./(1-exp(-θ)))
+    X = hcat(X, nestedstep("frank", rand(t, n[i]), rand(t), V0, ϕ[i], θ))
   end
-  u = -log.(X)
-  -log.(1+exp.(-u)*(exp(-θ)-1))/θ
+  -log.(1+X*(exp(-θ)-1))/θ
 end
+
 
 """
   copulagen(copula::String, r::Matrix{Float}, θ::Vector{Float64})
@@ -117,16 +126,25 @@ random vectors.
 """
 
 function copulagen(copula::String, r::Matrix{T}, θ::Vector{Float64}) where T <:AbstractFloat
+  θ = vcat(θ, [1.])
+  n = length(θ)
+  u = r[:,1:n]
+  v = r[:,n+1:end]
   if copula == "gumbel"
-    θ = vcat(θ, [1.])
-    n = length(θ)
-    u = r[:,1:n]
-    v = r[:,n+1:end]
     X = copulagen(copula, hcat(u[:,1:2], v[:,1]), θ[1]/θ[2])
     for i in 2:(n-1)
       X = hcat(X, u[:,i+1])
       X = -log.(X)./levygen(θ[i]/θ[i+1], v[:,i])
       X = exp.(-X.^(θ[i+1]/θ[i]))
+    end
+    return X
+  elseif copula == "amh"
+    V0 = 1+quantile(Geometric(1-θ), v)
+    X = nestedstep(copula, u[:,1:2], v[:,1], θ[1], θ[2])
+    for i in 2:(n-1)
+      X = hcat(X, u[:,i+1])
+      u = -log.(u)./frankgen(θ[i+1], θ[i], V0)
+      X = (1-(1-exp.(-u)*(1-exp(-θ[i+1]))).^(θ[i]/θ[i+1]))./(1-exp(-θ[i]))
     end
     return X
   end

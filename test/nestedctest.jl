@@ -1,5 +1,8 @@
 α = 0.025
 
+addprocs(10)
+@everywhere using DatagenCopulaBased
+
 @testset "helpers" begin
   @test Ginv(0.5, 0.5) ≈ 1.2732395447351625
   @test InvlaJ(4, 0.5) ≈ 0.7265625
@@ -63,8 +66,6 @@ end
   end
 end
 
-addprocs(10)
-@everywhere using DatagenCopulaBased
 
 @testset "nested Ali-Mikhail-Haq copula" begin
   @testset "single nested" begin
@@ -111,7 +112,7 @@ end
 
 @testset "nested Clayton copula" begin
   @testset "single nested" begin
-    srand(44)
+    srand(43)
     x = nestedclaytoncopula(50000, [2, 3],  [5., 4.], 1.5)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
