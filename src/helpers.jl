@@ -23,7 +23,7 @@ Returns a vector{Float} of the v[i] th quaintlie of logaritmic distribution with
 
 function logseriesquantile(p::Float64, v::Vector{Float64})
   w = logseriescdf(p)
-  [findlast(w .< b) for b in v]
+  pmap(i -> findlast(w .< i), v)
 end
 
 """
@@ -45,44 +45,57 @@ function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
 end
 
 
-
-function rgen(V0::Float64, α::Float64, j::Int, u::Vector{Float64})
-  γ = sum(u[1:j])
+function rgen(V0::Float64, α::Float64, γ::Float64)
   w = quantile(Exponential(1.), rand())
   minimum([(V0/(gamma(1-α)*γ))^(1/α), w*(rand())^(1/α)])
 end
 
-function gens(V0::Vector{Float64}, α::Float64)
-  m = floor(Int, 50/α^4)
-  ret = zeros(V0)
-  for i in 1:length(V0)
-    u = quantile(Exponential(1.), rand(m))
-    temp = 0.
-    for k in 1:m
-      @inbounds temp += rgen(V0[i], α, k, u)
+
+function el(v::Float64, α::Float64)
+  γ = quantile(Exponential(1.), rand())
+  ret = 0.
+  for k in 1:floor(Int, 100000/α^4)
+    @inbounds temp = rgen(v, α, γ)
+    γ += quantile(Exponential(1.), rand())
+    ret += temp
+    if temp < 1.e-12
+      return ret
     end
-    @inbounds ret[i] = temp
   end
   ret
 end
+
+function gens(V0::Vector{Float64}, α::Float64)
+  if nprocs() == 1
+    ret = zeros(V0)
+    for i in 1:length(V0)
+      @inbounds ret[i] = el(V0[i], α)
+    end
+    return ret
+  else
+    return pmap(v -> el(v, α), V0)
+  end
+end
+
+
 """
   Ginv(y::Float64, α::Float64)
 
-Returns Float64, helper for the joe/frank nasted copula generator
+Returns Float64, helper for the joe/frank nested copula generator
 """
 Ginv(y::Float64, α::Float64) = ((1-y)*gamma(1-α))^(-1/α)
 
 """
   InvlaJ(n::Int, α::Float64)
 
-Returns Float64, n-th element of the inverse laplacea transform of generator of Joe nasted copula
+Returns Float64, n-th element of the inverse laplacea transform of generator of Joe nested copula
 """
 InvlaJ(n::Int, α::Float64) = 1-1/(n*beta(n, 1-α))
 
 """
   sampleInvlaJ(α::Float64, v::Float64)
 
-Returns Int, a sample of inverce laplacea transform of generator of Joe nasted copula,
+Returns Int, a sample of inverce laplacea transform of generator of Joe nested copula,
 given a parameter α and a random numver v ∈ [0,1]
 """
 
@@ -103,7 +116,7 @@ end
   elInvlaF(θ₁::Float64, θ₀::Float64)
 
 Returns Int, a single sample of the inverse laplacea transform of the generator
-of nasted Frank copula
+of nested Frank copula
 """
 
 function elInvlaF(θ₁::Float64, θ₀::Float64)
@@ -131,7 +144,7 @@ end
 """
   frankngen(θ₁::Float64, θ₀::Float64, V0::Vector{Int})
 
-Return vector of int, samples of inverse laplacea trensform of nasted
+Return vector of int, samples of inverse laplacea trensform of nested
 Frak copula given parametes and V0 - vector of samples if invlaplace of perents copula
 """
 

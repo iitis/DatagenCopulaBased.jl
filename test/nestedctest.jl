@@ -25,10 +25,10 @@ end
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
 end
 
-@testset "nasted gumbel copula" begin
+@testset "nested gumbel copula" begin
   @testset "hierarchical" begin
     srand(43)
-    x = nastedgumbelcopula(500000, [4.2, 3.6, 1.1])
+    x = nestedgumbelcopula(500000, [4.2, 3.6, 1.1])
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -37,9 +37,9 @@ end
     @test tail(x[:,2], x[:,3], "r") ≈ 2-2^(1/3.6) atol=1.0e-1
     @test tail(x[:,3], x[:,4], "r") ≈ 2-2^(1/1.1) atol=1.0e-2
   end
-  @testset "single nasted" begin
+  @testset "single nested" begin
     srand(43)
-    x = nastedgumbelcopula(600000, [2,2], [4.2, 6.1], 2.1)
+    x = nestedgumbelcopula(600000, [2,2], [4.2, 6.1], 2.1)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -49,9 +49,9 @@ end
     @test tail(x[:,2], x[:,3], "r") ≈ 2-2^(1/2.1) atol=1.0e-2
     @test tail(x[:,3], x[:,4], "r") ≈ 2-2^(1/6.1) atol=1.0e-1
   end
-  @testset "double nasted" begin
+  @testset "double nested" begin
     srand(43)
-    x = nastedgumbelcopula(200000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2)
+    x = nestedgumbelcopula(200000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -63,10 +63,13 @@ end
   end
 end
 
-@testset "nasted Ali-Mikhail-Haq copula" begin
-  @testset "single nasted" begin
+addprocs(10)
+@everywhere using DatagenCopulaBased
+
+@testset "nested Ali-Mikhail-Haq copula" begin
+  @testset "single nested" begin
     srand(43)
-    x = nastedamhcopula(200000, [3, 2], [0.8, 0.7], 0.5)
+    x = nestedamhcopula(200000, [3, 2], [0.8, 0.7], 0.5)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -81,10 +84,10 @@ end
   end
 end
 
-@testset "nasted Frank copula" begin
-  @testset "single nasted" begin
+@testset "nested Frank copula" begin
+  @testset "single nested" begin
     srand(43)
-    x = nastedfrankcopula(500000, [3, 2],  [8., 10.], 2.)
+    x = nestedfrankcopula(500000, [3, 2],  [8., 10.], 2.)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -97,7 +100,7 @@ end
     @test tail(x[:,4], x[:,5], "l") ≈ 0 atol=1.0e-1
     @test tail(x[:,1], x[:,5], "l") ≈ 0 atol=1.0e-1
     srand(43)
-    x = nastedfrankcopula(100000, [2, 2],  [2., 3.], .8)
+    x = nestedfrankcopula(100000, [2, 2],  [2., 3.], .8)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
     @test tail(x[:,1], x[:,3], "r") ≈ 0 atol=1.0e-2
@@ -106,10 +109,28 @@ end
   end
 end
 
+@testset "nested Clayton copula" begin
+  @testset "single nested" begin
+    srand(44)
+    x = nestedclaytoncopula(50000, [2, 3],  [5., 4.], 1.5)
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+    @test corkendall(x)[:,1] ≈ [1.0, 5/7, 1.5/3.5, 1.5/3.5, 1.5/3.5] atol=1.0e-1
+    @test corkendall(x)[:,5] ≈ [1.5/3.5, 1.5/3.5, 2/3, 2/3, 1.0] atol=1.0e-1
+    @test tail(x[:,4], x[:,5], "r") ≈ 0 atol=1.0e-1
+    @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
+    @test tail(x[:,1], x[:,5], "l", 0.025) ≈ 2^(-1/(1.5)) atol=1.0e-1
+    @test tail(x[:,1], x[:,2], "l", 0.025) ≈ 2^(-1/5) atol=1.0e-1
+    @test tail(x[:,4], x[:,5], "l", 0.025) ≈ 2^(-1/4) atol=1.0e-1
+  end
+end
 
-@testset "nasted frechet copula" begin
+@testset "nested frechet copula" begin
   srand(43)
-  x = nastedfrechetcopulagen(500000, [0.9, 0.6, 0.2])
+  x = nestedfrechetcopulagen(500000, [0.9, 0.6, 0.2])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -118,7 +139,7 @@ end
   @test tail(x[:,1], x[:,2], "l") ≈ 0.9 atol=1.0e-1
   @test tail(x[:,1], x[:,4], "r") ≈ 0.2 atol=1.0e-1
   srand(43)
-  x = nastedfrechetcopulagen(500000, [0.8, 0.5], [0.2, 0.3]);
+  x = nestedfrechetcopulagen(500000, [0.8, 0.5], [0.2, 0.3]);
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -126,7 +147,7 @@ end
   @test tail(x[:,1], x[:,2], "r") ≈ 0.8 atol=1.0e-1
   @test tail(x[:,2], x[:,3], "r") ≈ 0.5 atol=1.0e-1
   srand(43)
-  x = nastedfrechetcopulagen(500000, [0., 0.], [1., 1.])
+  x = nestedfrechetcopulagen(500000, [0., 0.], [1., 1.])
   @test cor(x[:,1], x[:,2]) ≈ -1 atol=1.0e-3
   @test length(find((x[:, 1] .<  0.9).*(x[:, 2] .<  0.4)))/length(x[:,1]) ≈ 0.3 atol=1.0e-3
   @test length(find((x[:, 2] .<  0.8).*(x[:, 3] .<  0.4)))/length(x[:,1]) ≈ 0.2 atol=1.0e-3

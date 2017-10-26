@@ -11,4 +11,4 @@ import DatagenCopulaBased: Ginv, InvlaJ, sampleInvlaJ, elInvlaF
 
 include("copulatests.jl")
 include("bivariatecopulas.jl")
-include("nastedcopulas.jl")
+include("nestedctest.jl")

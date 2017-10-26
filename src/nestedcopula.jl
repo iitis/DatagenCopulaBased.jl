@@ -1,18 +1,18 @@
-# nasted copulas
+# nested copulas
 # Algorithms from M. Hofert, `Efficiently sampling nested Archimedean copulas`
 # Computational Statistics and Data Analysis 55 (2011) 57–70
 
 
 """
-  nastedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64)
+  nestedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64)
 
-Returns t realisations of ∑ᵢ nᵢ variate data of nasted Gumbel copula
+Returns t realisations of ∑ᵢ nᵢ variate data of nested Gumbel copula
 C_θ(C_Φ₁(u₁₁, ..., u₁,ₙ₁), C_θ(C_Φₖ(uₖ₁, ..., uₖ,ₙₖ)) where k = length(n).
 
 M. Hofert, 'Sampling  Archimedean copulas', Computational Statistics & Data Analysis, Volume 52, 2008
 """
 
-function nastedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64; c::Float64 = 1.)
+function nestedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64; c::Float64 = 1.)
   θ <= minimum(Φ) || throw(AssertionError("wrong heirarchy of parameters"))
   length(n) == length(Φ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
   Φ = Φ./θ./c
@@ -26,39 +26,39 @@ end
 
 
 """
-  nastedgumbelcopulat::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, Φ::Vector{Float64}, θ₀::Float64)
+  nestedgumbelcopulat::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, Φ::Vector{Float64}, θ₀::Float64)
 
-Returns t realisations of ∑ᵢ ∑ⱼ nᵢⱼ variate data of double nasted Gumbel copula.
+Returns t realisations of ∑ᵢ ∑ⱼ nᵢⱼ variate data of double nested Gumbel copula.
 C_θ(C_Φ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_Φₖ(C_Ψₖ₁(u,...), ..., C_Ψₖ,ₗₖ(u,...)))
  where lᵢ = length(n[i])
 
 """
 
 
-function nastedgumbelcopula(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, Φ::Vector{Float64}, θ::Float64)
+function nestedgumbelcopula(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, Φ::Vector{Float64}, θ::Float64)
   θ <= minimum(Φ) || throw(AssertionError("wrong heirarchy of parameters"))
   Φ = Φ./θ
-  X = nastedgumbelcopula(t, n[1], Ψ[1], Φ[1]; c = θ)
+  X = nestedgumbelcopula(t, n[1], Ψ[1], Φ[1]; c = θ)
   for i in 2:length(n)
-    X = hcat(X, nastedgumbelcopula(t, n[i], Ψ[i], Φ[i], c = θ))
+    X = hcat(X, nestedgumbelcopula(t, n[i], Ψ[i], Φ[i], c = θ))
   end
   u = -log.(X)./levygen(θ, rand(t))
   exp.(-u.^(1/θ))
 end
 
 """
-  nastedgumbelcopula(t::Int, θ::Vector{Float64})
+  nestedgumbelcopula(t::Int, θ::Vector{Float64})
 
-Returns t realisations of length(θ)+1 variate data of (hierarchically) nasted Gumbel copula.
+Returns t realisations of length(θ)+1 variate data of (hierarchically) nested Gumbel copula.
 C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)
 """
 
-function nastedgumbelcopula(t::Int, θ::Vector{Float64})
+function nestedgumbelcopula(t::Int, θ::Vector{Float64})
   issorted(θ; rev=true) || throw(AssertionError("wrong heirarchy of parameters"))
   copulagen("gumbel", rand(t, 2*length(θ)+1), θ)
 end
 
-function nastedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+function nestedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
   v = rand(t)
   V0 = quantile(Gamma(1/θ, θ), v)
   u = -log.(rand(t, n[1]))./gens(V0, θ/ϕ[1])
@@ -72,7 +72,7 @@ function nastedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Fl
 end
 
 
-function nastedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+function nestedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
   θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
   length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
   v = rand(t)
@@ -92,7 +92,7 @@ function nastedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float6
   (1-θ)./(exp.(u)-θ)
 end
 
-function nastedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+function nestedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
   v = rand(t)
   V0 = logseriesquantile(1-exp(-θ), v)
   u = rand(t, n[1])
@@ -110,7 +110,7 @@ end
 """
   copulagen(copula::String, r::Matrix{Float}, θ::Vector{Float64})
 
-Auxiliary function used to generate data from nasted (hiererchical) gumbel copula
+Auxiliary function used to generate data from nested (hiererchical) gumbel copula
 parametrised by a single parameter θ given a matrix of independent [0,1] distributerd
 random vectors.
 
@@ -134,11 +134,11 @@ function copulagen(copula::String, r::Matrix{T}, θ::Vector{Float64}) where T <:
 end
 
 """
-  nastedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64})
+  nestedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64})
 
-Retenares data from nasted hierarchical frechet copula
+Retenares data from nested hierarchical frechet copula
 """
-function nastedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
+function nestedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
   α = vcat([0.], α)
   β = vcat([0.], β)
   n = length(α)
