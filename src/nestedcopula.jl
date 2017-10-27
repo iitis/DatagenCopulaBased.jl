@@ -12,12 +12,16 @@ C_θ(C_Φ₁(u₁₁, ..., u₁,ₙ₁), C_θ(C_Φₖ(uₖ₁, ..., uₖ,ₙₖ)
 M. Hofert, 'Sampling  Archimedean copulas', Computational Statistics & Data Analysis, Volume 52, 2008
 """
 
-function nestedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64; c::Float64 = 1.)
+function nestedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64, m::Int = 0;
+                                                                                    c::Float64 = 1.)
   testnestedpars(θ, Φ, n)
   Φ = Φ./θ./c
   X = copulagen("gumbel", rand(t,n[1]+1), Φ[1])
   for i in 2:length(n)
     X = hcat(X, copulagen("gumbel", rand(t,n[i]+1), Φ[i]))
+  end
+  if m != 0
+    X = hcat(X, rand(t,m))
   end
   u = -log.(X)./levygen(θ, rand(t))
   exp.(-u.^(1/θ))
@@ -45,17 +49,13 @@ function nestedgumbelcopula(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Fl
   exp.(-u.^(1/θ))
 end
 
-"""
-  nestedgumbelcopula(t::Int, θ::Vector{Float64})
 
-Returns t realisations of length(θ)+1 variate data of (hierarchically) nested Gumbel copula.
-C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)
 """
+  testnestedpars(θ::Float64, ϕ::Vector{Float64}, n::Vector{Int})
 
-function nestedgumbelcopula(t::Int, θ::Vector{Float64})
-  issorted(θ; rev=true) || throw(AssertionError("wrong heirarchy of parameters"))
-  copulagen("gumbel", rand(t, 2*length(θ)+1), θ)
-end
+Tests the hierarchy of parameters for the nested archimedean copula where both parent and
+childs are from the same family
+"""
 
 function testnestedpars(θ::Float64, ϕ::Vector{Float64}, n::Vector{Int})
   θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
@@ -80,7 +80,7 @@ function nestedstep(copula::String, u::Matrix{Float64}, v::Vector{Float64},
   u
 end
 
-function nestedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+function nestedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
   testnestedpars(θ, ϕ, n)
   v = rand(t)
   V0 = quantile(Gamma(1/θ, θ), v)
@@ -88,11 +88,23 @@ function nestedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Fl
   for i in 2:length(n)
     X = hcat(X, nestedstep("clayton", rand(t, n[i]), rand(t), V0, ϕ[i], θ))
   end
+  if m != 0
+    X = hcat(X, rand(t, m))
+  end
   u = -log.(X)./V0
   (1 + θ.*u).^(-1/θ)
 end
 
-function nestedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+"""
+  nestedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
+
+Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using
+nested Ali-Mikhail-Haq copula, outer copula parameter is θ, inner i'th copulas parameter is
+ϕ[i] and size is n[i]. If m ≠ 0, last m variables are from outer copula only, see Alg. 5
+McNeil, A.J., 2008. 'Sampling nested Archimedean copulas'. Journal of Statistical Computation and Simulation 78, 567–581.
+"""
+
+function nestedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
   testnestedpars(θ, ϕ, n)
   v = rand(t)
   V0 = 1+quantile(Geometric(1-θ), v)
@@ -100,11 +112,21 @@ function nestedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float6
   for i in 2:length(n)
     X = hcat(X, nestedstep("amh", rand(t, n[i]), rand(t), V0, ϕ[i], θ))
   end
-  (1-θ)./(X-θ)
+  if m != 0
+    X = hcat(X, 1./rand(t, m).^(1./V0))
+  end
+ (1-θ)./(X-θ)
 end
 
+"""
+  nestedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
 
-function nestedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64)
+Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using
+nested Ali-Mikhail-Haq copula, outer copula parameter is θ, inner i'th copulas parameter is
+ϕ[i] and size is n[i]. If m ≠ 0, last m variables are from outer copula only
+"""
+
+function nestedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
   testnestedpars(θ, ϕ, n)
   v = rand(t)
   V0 = logseriesquantile(1-exp(-θ), v)
@@ -112,12 +134,26 @@ function nestedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Floa
   for i in 2:length(n)
     X = hcat(X, nestedstep("frank", rand(t, n[i]), rand(t), V0, ϕ[i], θ))
   end
+  if m != 0
+    X = hcat(X, rand(t, m).^(1./V0))
+  end
   -log.(1+X*(exp(-θ)-1))/θ
 end
 
+"""
+  nestedgumbelcopula(t::Int, θ::Vector{Float64})
+
+Returns t realisations of length(θ)+1 variate data of (hierarchically) nested Gumbel copula.
+C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)
+"""
+
+function nestedgumbelcopula(t::Int, θ::Vector{Float64})
+  issorted(θ; rev=true) || throw(AssertionError("wrong heirarchy of parameters"))
+  hiergcopulagen(rand(t, 2*length(θ)+1), θ)
+end
 
 """
-  copulagen(copula::String, r::Matrix{Float}, θ::Vector{Float64})
+  hiergcopulagen(r::Matrix{Float}, θ::Vector{Float64})
 
 Auxiliary function used to generate data from nested (hiererchical) gumbel copula
 parametrised by a single parameter θ given a matrix of independent [0,1] distributerd
@@ -125,30 +161,18 @@ random vectors.
 
 """
 
-function copulagen(copula::String, r::Matrix{T}, θ::Vector{Float64}) where T <:AbstractFloat
-  θ = vcat(θ, [1.])
-  n = length(θ)
+function hiergcopulagen(r::Matrix{T}, θ::Vector{Float64}) where T <:AbstractFloat
+  n = length(θ)+1
   u = r[:,1:n]
   v = r[:,n+1:end]
-  if copula == "gumbel"
-    X = copulagen(copula, hcat(u[:,1:2], v[:,1]), θ[1]/θ[2])
-    for i in 2:(n-1)
-      X = hcat(X, u[:,i+1])
-      X = -log.(X)./levygen(θ[i]/θ[i+1], v[:,i])
-      X = exp.(-X.^(θ[i+1]/θ[i]))
-    end
-    return X
-  elseif copula == "amh"
-    V0 = 1+quantile(Geometric(1-θ), v)
-    X = nestedstep(copula, u[:,1:2], v[:,1], θ[1], θ[2])
-    for i in 2:(n-1)
-      X = hcat(X, u[:,i+1])
-      u = -log.(u)./frankgen(θ[i+1], θ[i], V0)
-      X = (1-(1-exp.(-u)*(1-exp(-θ[i+1]))).^(θ[i]/θ[i+1]))./(1-exp(-θ[i]))
-    end
-    return X
+  θ = vcat(θ, [1.])
+  X = copulagen("gumbel", hcat(u[:,1:2], v[:,1]), θ[1]/θ[2])
+  for i in 2:(n-1)
+    X = hcat(X, u[:,i+1])
+    X = -log.(X)./levygen(θ[i]/θ[i+1], v[:,i])
+    X = exp.(-X.^(θ[i+1]/θ[i]))
   end
-  r
+  X
 end
 
 """
@@ -189,7 +213,7 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
       x[:,ind] = mocopula(v, length(ind), τ2λ(ρ, λ))
     elseif (p[1] == "gumbel") & (length(ind) > 2)
       θ = [ρ2θ(Σ[ind[i], ind[i+1]], p[1]) for i in 1:(length(ind)-1)]
-      x[:,ind] = copulagen(p[1], v, sort(θ; rev = true))
+      x[:,ind] = hiergcopulagen(v, sort(θ; rev = true))
     elseif p[1] == "t-student"
       g2tsubcopula!(x, Σ, ind, ν)
     else

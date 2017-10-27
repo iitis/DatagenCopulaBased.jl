@@ -149,11 +149,14 @@ Frak copula given parametes and V0 - vector of samples if invlaplace of perents 
 """
 
 function frankgen(θ₁::Float64, θ₀::Float64, V0::Vector{Int})
-  u = zeros(V0)
-  for i in 1:length(V0)
+  if nprocs() == 1
+    return map(k -> sum([elInvlaF(θ₁, θ₀) for j in 1:k]), V0)
+  end
+  u = SharedArray{Float64}(length(V0))
+  @sync @parallel for i = 1:length(V0)
     u[i] = sum([elInvlaF(θ₁, θ₀) for j in 1:V0[i]])
   end
-  u
+  Array(u)
 end
 
 

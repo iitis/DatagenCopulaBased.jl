@@ -1,8 +1,5 @@
 α = 0.025
 
-addprocs(10)
-@everywhere using DatagenCopulaBased
-
 @testset "helpers" begin
   @test Ginv(0.5, 0.5) ≈ 1.2732395447351625
   @test InvlaJ(4, 0.5) ≈ 0.7265625
@@ -15,6 +12,9 @@ addprocs(10)
   srand(43)
   @test frankgen(5., 3., [1, 1, 2]) == [3, 1, 49]
 end
+
+#addprocs(10)
+#@everywhere using DatagenCopulaBased
 
 @testset "t-student subcopula" begin
   srand(43)
@@ -41,16 +41,20 @@ end
     @test tail(x[:,3], x[:,4], "r") ≈ 2-2^(1/1.1) atol=1.0e-2
   end
   @testset "single nested" begin
-    srand(43)
-    x = nestedgumbelcopula(600000, [2,2], [4.2, 6.1], 2.1)
+    srand(44)
+    x = nestedgumbelcopula(600000, [2,2], [4.2, 6.1], 2.1, 1)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
-    @test corkendall(x)[1:3,:] ≈ [1. 0.7619 0.52380 0.52380; 0.7619 1. 0.52380 0.52380; 0.52380 0.52380 1. 0.83606] atol=1.0e-2
+    @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+    M = [1. 0.7619 0.52380 0.52380 0.52380; 0.7619 1. 0.52380 0.52380 0.52380; 0.52380 0.52380 1. 0.83606 0.52380]
+    @test corkendall(x)[1:3,:] ≈ M atol=1.0e-2
     @test tail(x[:,1], x[:,2], "r") ≈ 2-2^(1/4.2) atol=1.0e-1
-    @test tail(x[:,2], x[:,3], "r") ≈ 2-2^(1/2.1) atol=1.0e-2
+    @test tail(x[:,2], x[:,3], "r") ≈ 2-2^(1/2.1) atol=1.0e-1
+    @test tail(x[:,1], x[:,5], "r") ≈ 2-2^(1/2.1) atol=1.0e-2
     @test tail(x[:,3], x[:,4], "r") ≈ 2-2^(1/6.1) atol=1.0e-1
+    @test tail(x[:,1], x[:,2], "l", 0.00001) ≈ 0
   end
   @testset "double nested" begin
     srand(43)
@@ -68,65 +72,65 @@ end
 
 
 @testset "nested Ali-Mikhail-Haq copula" begin
-  @testset "single nested" begin
-    srand(43)
-    x = nestedamhcopula(200000, [3, 2], [0.8, 0.7], 0.5)
-    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
-    @test corkendall(x)[1:3,1] ≈ [1., 0.23373, 0.23373] atol=1.0e-2
-    @test corkendall(x)[3:5,4] ≈ [0.1288, 1., 0.19505] atol=1.0e-2
-    @test tail(x[:,4], x[:,5], "r") ≈ 0 atol=1.0e-1
-    @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
-    @test tail(x[:,4], x[:,5], "l") ≈ 0 atol=1.0e-1
-    @test tail(x[:,1], x[:,5], "l") ≈ 0 atol=1.0e-1
-  end
+  srand(43)
+  x = nestedamhcopula(200000, [3, 2], [0.8, 0.7], 0.5, 2)
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+  @test corkendall(x)[1:3,1] ≈ [1., 0.23373, 0.23373] atol=1.0e-2
+  @test corkendall(x)[3:6,4] ≈ [0.1288, 1., 0.19505, 0.1288] atol=1.0e-2
+  @test tail(x[:,4], x[:,5], "r") ≈ 0 atol=1.0e-1
+  @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
+  @test tail(x[:,4], x[:,5], "l") ≈ 0 atol=1.0e-1
+  @test tail(x[:,1], x[:,5], "l") ≈ 0 atol=1.0e-1
+  @test tail(x[:,6], x[:,7], "l") ≈ 0 atol=1.0e-1
+  @test tail(x[:,6], x[:,7], "r") ≈ 0 atol=1.0e-1
 end
 
 @testset "nested Frank copula" begin
-  @testset "single nested" begin
-    srand(43)
-    x = nestedfrankcopula(500000, [3, 2],  [8., 10.], 2.)
-    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
-    @test corkendall(x)[1:4,1] ≈ [1.0, 0.60262, 0.60262, 0.2139] atol=1.0e-2
-    @test corkendall(x)[3:5,4] ≈ [0.2139, 1.0, 0.6658] atol=1.0e-2
-    @test tail(x[:,4], x[:,5], "r") ≈ 0 atol=1.0e-1
-    @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
-    @test tail(x[:,4], x[:,5], "l") ≈ 0 atol=1.0e-1
-    @test tail(x[:,1], x[:,5], "l") ≈ 0 atol=1.0e-1
-    srand(43)
-    x = nestedfrankcopula(100000, [2, 2],  [2., 3.], .8)
-    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-    @test tail(x[:,1], x[:,3], "r") ≈ 0 atol=1.0e-2
-    @test tail(x[:,1], x[:,3], "l") ≈ 0 atol=1.0e-2
-    @test corkendall(x)[:,1] ≈ [1.0, 0.2139, 0.088327, 0.088327] atol=1.0e-2
-  end
+  srand(43)
+  x = nestedfrankcopula(250000, [3, 2],  [8., 10.], 2., 2)
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+  @test corkendall(x)[1:4,1] ≈ [1.0, 0.60262, 0.60262, 0.2139] atol=1.0e-2
+  @test corkendall(x)[3:5,4] ≈ [0.2139, 1.0, 0.6658] atol=1.0e-2
+  @test corkendall(x)[6:7,6] ≈ [1.0, 0.2139] atol=1.0e-2
+  @test tail(x[:,4], x[:,5], "r") ≈ 0 atol=1.0e-1
+  @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
+  @test tail(x[:,4], x[:,5], "l") ≈ 0 atol=1.0e-1
+  @test tail(x[:,1], x[:,5], "l") ≈ 0 atol=1.0e-1
+  @test tail(x[:,6], x[:,7], "r") ≈ 0 atol=1.0e-1
+  @test tail(x[:,6], x[:,7], "l") ≈ 0 atol=1.0e-1
+  srand(43)
 end
 
 @testset "nested Clayton copula" begin
-  @testset "single nested" begin
-    srand(43)
-    x = nestedclaytoncopula(50000, [2, 3],  [5., 4.], 1.5)
-    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
-    @test corkendall(x)[:,1] ≈ [1.0, 5/7, 1.5/3.5, 1.5/3.5, 1.5/3.5] atol=1.0e-1
-    @test corkendall(x)[:,5] ≈ [1.5/3.5, 1.5/3.5, 2/3, 2/3, 1.0] atol=1.0e-1
-    @test tail(x[:,4], x[:,5], "r") ≈ 0 atol=1.0e-1
-    @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
-    @test tail(x[:,1], x[:,5], "l", 0.025) ≈ 2^(-1/(1.5)) atol=1.0e-1
-    @test tail(x[:,1], x[:,2], "l", 0.025) ≈ 2^(-1/5) atol=1.0e-1
-    @test tail(x[:,4], x[:,5], "l", 0.025) ≈ 2^(-1/4) atol=1.0e-1
-  end
+  srand(42)
+  x = nestedclaytoncopula(10000, [2, 3],  [3., 4.], 1.5, 2)
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,7], Uniform(0,1))) > α
+  @test corkendall(x)[:,1] ≈ [1.0, 3/5, 1.5/3.5, 1.5/3.5, 1.5/3.5, 1.5/3.5, 1.5/3.5] atol=1.0e-1
+  @test corkendall(x)[:,5] ≈ [1.5/3.5, 1.5/3.5, 2/3, 2/3, 1.0, 1.5/3.5, 1.5/3.5] atol=1.0e-1
+  @test corkendall(x)[6,7] ≈ 1.5/3.5 atol=1.0e-1
+  @test tail(x[:,4], x[:,5], "r") ≈ 0 atol=1.0e-1
+  @test tail(x[:,1], x[:,5], "r") ≈ 0 atol=1.0e-1
+  @test tail(x[:,1], x[:,5], "l", 0.025) ≈ 2^(-1/(1.5)) atol=1.0e-1
+  @test tail(x[:,1], x[:,2], "l", 0.025) ≈ 2^(-1/3) atol=1.0e-1
+  @test tail(x[:,4], x[:,5], "l", 0.025) ≈ 2^(-1/4) atol=1.0e-1
+  @test tail(x[:,6], x[:,7], "l", 0.025) ≈ 2^(-1/(1.5)) atol=1.0e-1
 end
 
 @testset "nested frechet copula" begin
