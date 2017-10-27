@@ -48,13 +48,13 @@ end
 #u = ecdf(x);
 #u(2)
 
-function ge(V0, α)
+function ge(V0::Vector{Float64}, α::Float64)
   t = length(V0)
   ret = zeros(t)
   for i in 1:t
     x = levyg(α, 1)[1]
     u = rand()
-    while exp(-V0[i]^α*x)/exp(-V0[i]) < u
+    while exp(-V0[i]^α*x)/(10*exp(-V0[i])) < u
       x = levyg(α, 1)[1]
       u = rand()
     end
@@ -63,22 +63,24 @@ function ge(V0, α)
   ret
 end
 
-#=
+
 using Distributions
 using StatsBase
-x = ge(0.2*ones(500000), 5.)
-y = gens(0.2*ones(500000), 1/5.)
+x = ge(0.2*ones(500000), 10.)
+y = gens(0.2*ones(500000), 1/10.)
 
-mean(x)
-std(x)
+mean(x/std(x))
+std(x)/std(y)
 skewness(x)
 kurtosis(x)
 
-mean(y)
+mean(y/std(y))
 std(y)
 skewness(y)
 kurtosis(y)
-=#
+
+exp(0.2^1/5)
+
 
 
 
