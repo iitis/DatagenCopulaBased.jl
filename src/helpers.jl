@@ -54,7 +54,7 @@ function ge(V0::Vector{Float64}, α::Float64)
   for i in 1:t
     x = levyg(α, 1)[1]
     u = rand()
-    while exp(-V0[i]^α*x)/(10*exp(-V0[i])) < u
+    while exp(-V0[i]^α*x)/(20*exp(-V0[i])) < u
       x = levyg(α, 1)[1]
       u = rand()
     end
