@@ -34,13 +34,57 @@ Pseudo cdf of Levy stable distribution with parameters α = 1/θ, β = 1,
 Return Vector{Float}, given parameter ϴ and Vector{Float} - u
 """
 
-function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
-  p = invperm(sortperm(u))
-  ϕ = pi*rand(length(u))-pi/2
-  v = quantile(Exponential(1.), rand(length(u)))
+function levyg(θ::Union{Int, Float64}, t::Int)
+  ϕ = pi*rand(t)-pi/2
+  v = quantile(Exponential(1.), rand(t))
   γ = (cos(pi/(2*θ)))^θ
   v = ((cos.(pi/(2*θ)+(1/θ-1).*ϕ))./v).^(θ-1)
-  v = γ*v.*sin.(1/θ.*(pi/2+ϕ)).*(cos(pi/(2*θ)).*cos.(ϕ)).^(-θ)
+  γ*v.*sin.(1/θ.*(pi/2+ϕ)).*(cos(pi/(2*θ)).*cos.(ϕ)).^(-θ)
+end
+
+
+
+#x = levyg(1.5, 1000000)
+#u = ecdf(x);
+#u(2)
+
+function ge(V0, α)
+  t = length(V0)
+  ret = zeros(t)
+  for i in 1:t
+    x = levyg(α, 1)[1]
+    u = rand()
+    while exp(-V0[i]^α*x)/exp(-V0[i]) < u
+      x = levyg(α, 1)[1]
+      u = rand()
+    end
+    ret[i] = x
+  end
+  ret
+end
+
+#=
+using Distributions
+using StatsBase
+x = ge(0.2*ones(500000), 5.)
+y = gens(0.2*ones(500000), 1/5.)
+
+mean(x)
+std(x)
+skewness(x)
+kurtosis(x)
+
+mean(y)
+std(y)
+skewness(y)
+kurtosis(y)
+=#
+
+
+
+function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
+  p = invperm(sortperm(u))
+  v = levyg(θ, length(u))
   sort(v)[p]
 end
 
