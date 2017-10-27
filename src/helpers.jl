@@ -60,27 +60,28 @@ function ge(V0::Vector{Float64}, α::Float64)
     end
     ret[i] = x
   end
-  ret
+  ret.*V0.^α
 end
 
-
+#=
 using Distributions
 using StatsBase
-x = ge(0.2*ones(500000), 10.)
-y = gens(0.2*ones(500000), 1/10.)
+r = 0.1*rand(500000)
+x = ge(r, 4.)
+y = gens(r, 1/4.)
 
-mean(x/std(x))
-std(x)/std(y)
+mean(x)
+std(x)
 skewness(x)
 kurtosis(x)
 
-mean(y/std(y))
+mean(y)
 std(y)
 skewness(y)
 kurtosis(y)
 
 exp(0.2^1/5)
-
+=#
 
 
 
