@@ -110,6 +110,32 @@ end
 
 # Archimedean copulas
 
+function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
+  if copula == "clayton"
+    return quantile(Gamma(1/θ, θ), v)
+  elseif copula == "amh"
+    return 1+quantile(Geometric(1-θ), v)
+  elseif copula == "frank"
+    return logseriesquantile(1-exp(-θ), v)
+  elseif copula == "gumbel"
+    return levygen(θ, v)
+  end
+  v
+end
+
+function phi(u::Matrix{T}, θ::Union{Float64, Int}, copula::String) where T <:AbstractFloat
+  if copula == "clayton"
+    return (1 + θ.*u).^(-1/θ)
+  elseif copula == "amh"
+    return (1-θ)./(exp.(u)-θ)
+  elseif copula == "frank"
+    return -log.(1+exp.(-u)*(exp(-θ)-1))/θ
+  elseif copula == "gumbel"
+    return exp.(-u.^(1/θ))
+  end
+  u
+end
+
 """
   copulagen(copula::String, r::Matrix{Float}, θ::Union{Float64, Int})
 
@@ -120,22 +146,8 @@ random vectors.
 """
 
 function copulagen(copula::String, r::Matrix{T}, θ::Union{Float64, Int}) where T <:AbstractFloat
-  u = r[:,1:end-1]
-  v = r[:,end]
-  if copula == "clayton"
-    u = -log.(u)./quantile(Gamma(1/θ, θ), v)
-    return (1 + θ.*u).^(-1/θ)
-  elseif copula == "amh"
-    u = -log.(u)./(1+quantile(Geometric(1-θ), v))
-    return (1-θ)./(exp.(u)-θ)
-  elseif copula == "frank"
-    u = -log.(u)./logseriesquantile(1-exp(-θ), v)
-    return -log.(1+exp.(-u)*(exp(-θ)-1))/θ
-  elseif copula == "gumbel"
-    u = -log.(u)./levygen(θ, v)
-    return exp.(-u.^(1/θ))
-  end
-  u
+  u = -log.(r[:,1:end-1])./getV0(θ, r[:,end], copula)
+  phi(u, θ, copula)
 end
 
 """

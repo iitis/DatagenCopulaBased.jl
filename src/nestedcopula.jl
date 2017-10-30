@@ -2,51 +2,40 @@
 # Algorithms from M. Hofert, `Efficiently sampling nested Archimedean copulas`
 # Computational Statistics and Data Analysis 55 (2011) 57–70
 
-
 """
-  nestedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64)
+  nestedcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
 
-Returns t realisations of ∑ᵢ nᵢ variate data of nested Gumbel copula
-C_θ(C_Φ₁(u₁₁, ..., u₁,ₙ₁), C_θ(C_Φₖ(uₖ₁, ..., uₖ,ₙₖ)) where k = length(n).
-
-M. Hofert, 'Sampling  Archimedean copulas', Computational Statistics & Data Analysis, Volume 52, 2008
+Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using
+nested archimedean copula, outer copula parameter is θ, inner i'th copulas parameter is
+ϕ[i] and size is n[i]. If m ≠ 0, last m variables are from outer copula only, see Alg. 5
+McNeil, A.J., 2008. 'Sampling nested Archimedean copulas'. Journal of Statistical
+ Computation and Simulation 78, 567–581.
 """
 
-function nestedgumbelcopula(t::Int, n::Vector{Int}, Φ::Vector{Float64}, θ::Float64, m::Int = 0;
-                                                                                    c::Float64 = 1.)
-  testnestedpars(θ, Φ, n)
-  Φ = Φ./θ./c
-  X = copulagen("gumbel", rand(t,n[1]+1), Φ[1])
+
+nestedarchcopulagen(copula::String, t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0) =
+  nestedcopulag(copula, t, n, ϕ, θ, rand(t, sum(n)+m+1))
+
+  """
+    nestedcopulag(copula::String, t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, r::Matrix{Float64})
+
+  Returns t realisations of ∑ᵢ nᵢ variate data of nested archimedean copula
+  C_θ(C_Φ₁(u₁₁, ..., u₁,ₙ₁), C_θ(C_Φₖ(uₖ₁, ..., uₖ,ₙₖ)) where k = length(n).
+
+  M. Hofert, 'Sampling  Archimedean copulas', Computational Statistics & Data Analysis, Volume 52, 2008
+  """
+
+function nestedcopulag(copula::String, t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, r::Matrix{Float64})
+  testnestedpars(θ, ϕ, n)
+  V0 = getV0(θ, r[:,end], copula)
+  X = nestedstep(copula, r[:,1:n[1]], rand(t), V0, ϕ[1], θ)
+  cn = cumsum(n)
   for i in 2:length(n)
-    X = hcat(X, copulagen("gumbel", rand(t,n[i]+1), Φ[i]))
+    u = r[:,cn[i-1]+1:cn[i]]
+    X = hcat(X, nestedstep(copula, u, rand(t), V0, ϕ[i], θ))
   end
-  if m != 0
-    X = hcat(X, rand(t,m))
-  end
-  u = -log.(X)./levygen(θ, rand(t))
-  exp.(-u.^(1/θ))
-end
-
-
-"""
-  nestedgumbelcopulat::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, Φ::Vector{Float64}, θ₀::Float64)
-
-Returns t realisations of ∑ᵢ ∑ⱼ nᵢⱼ variate data of double nested Gumbel copula.
-C_θ(C_Φ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_Φₖ(C_Ψₖ₁(u,...), ..., C_Ψₖ,ₗₖ(u,...)))
- where lᵢ = length(n[i])
-
-"""
-
-
-function nestedgumbelcopula(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, Φ::Vector{Float64}, θ::Float64)
-  θ <= minimum(Φ) || throw(AssertionError("wrong heirarchy of parameters"))
-  Φ = Φ./θ
-  X = nestedgumbelcopula(t, n[1], Ψ[1], Φ[1]; c = θ)
-  for i in 2:length(n)
-    X = hcat(X, nestedgumbelcopula(t, n[i], Ψ[i], Φ[i], c = θ))
-  end
-  u = -log.(X)./levygen(θ, rand(t))
-  exp.(-u.^(1/θ))
+  X = hcat(X, r[:,sum(n)+1:end-1])
+  phi(-log.(X)./V0, θ, copula)
 end
 
 
@@ -69,76 +58,41 @@ function nestedstep(copula::String, u::Matrix{Float64}, v::Vector{Float64},
     t = length(V0)
     w = [quantile(NegativeBinomial(V0[i], (1-ϕ)/(1-θ)), v[i]) for i in 1:t]
     u = -log.(u)./(V0 + w)
-    return ((exp.(u)-ϕ)*(1-θ)+θ*(1-ϕ))/(1-ϕ)
+    X = ((exp.(u)-ϕ)*(1-θ)+θ*(1-ϕ))/(1-ϕ)
+    return X.^(-V0)
   elseif copula == "frank"
     u = -log.(u)./nestedfrankgen(ϕ, θ, V0)
-    return (1-(1-exp.(-u)*(1-exp(-ϕ))).^(θ/ϕ))./(1-exp(-θ))
+    X = (1-(1-exp.(-u)*(1-exp(-ϕ))).^(θ/ϕ))./(1-exp(-θ))
+    return X.^V0
   elseif copula == "clayton"
     u = -log.(u)./tiltedlevygen(V0, ϕ/θ)
     return exp.(V0.-V0.*(1.+u).^(θ/ϕ))
+  elseif copula == "gumbel"
+    u = -log.(u)./levygen(ϕ/θ, v)
+    return exp.(-u.^(θ/ϕ))
   end
   u
 end
 
-function nestedclaytoncopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
-  testnestedpars(θ, ϕ, n)
-  v = rand(t)
-  V0 = quantile(Gamma(1/θ, θ), v)
-  X = nestedstep("clayton", rand(t, n[1]), rand(t), V0, ϕ[1], θ)
+"""
+  nestedgumbelcopulat::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, Φ::Vector{Float64}, θ₀::Float64)
+
+Returns t realisations of ∑ᵢ ∑ⱼ nᵢⱼ variate data of double nested Gumbel copula.
+C_θ(C_Φ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_Φₖ(C_Ψₖ₁(u,...), ..., C_Ψₖ,ₗₖ(u,...)))
+ where lᵢ = length(n[i])
+
+"""
+
+
+function nestedgumbelcopula(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, Φ::Vector{Float64}, θ::Float64)
+  θ <= minimum(Φ) || throw(AssertionError("wrong heirarchy of parameters"))
+  X = nestedarchcopulagen("gumbel", t, n[1], Ψ[1], Φ[1]./θ)
   for i in 2:length(n)
-    X = hcat(X, nestedstep("clayton", rand(t, n[i]), rand(t), V0, ϕ[i], θ))
+    X = hcat(X, nestedarchcopulagen("gumbel", t, n[i], Ψ[i], Φ[i]./θ))
   end
-  if m != 0
-    X = hcat(X, rand(t, m))
-  end
-  u = -log.(X)./V0
-  (1 + θ.*u).^(-1/θ)
+  phi(-log.(X)./levygen(θ, rand(t)), θ, "gumbel")
 end
 
-"""
-  nestedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
-
-Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using
-nested Ali-Mikhail-Haq copula, outer copula parameter is θ, inner i'th copulas parameter is
-ϕ[i] and size is n[i]. If m ≠ 0, last m variables are from outer copula only, see Alg. 5
-McNeil, A.J., 2008. 'Sampling nested Archimedean copulas'. Journal of Statistical Computation and Simulation 78, 567–581.
-"""
-
-function nestedamhcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
-  testnestedpars(θ, ϕ, n)
-  v = rand(t)
-  V0 = 1+quantile(Geometric(1-θ), v)
-  X = nestedstep("amh", rand(t, n[1]), rand(t), V0, ϕ[1], θ)
-  for i in 2:length(n)
-    X = hcat(X, nestedstep("amh", rand(t, n[i]), rand(t), V0, ϕ[i], θ))
-  end
-  if m != 0
-    X = hcat(X, 1./rand(t, m).^(1./V0))
-  end
- (1-θ)./(X-θ)
-end
-
-"""
-  nestedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
-
-Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using
-nested Ali-Mikhail-Haq copula, outer copula parameter is θ, inner i'th copulas parameter is
-ϕ[i] and size is n[i]. If m ≠ 0, last m variables are from outer copula only
-"""
-
-function nestedfrankcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
-  testnestedpars(θ, ϕ, n)
-  v = rand(t)
-  V0 = logseriesquantile(1-exp(-θ), v)
-  X = nestedstep("frank", rand(t, n[1]), rand(t), V0, ϕ[1], θ)
-  for i in 2:length(n)
-    X = hcat(X, nestedstep("frank", rand(t, n[i]), rand(t), V0, ϕ[i], θ))
-  end
-  if m != 0
-    X = hcat(X, rand(t, m).^(1./V0))
-  end
-  -log.(1+X*(exp(-θ)-1))/θ
-end
 
 """
   nestedgumbelcopula(t::Int, θ::Vector{Float64})

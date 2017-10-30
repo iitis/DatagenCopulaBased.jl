@@ -11,7 +11,7 @@ module DatagenCopulaBased
   include("helpers.jl")
   include("nestedcopula.jl")
 
-  export tstudentcopulagen, gausscopulagen, convertmarg!, marshalolkincopulagen, archcopulagen
-  export cormatgen, copulamixbv, g2tsubcopula!, copulamix, nestedgumbelcopula, frechetcopulagen, nestedclaytoncopula
-  export nestedfrechetcopulagen, nestedamhcopula, nestedfrankcopula
+  export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshalolkincopulagen, archcopulagen
+  export cormatgen, copulamixbv, copulamix, convertmarg!
+  export nestedfrechetcopulagen, nestedarchcopulagen, nestedgumbelcopula
 end
