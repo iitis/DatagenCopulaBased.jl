@@ -71,11 +71,10 @@ function nestedstep(copula::String, u::Matrix{Float64}, v::Vector{Float64},
     u = -log.(u)./(V0 + w)
     return ((exp.(u)-ϕ)*(1-θ)+θ*(1-ϕ))/(1-ϕ)
   elseif copula == "frank"
-    u = -log.(u)./frankgen(ϕ, θ, V0)
+    u = -log.(u)./nestedfrankgen(ϕ, θ, V0)
     return (1-(1-exp.(-u)*(1-exp(-ϕ))).^(θ/ϕ))./(1-exp(-θ))
   elseif copula == "clayton"
-    #u = -log.(u)./gens(V0, θ/ϕ)
-    u = -log.(u)./ge(V0, ϕ/θ)
+    u = -log.(u)./tiltedlevygen(V0, ϕ/θ)
     return exp.(V0.-V0.*(1.+u).^(θ/ϕ))
   end
   u

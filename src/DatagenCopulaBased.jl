@@ -5,6 +5,7 @@ module DatagenCopulaBased
   using NLsolve
   using Combinatorics
 
+  include("gendat.jl")
   include("copulagendat.jl")
   include("subcopgendat.jl")
   include("helpers.jl")
@@ -12,5 +13,5 @@ module DatagenCopulaBased
 
   export tstudentcopulagen, gausscopulagen, convertmarg!, marshalolkincopulagen, archcopulagen
   export cormatgen, copulamixbv, g2tsubcopula!, copulamix, nestedgumbelcopula, frechetcopulagen, nestedclaytoncopula
-  export nestedfrechetcopulagen, nestedamhcopula, nestedfrankcopula, frankgen
+  export nestedfrechetcopulagen, nestedamhcopula, nestedfrankcopula
 end
