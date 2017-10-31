@@ -4,7 +4,9 @@ module DatagenCopulaBased
   using QuadGK
   using NLsolve
   using Combinatorics
-
+  using PyCall
+  @pyimport scipy.cluster.hierarchy as sch
+  
   include("gendat.jl")
   include("copulagendat.jl")
   include("subcopgendat.jl")

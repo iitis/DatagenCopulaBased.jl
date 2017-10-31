@@ -152,6 +152,7 @@ end
 
 # copula mix
 
+
 function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}},
                                                 λ::Vector{Float64} = [0.8, 0.1],
                                                 ν::Int = 10)
@@ -165,11 +166,13 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
       map = collect(combinations(1:length(ind),2))
       ρ = [Σ[ind[k[1]], ind[k[2]]] for k in map]
       x[:,ind] = mocopula(v, length(ind), τ2λ(ρ, λ))
-    elseif (p[1] == "gumbel") & (length(ind) > 2)
-      θ = [ρ2θ(Σ[ind[i], ind[i+1]], p[1]) for i in 1:(length(ind)-1)]
-      x[:,ind] = hiergcopulagen(v, sort(θ; rev = true))
     elseif p[1] == "t-student"
       g2tsubcopula!(x, Σ, ind, ν)
+    elseif length(ind) > 2
+      m1, m, n = getcors(xgauss[:,ind])
+      ϕ = [ρ2θ(m1[i], p[1]) for i in 1:length(m1)]
+      θ = ρ2θ(m, p[1])
+      x[:,ind] = nestedcopulag(p[1], t, [length(s) for s in n], ϕ, θ, v)
     else
       θ = ρ2θ(Σ[ind[1], ind[2]], p[1])
       x[:,ind] = copulagen(p[1], v, θ)
@@ -177,7 +180,6 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
   end
   x
 end
-
 """
   makeind(Σ::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
 
@@ -191,8 +193,6 @@ function makeind(Σ::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
   lim = l+1
   if ind[1] =="Marshal-Olkin"
     lim = 2^l-1
-  elseif ind[1] =="gumbel"
-    lim = 2*l-1
   end
   for p in 0:(lim-l-1)
     k = p%l+1
@@ -214,4 +214,34 @@ function norm2unifind(x::Matrix{Float64}, Σ::Matrix{Float64}, i::Vector{Int})
   w = x[:, i]*s./transpose(sqrt.(a))
   w[:, end] = sign(cov(x[:, i[1]], w[:, end]))*w[:, end]
   cdf(Normal(0,1), w)
+end
+
+function getclust(x::Matrix{Float64})
+  Z=sch.linkage(x, "average", "correlation")
+  clusts = sch.fcluster(Z, 1, criterion="maxclust")
+  for i in 2:size(x,1)
+    b = sch.fcluster(Z, i, criterion="maxclust")
+    if minimum([count(b.==j) for j in 1:i]) > 1
+      clusts = b
+    end
+  end
+  clusts
+end
+
+meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[find(tril(Σ-eye(Σ)).!=0)]))
+
+function getcors(x::Matrix{Float64})
+  inds = getclust(transpose(x))
+  Σ = cor(x)
+  m = meanΣ(Σ)
+  k = maximum(inds)
+  m1 = zeros(k)
+  ind = Array{Int}[]
+  for i in 1:k
+    j = find(inds .==i)
+    m1[i] = meanΣ(Σ[j,j])
+    push!(ind, j)
+  end
+  m = (m < minimum(m1))? m: minimum(m1)
+  m1, m, ind
 end

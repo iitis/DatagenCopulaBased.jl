@@ -171,7 +171,7 @@ end
 @testset "copula mixture" begin
   srand(44)
   Σ = cormatgen(20, 0.5, false, false)
-  d=["clayton" => [2,3,4,5,6], "amh" => [1,20], "gumbel" => [9,10], "frank" => [7,8], "Marshal-Olkin" => [11,12]]
+  d=["clayton" => [2,3,4,15,16], "amh" => [1,20], "gumbel" => [9,10], "frank" => [7,8], "Marshal-Olkin" => [11,12]]
   srand(44)
   x = copulamix(100000, Σ, d)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -186,6 +186,7 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,10], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,11], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,12], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,15], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,20], Uniform(0,1))) > α
   λₗ = (2^(-1/ρ2θ(Σ[2,3], "clayton")))
   λᵣ = (2-2.^(1./ρ2θ(Σ[9,10], "gumbel")))
@@ -198,6 +199,8 @@ end
   @test tail(x[:,9], x[:,10], "l", 0.0001) ≈ 0 atol=1.0e-1
   @test tail(x[:,7], x[:,8], "r", 0.0001) ≈ 0 atol=1.0e-2
   @test tail(x[:,7], x[:,8], "l", 0.0001) ≈ 0 atol=1.0e-2
+  println(vecnorm(Σ))
+  println(vecnorm(cor(x)))
   d=["gumbel" => [1,2,3,4], "Marshal-Olkin" => [5,6,7]]
   srand(44)
   x = copulamix(100000, Σ, d, [2., 1.8, 1.3, 0.6])
