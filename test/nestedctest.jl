@@ -200,7 +200,7 @@ end
   @test tail(x[:,7], x[:,8], "r", 0.0001) ≈ 0 atol=1.0e-2
   @test tail(x[:,7], x[:,8], "l", 0.0001) ≈ 0 atol=1.0e-2
   println(vecnorm(Σ))
-  println(vecnorm(cor(x)))
+  println(vecnorm(cor(quantile(Normal(0,1.), x))))
   d=["gumbel" => [1,2,3,4], "Marshal-Olkin" => [5,6,7]]
   srand(44)
   x = copulamix(100000, Σ, d, [2., 1.8, 1.3, 0.6])

@@ -9,6 +9,6 @@ import DatagenCopulaBased: logseriescdf, logseriesquantile, τ2λ, norm2unifind,
 import DatagenCopulaBased: frankτ2θ, dilog, frankθ, levygen, Debye
 import DatagenCopulaBased: Ginv, InvlaJ, sampleInvlaJ, elInvlaF, nestedfrankgen
 
-#include("copulatests.jl")
-#include("bivariatecopulas.jl")
+include("copulatests.jl")
+include("bivariatecopulas.jl")
 include("nestedctest.jl")

@@ -161,7 +161,7 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
   x = cdf(Normal(0,1), x)
   for p in inds
     ind = p[2]
-    v = norm2unifind(xgauss, Σ, makeind(Σ, p))
+    v = norm2unifind(xgauss, Σ, makeind(xgauss, p))
     if p[1] == "Marshal-Olkin"
       map = collect(combinations(1:length(ind),2))
       ρ = [Σ[ind[k[1]], ind[k[2]]] for k in map]
@@ -181,25 +181,36 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
   x
 end
 """
-  makeind(Σ::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
+  makeind(x::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
 
-Returns multiindex hcat(ind[2], [j₁, ..., jₖ]) where js are such that maximise Σ[ind[2] [i], js]
-k is determined by the copula type ind[1] and length(ind[2])
+Returns multiindex of chosen marginals and those most correlated with chosen marginals.
 """
 
-function makeind(Σ::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
-  l = length(ind[2])
+function makeind(x::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
   i = ind[2]
-  lim = l+1
-  if ind[1] =="Marshal-Olkin"
-    lim = 2^l-1
-  end
-  for p in 0:(lim-l-1)
-    k = p%l+1
-    i = vcat(i, find(Σ[:, k].== maximum(Σ[setdiff(collect(1:size(Σ, 2)),i),k])))
+  i = vcat(i, findsimilar(transpose(x), i))
+  if ind[1] == "Marshal-Olkin"
+    l = length(ind[2])
+    for p in 2+l:2^l-1
+      i = vcat(i, findsimilar(transpose(x), i))
+    end
   end
   i
 end
+
+function findsimilar(x::Matrix{Float64}, ind::Vector{Int})
+  maxd =Float64[]
+  for i in 1:size(x,1)
+    if !(i in ind)
+      y = vcat(x[ind,:], transpose(x[i,:]))
+      push!(maxd, sum(sch.maxdists(sch.linkage(y, "average", "correlation"))))
+    else
+      push!(maxd, Inf)
+    end
+  end
+  find(maxd .== minimum(maxd))
+end
+
 
 """
   norm2unifind(x::Matrix{Float64}, Σ::Matrix{Float64}, i::Vector{Int})
