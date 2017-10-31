@@ -3,7 +3,7 @@
 # Computational Statistics and Data Analysis 55 (2011) 57–70
 
 """
-  nestedcopula(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
+  nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
 
 Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using
 nested archimedean copula, outer copula parameter is θ, inner i'th copulas parameter is
@@ -28,11 +28,11 @@ nestedarchcopulagen(copula::String, t::Int, n::Vector{Int}, ϕ::Vector{Float64},
 function nestedcopulag(copula::String, t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, r::Matrix{Float64})
   testnestedpars(θ, ϕ, n)
   V0 = getV0(θ, r[:,end], copula)
-  X = nestedstep(copula, r[:,1:n[1]], rand(t), V0, ϕ[1], θ)
+  X = nestedstep(copula, r[:,1:n[1]], V0, ϕ[1], θ)
   cn = cumsum(n)
   for i in 2:length(n)
     u = r[:,cn[i-1]+1:cn[i]]
-    X = hcat(X, nestedstep(copula, u, rand(t), V0, ϕ[i], θ))
+    X = hcat(X, nestedstep(copula, u, V0, ϕ[i], θ))
   end
   X = hcat(X, r[:,sum(n)+1:end-1])
   phi(-log.(X)./V0, θ, copula)
@@ -51,12 +51,10 @@ function testnestedpars(θ::Float64, ϕ::Vector{Float64}, n::Vector{Int})
   length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
 end
 
-function nestedstep(copula::String, u::Matrix{Float64}, v::Vector{Float64},
-                                                        V0::Union{Vector{Float64}, Vector{Int}},
+function nestedstep(copula::String, u::Matrix{Float64}, V0::Union{Vector{Float64}, Vector{Int}},
                                                         ϕ::Float64, θ::Float64)
   if copula == "amh"
-    t = length(V0)
-    w = [quantile(NegativeBinomial(V0[i], (1-ϕ)/(1-θ)), v[i]) for i in 1:t]
+    w = [quantile(NegativeBinomial(v, (1-ϕ)/(1-θ)), rand()) for v in V0]
     u = -log.(u)./(V0 + w)
     X = ((exp.(u)-ϕ)*(1-θ)+θ*(1-ϕ))/(1-ϕ)
     return X.^(-V0)
@@ -68,7 +66,7 @@ function nestedstep(copula::String, u::Matrix{Float64}, v::Vector{Float64},
     u = -log.(u)./tiltedlevygen(V0, ϕ/θ)
     return exp.(V0.-V0.*(1.+u).^(θ/ϕ))
   elseif copula == "gumbel"
-    u = -log.(u)./levygen(ϕ/θ, v)
+    u = -log.(u)./levygen(ϕ/θ, rand(length(V0)))
     return exp.(-u.^(θ/ϕ))
   end
   u
@@ -103,28 +101,10 @@ C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)
 
 function nestedgumbelcopula(t::Int, θ::Vector{Float64})
   issorted(θ; rev=true) || throw(AssertionError("wrong heirarchy of parameters"))
-  hiergcopulagen(rand(t, 2*length(θ)+1), θ)
-end
-
-"""
-  hiergcopulagen(r::Matrix{Float}, θ::Vector{Float64})
-
-Auxiliary function used to generate data from nested (hiererchical) gumbel copula
-parametrised by a single parameter θ given a matrix of independent [0,1] distributerd
-random vectors.
-
-"""
-
-function hiergcopulagen(r::Matrix{T}, θ::Vector{Float64}) where T <:AbstractFloat
-  n = length(θ)+1
-  u = r[:,1:n]
-  v = r[:,n+1:end]
   θ = vcat(θ, [1.])
-  X = copulagen("gumbel", hcat(u[:,1:2], v[:,1]), θ[1]/θ[2])
-  for i in 2:(n-1)
-    X = hcat(X, u[:,i+1])
-    X = -log.(X)./levygen(θ[i]/θ[i+1], v[:,i])
-    X = exp.(-X.^(θ[i+1]/θ[i]))
+  X = rand(t,1)
+  for i in 1:length(θ)-1
+    X = nestedstep("gumbel", hcat(X, rand(t)), ones(t), θ[i], θ[i+1])
   end
   X
 end
