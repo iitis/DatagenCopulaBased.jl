@@ -119,13 +119,14 @@ nestedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(
 
 
 function fncopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64}, u::Matrix{Float64})
-  p = invperm(sortperm(u[:,end]))
+  p = invperm(sortperm(u[:,1]))
+  u = u[:,end:-1:1]
   lx = floor.(Int, t.*α)
   li = floor.(Int, t.*β) + lx
-  for j in size(u, 2)-1:-1:1
-    u[p[1:lx[j]],j] = u[p[1:lx[j]], j+1]
+  for j in 1:size(u, 2)-1
+    u[p[1:lx[j]],j+1] = u[p[1:lx[j]], j]
     r = p[lx[j]+1:li[j]]
-    u[r,j] = 1-u[r,j+1]
+    u[r,j+1] = 1-u[r,j]
   end
   u
 end
