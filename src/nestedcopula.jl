@@ -146,7 +146,8 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
     if p[1] == "Marshal-Olkin"
       map = collect(combinations(1:length(ind),2))
       ρ = [Σ[ind[k[1]], ind[k[2]]] for k in map]
-      x[:,ind] = mocopula(v, length(ind), τ2λ(ρ, λ))
+      τ = [moρ2τ(r) for r in ρ]
+      x[:,ind] = mocopula(v, length(ind), τ2λ(τ, λ))
     elseif p[1] == "frechet"
       l = length(ind)-1
       α, β = frechetρ2αβ([Σ[ind[k], ind[k+1]] for k in 1:l], a)
