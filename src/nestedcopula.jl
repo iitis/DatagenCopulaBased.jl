@@ -176,15 +176,13 @@ Returns multiindex of chosen marginals and those most correlated with chosen mar
 
 function makeind(x::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
   i = ind[2]
-  if ind[1] == "frechet"
-    return i
-  end
-  i = vcat(i, findsimilar(transpose(x), i))
   if ind[1] == "Marshal-Olkin"
     l = length(ind[2])
-    for p in 2+l:2^l-1
+    for p in 1+l:2^l-1
       i = vcat(i, findsimilar(transpose(x), i))
     end
+  elseif ind[1] in ["gumbel", "clayton", "frank", "amh"]
+    i = vcat(i, findsimilar(transpose(x), i))
   end
   i
 end
