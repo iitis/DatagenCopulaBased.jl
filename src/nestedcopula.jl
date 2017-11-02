@@ -114,28 +114,28 @@ end
 
 Retenares data from nested hierarchical frechet copula
 """
-function nestedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
-  α = vcat([0.], α)
-  β = vcat([0.], β)
-  n = length(α)
-  u = rand(t, n)
-  p = invperm(sortperm(u[:,1]))
-  l = floor.(Int, t.*α)
-  lb = floor.(Int, t.*β)
-  for i in 2:n
-    u[1:l[i],i] = u[1:l[i], i-1]
-    r = l[i]+1:lb[i]+l[i]
-    u[r,i] = 1-u[r,i-1]
+nestedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α)) =
+  fncopulagen(t, α, β, rand(t, length(α)+1))
+
+
+function fncopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64}, u::Matrix{Float64})
+  p = invperm(sortperm(u[:,end]))
+  lx = floor.(Int, t.*α)
+  li = floor.(Int, t.*β) + lx
+  for j in size(u, 2)-1:-1:1
+    u[p[1:lx[j]],j] = u[p[1:lx[j]], j+1]
+    r = p[lx[j]+1:li[j]]
+    u[r,j] = 1-u[r,j+1]
   end
-  u[p,:]
+  u
 end
 
 # copula mix
 
 
-function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}},
+function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}};
                                                 λ::Vector{Float64} = [0.8, 0.1],
-                                                ν::Int = 10)
+                                                ν::Int = 10, a::Vector{Float64} = [0.1])
   x = transpose(rand(MvNormal(Σ),t))
   xgauss = copy(x)
   x = cdf(Normal(0,1), x)
@@ -146,6 +146,10 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
       map = collect(combinations(1:length(ind),2))
       ρ = [Σ[ind[k[1]], ind[k[2]]] for k in map]
       x[:,ind] = mocopula(v, length(ind), τ2λ(ρ, λ))
+    elseif p[1] == "frechet"
+      l = length(ind)-1
+      α, β = frechetρ2αβ([Σ[ind[k], ind[k+1]] for k in 1:l], a)
+      x[:,ind] =fncopulagen(t, α, β, v)
     elseif p[1] == "t-student"
       g2tsubcopula!(x, Σ, ind, ν)
     elseif length(ind) > 2
@@ -160,6 +164,10 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
   end
   x
 end
+
+
+
+
 """
   makeind(x::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
 
@@ -168,6 +176,9 @@ Returns multiindex of chosen marginals and those most correlated with chosen mar
 
 function makeind(x::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
   i = ind[2]
+  if ind[1] == "frechet"
+    return i
+  end
   i = vcat(i, findsimilar(transpose(x), i))
   if ind[1] == "Marshal-Olkin"
     l = length(ind[2])

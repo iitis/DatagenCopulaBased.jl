@@ -142,6 +142,16 @@ function frankθ(ρ::Float64)
   return nlsolve(f1!, [ρ]).zero[1]
 end
 
+function frechetρ2αβ(ρ::Vector{Float64}, a::Vector{Float64})
+  la = length(a)
+  l = length(ρ)
+  a = (l > la)? hcat(a, transpose(0.1*ones(l - la))): a
+  a = [minimum([a[i], 0.5-ρ[i]/2, 0.5+ρ[i]/2]) for i in 1:l]
+  α = [(ρ[i] >= 0)? ρ[i] + a[i]: a[i] for i in 1:l]
+  β = [(ρ[i] < 0)? -ρ[i] + a[i]: a[i] for i in 1:l]
+  α, β
+end
+
 # some Marshal-Olkin copulas helpers
 
 function getmoλ(λ::Vector{Float64}, ind::Vector{Int})
