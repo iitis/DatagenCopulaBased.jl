@@ -173,7 +173,7 @@ end
   d=["clayton" => [2,3,4,15,16], "amh" => [1,20], "gumbel" => [9,10], "frank" => [7,8],
   "Marshal-Olkin" => [11,12], "frechet" => [5,6,13]]
   srand(44)
-  x = copulamix(100000, Σ, d; λ = [2.5, 3.1, 1.1])
+  x = copulamix(100000, Σ, d; λ = [2.5, 3.1, 20.])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
