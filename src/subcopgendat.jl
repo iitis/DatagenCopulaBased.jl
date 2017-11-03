@@ -7,6 +7,7 @@ distributed u1 and copula parameter θ.
 
 function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
   w = rand(length(u1))
+  copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
   if copula == "clayton"
     return (u1.^(-θ).*(w.^(-θ/(1+θ))-1)+1).^(-1/θ)
   elseif copula == "frank"
@@ -20,17 +21,21 @@ function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
 end
 
 """
-  archcopulagen(t::Int, θ::Vector{Float64})
+  bivariatecopgen(t::Int, θ::Vector{Float64})
 
 Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
 To generate data uses Archimedean one parameter bivariate sub-copulas with parameters θᵢ ≠ 0 for each
-neighbour marginals (i'th and i+1'th). If cor == "pearson", parameters
-are Pearson correlation coefficents fulfilling
+neighbour marginals (i'th and i+1'th).
+
+Following copula families are supported: clayton, frank and amh -- Ali-Mikhail-Haq.
+
+If rev == true, reverse the copula output i.e. u → 1-u (we call it reversed copula).
+It cor == pearson, kendall, uses correlation coeficient as a parameter
 
 ```jldoctest
 julia> srand(43);
 
-julia> archcopulagen(10, [4., 11.], "frank")
+julia> bivariatecopgen(10, [4., 11.], "frank")
 10×3 Array{Float64,2}:
  0.180975  0.386303   0.879254
  0.775377  0.247895   0.144803
@@ -45,8 +50,8 @@ julia> archcopulagen(10, [4., 11.], "frank")
 ```
 """
 
-function archcopulagen(t::Int, θ::Vector{Float64}, copula::String; rev::Bool = false,
-                                                                   cor::String = "")
+function bivariatecopgen(t::Int, θ::Vector{Float64}, copula::String; rev::Bool = false,
+                                                                    cor::String = "")
   if ((cor == "pearson") | (cor == "kendall"))
     θ = map(i -> usebivρ(i, copula, cor), θ)
   else
@@ -60,10 +65,13 @@ function archcopulagen(t::Int, θ::Vector{Float64}, copula::String; rev::Bool = 
 end
 
 """
+  testbivθ(θ::Union{Float64}, copula::String)
 
-Clayton bivariate sub-copulas with parameters (θᵢ ≥ -1) ^ ∧ (θᵢ ≠ 0).
-Ali-Mikhail-Haq bivariate sub-copulas with parameters -1 ≥ θᵢ ≥ 1
-Frank bivariate sub-copulas with parameters (θᵢ ≠ 0)
+Tests bivariate copula parameter
+
+clayton bivariate sub-copulas with parameters (θᵢ ≥ -1) ^ ∧ (θᵢ ≠ 0).
+amh -- Ali-Mikhail-Haq bivariate sub-copulas with parameters -1 ≥ θᵢ ≥ 1
+frank bivariate sub-copulas with parameters (θᵢ ≠ 0)
 """
 function testbivθ(θ::Union{Float64}, copula::String)
   !(0. in θ) || throw(AssertionError("not supported for θ = 0"))
@@ -75,9 +83,10 @@ function testbivθ(θ::Union{Float64}, copula::String)
 end
 
 """
+Returns Float64, a copula parameter given a pearson or kendall correlation
 
-Clayton, Frank Pearson/Kendall correlation coefficents fulfulling (-1 > θᵢ > 1) ∧ (θᵢ ≠ 0)
-Ali-Mikhail-Haq Pearson correlation coefficents fulfilling -0.2816 > θᵢ >= .5.
+For clayton or frank copula correlation fulfulling (-1 > ρᵢ > 1) ∧ (ρᵢ ≠ 0)
+For amh copula pearson correlation fulfilling -0.2816 > ρᵢ >= .5. while kendall -0.18 < τ < 1/3
 """
 
 function usebivρ(ρ::Float64, copula::String, cor::String)
@@ -90,38 +99,21 @@ function usebivρ(ρ::Float64, copula::String, cor::String)
     -1 < ρ < 1 || throw(AssertionError("correlation coeficiant must fulfill -1 < ρ < 1"))
     !(0. in ρ) || throw(AssertionError("not supported for ρ = 0"))
   end
-  (cor == "pearson")? ρ2θ(ρ, copula): τ2θ(ρ, copula)
+  (cor == "kendall")? τ2θ(ρ, copula): ρ2θ(ρ, copula)
 end
 
 
 """
-  g2tsubcopula!(z::Matrix{Float}, cormat::Matrix{Float}, subn::Array{Int})
-
-Changes data generated using gaussian copula to data generated using student
- subcopula at indices subn.
-"""
-
-function g2tsubcopula!(z::Matrix{Float64}, cormat::Matrix{Float64}, subn::Array{Int}, nu::Int = 10)
-  d = Chisq(nu)
-  U = rand(d, size(z, 1))
-  p = TDist(nu)
-  for i in subn
-    w = quantile(Normal(0, cormat[i,i]), z[:,i])
-    z[:,i] = cdf(p, w.*sqrt.(nu./U))
-  end
-end
-
-
-"""
-  ccopulamixbv(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
+  bivariatecopulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
 
 Returns Matrix{Float} t x n of t realisations of n variate uniform random variable
 given a correlation matrix. Other than Gaussian copulas subcopulas are indicated in inds =
 [copulaname::String, number_of_marginal_vatiables::Vector{Int}]
+following bivariate subcopulas families are available: "clayton", "frank", "amh" -- Ali-Mikhail-Haq
 """
 
 
-function copulamixbv(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
+function bivariatecopulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
   z = gausscopulagen(t, Σ)
   for p in inds
     j = p[2]

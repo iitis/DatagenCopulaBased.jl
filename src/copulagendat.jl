@@ -197,7 +197,11 @@ end
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Archimedean
 one parameter copula.
 
-If reversed returns data from reversed copula.
+Following copula families are supported: clayton, frank, gumbel and amh --
+Ali-Mikhail-Haq.
+
+If rev == true, reverse the copula output i.e. u → 1-u (we call it reversed copula).
+It cor == pearson, kendall, uses correlation coeficient as a parameter
 
 ```jldoctest
 julia> srand(43);
@@ -221,9 +225,9 @@ julia> archcopulagen(10, 2, 1, "clayton")
 function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
                                                               rev::Bool = false,
                                                               cor::String = "")
-  copula in ["clayton", "amh", "frank", "gumbel"] || throw(AssertionError("$(copula) is not valid copula family"))
+  copula in ["clayton", "amh", "frank", "gumbel"] || throw(AssertionError("$(copula) copula is not supported"))
   if (θ < 0)*(n == 2)*(copula != "gumbel")
-    return archcopulagen(t, [θ], copula; rev=rev, cor=cor)
+    return bivariatecopgen(t, [θ], copula; rev=rev, cor=cor)
   elseif cor == "pearson"
     θ = useρ(θ , copula)
   elseif cor == "kendall"
@@ -425,7 +429,7 @@ julia> cormatgen(4)
   1.0        0.574741  -0.789649  -0.654538
   0.574741   1.0       -0.717196  -0.610049
  -0.789649  -0.717196   1.0        0.703387
- -0.654538  -0.610049   0.703387   1.0  
+ -0.654538  -0.610049   0.703387   1.0
 ```
 """
 
@@ -433,7 +437,7 @@ function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::
   1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
   x = zeros(4*n,n)
   if ordered
-    x = archcopulagen(4*n, [fill(ρ, (n-1))...], "clayton"; cor = "pearson")
+    x = bivariatecopgen(4*n, [fill(ρ, (n-1))...], "clayton"; cor = "pearson")
   else
     x = archcopulagen(4*n, n, ρ, "clayton"; cor = "pearson")
   end

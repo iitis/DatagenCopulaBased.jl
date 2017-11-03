@@ -1,4 +1,22 @@
-# nested copulas
+"""
+  g2tsubcopula!(z::Matrix{Float}, cormat::Matrix{Float}, subn::Array{Int})
+
+Changes data generated using gaussian copula to data generated using student
+ subcopula at indices subn.
+"""
+
+function g2tsubcopula!(z::Matrix{Float64}, cormat::Matrix{Float64}, subn::Array{Int}, nu::Int = 10)
+  d = Chisq(nu)
+  U = rand(d, size(z, 1))
+  p = TDist(nu)
+  for i in subn
+    w = quantile(Normal(0, cormat[i,i]), z[:,i])
+    z[:,i] = cdf(p, w.*sqrt.(nu./U))
+  end
+end
+
+
+# nested archimedean copulas
 # Algorithms from M. Hofert, `Efficiently sampling nested Archimedean copulas`
 # Computational Statistics and Data Analysis 55 (2011) 57–70
 
