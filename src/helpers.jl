@@ -151,6 +151,12 @@ function frankθ(ρ::Float64)
   return nlsolve(f1!, [ρ]).zero[1]
 end
 
+"""
+  frechetρ2αβ(ρ::Vector{Float64}, a::Vector{Float64})
+
+Returns Vector{Float}, Vector{Float}, parameters of the frechet copula given a
+sequential correlation and parameter a = α- β or β - α
+"""
 function frechetρ2αβ(ρ::Vector{Float64}, a::Vector{Float64})
   la = length(a)
   l = length(ρ)

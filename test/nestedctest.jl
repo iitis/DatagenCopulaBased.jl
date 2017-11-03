@@ -156,13 +156,17 @@ end
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
   @test cor(y)≈ [1. 0.; 0. 1.] atol=1.0e-3
   @test makeind(Σ, "clayton" => [1,2]) == [1,2,4]
+  x = [0.1 0.2 0.3 0.4; 0.2 0.3 0.4 0.5; 0.2 0.2 0.4 0.4; 0.1 0.3 0.5 0.6]
+  @test findsimilar(x, [1,2]) == 4
+  srand(43)
+  @test getclust(randn(4,100)) == [1,1,1,1]
 end
 
 @testset "copula mixture" begin
   srand(44)
   Σ = cormatgen(20, 0.5, false, false)
   d=["clayton" => [2,3,4,15,16], "amh" => [1,20], "gumbel" => [9,10], "frank" => [7,8],
-  "Marshal-Olkin" => [11,12], "frechet" => [5,6,13]]
+  "mo" => [11,12], "frechet" => [5,6,13]]
   srand(44)
   x = copulamix(100000, Σ, d; λ = [2.5, 3.1, 20.])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -194,7 +198,7 @@ end
   @test tail(x[:,7], x[:,8], "l", 0.0001) ≈ 0 atol=1.0e-2
   println(vecnorm(Σ))
   println(vecnorm(cor(quantile(Normal(0,1.), x))))
-  d=["gumbel" => [1,2,3,4], "Marshal-Olkin" => [5,6,7]]
+  d=["gumbel" => [1,2,3,4], "mo" => [5,6,7]]
   srand(44)
   x = copulamix(100000, Σ, d; λ = [2.5, .7, 1.1, 20.])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α

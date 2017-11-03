@@ -210,20 +210,57 @@ function testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula
   length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
 end
 
-
+VP = Vector{Pair{String,Vector{Int64}}}
 # copula mix
+"""
+  copulamix(t::Int, Σ::Matrix{Float}, inds::VP; λ::Vector{Float} = [0.8, 0.1], ν::Int = 10,
+                                                a::Vector{Float} = [0.1])
+
+Returns x ∈ [0,1]ᵗⁿ data generated from gaussian copula with given correlation matrix Σ,
+and replaced by gumbel, clayton, frank, amh (Ali-Mikhail-Haq), mo ("Marshal-Olkin"),
+frechet or t-student copula at given marginal indices.
+
+Thise copulas are indicated in inds = [copulaname::String, indices of marginals::Vector{Int}].
+Indices array must be disjoint for different copulas.
+
+Additional copula parameters are supplied as a named parameters, for t-student copula: ν::Int,
+for "Marshal-Olkin" λ::Vector{Float64}, for frechet copula a::Vector{Float64} = α - β
+
+```jldoctest
+
+julia> d = ["mo" => [1,2,3], "clayton" => [4,5,6]]
+
+julia> srand(43)
+
+julia> Σ = cormatgen(7);
+
+julia> x = copulamix(10, Σ, d; λ = [0.8, 0.9, 2.1, 2.])
+10×7 Array{Float64,2}:
+ 0.746289   0.73853    0.651478    0.17872    0.415729    0.100993  0.289826
+ 0.487619   0.47527    0.695402    0.667372   0.854448    0.396435  0.252692
+ 0.959344   0.598114   0.483525    0.0694169  0.635065    0.943713  0.0463879
+ 0.949993   0.948254   0.927633    0.0512759  0.00436219  0.20456   0.19945
+ 0.718963   0.71054    0.616847    0.125815   0.145763    0.408557  0.379778
+ 0.241307   0.261325   0.221682    0.760856   0.772814    0.165766  0.544807
+ 0.0223038  0.0194711  0.00381552  0.960242   0.354697    0.381062  0.183945
+ 0.196893   0.233486   0.0252574   0.426957   0.40978     0.246162  0.831808
+ 0.856694   0.851975   0.797329    0.430832   0.0839215   0.610538  0.0235287
+ 0.574165   0.5629     0.443773    0.129092   0.0783403   0.41072   0.202428
+```
+"""
 
 
-function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}};
-                                                λ::Vector{Float64} = [0.8, 0.1],
-                                                ν::Int = 10, a::Vector{Float64} = [0.1])
+function copulamix(t::Int, Σ::Matrix{Float64}, inds::VP; λ::Vector{Float64} = [0.8, 0.1],
+                                                ν::Int = 2, a::Vector{Float64} = [0.1])
+  testind(inds)
   x = transpose(rand(MvNormal(Σ),t))
   xgauss = copy(x)
   x = cdf(Normal(0,1), x)
   for p in inds
     ind = p[2]
     v = norm2unifind(xgauss, Σ, makeind(xgauss, p))
-    if p[1] == "Marshal-Olkin"
+    if p[1] == "mo"
+      length(ind) < 4 || throw(DomainError("not supported for Marshal-Olkin subcopula of number of marginals > 3"))
       map = collect(combinations(1:length(ind),2))
       ρ = [Σ[ind[k[1]], ind[k[2]]] for k in map]
       τ = [moρ2τ(r) for r in ρ]
@@ -231,13 +268,13 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
     elseif p[1] == "frechet"
       l = length(ind)-1
       α, β = frechetρ2αβ([Σ[ind[k], ind[k+1]] for k in 1:l], a)
-      x[:,ind] =fncopulagen(t, α, β, v)
+      x[:,ind] =fncopulagen(α, β, v)
     elseif p[1] == "t-student"
       g2tsubcopula!(x, Σ, ind, ν)
     elseif length(ind) > 2
       m1, m, n = getcors(xgauss[:,ind])
-      ϕ = [ρ2θ(m1[i], p[1]) for i in 1:length(m1)]
-      θ = ρ2θ(m, p[1])
+      ϕ = [ρ2θ(abs.(m1[i]), p[1]) for i in 1:length(m1)]
+      θ = ρ2θ(abs.(m), p[1])
       x[:,ind] = nestedcopulag(p[1], [length(s) for s in n], ϕ, θ, v)
     else
       θ = ρ2θ(Σ[ind[1], ind[2]], p[1])
@@ -247,8 +284,21 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{
   x
 end
 
+"""
+  testind(inds::Vector{Pair{String,Vector{Int64}}})
 
+Tests if the sub copula name is supported and if their indices are disjoint.
+"""
 
+function testind(inds::Vector{Pair{String,Vector{Int64}}})
+  indar = []
+  for i in 1:length(inds)
+    indar = vcat(indar, inds[i][2])
+    inds[i][1] in ["gumbel", "clayton", "frank", "amh", "mo", "t-student", "frechet"] ||
+    throw(AssertionError("$(inds[i][1]) copula family not supported"))
+  end
+  unique(indar) == indar || throw(AssertionError("differnt subcopulas must heve different indices"))
+end
 
 """
   makeind(x::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
@@ -258,7 +308,7 @@ Returns multiindex of chosen marginals and those most correlated with chosen mar
 
 function makeind(x::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
   i = ind[2]
-  if ind[1] == "Marshal-Olkin"
+  if ind[1] == "mo"
     l = length(ind[2])
     for p in 1+l:2^l-1
       i = vcat(i, findsimilar(transpose(x), i))
@@ -269,6 +319,20 @@ function makeind(x::Matrix{Float64}, ind::Pair{String,Vector{Int64}})
   i
 end
 
+"""
+  findsimilar(x::Matrix{Float64}, ind::Vector{Int})
+
+Returns Int, an index of most simillar vector to those indexed by ind from x
+
+```jldoctest
+
+julia> x = [0.1 0.2 0.3 0.4; 0.2 0.3 0.4 0.5; 0.2 0.2 0.4 0.4; 0.1 0.3 0.5 0.6]
+
+julia> findsimilar(x, [1,2])
+1-element Array{Int64,1}:
+ 4
+```
+"""
 function findsimilar(x::Matrix{Float64}, ind::Vector{Int})
   maxd =Float64[]
   for i in 1:size(x,1)
@@ -298,6 +362,23 @@ function norm2unifind(x::Matrix{Float64}, Σ::Matrix{Float64}, i::Vector{Int})
   cdf(Normal(0,1), w)
 end
 
+"""
+  getclust(x::Matrix{Float64})
+
+Returns Array{Int} of that indicates a clusters of marginals given a data matrix
+
+``` jldoctest
+julia> srand(43)
+
+julia> getclust(randn(4,100))
+4-element Array{Int32,1}:
+ 1
+ 1
+ 1
+ 1
+```
+"""
+
 function getclust(x::Matrix{Float64})
   Z=sch.linkage(x, "average", "correlation")
   clusts = sch.fcluster(Z, 1, criterion="maxclust")
@@ -310,8 +391,19 @@ function getclust(x::Matrix{Float64})
   clusts
 end
 
+"""
+  meanΣ(Σ::Matrix{Float64})
+
+Returns Float64, a mean of the mean of lower diagal elements of a matrix
+"""
 meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[find(tril(Σ-eye(Σ)).!=0)]))
 
+"""
+  getcors(x::Matrix{Float64})
+
+retruns Float64, Vector{Float64} and Venctor{Vector{Int}}, a general mean correlation of
+data, mean correlations in each cluster and indices of clusters.
+"""
 function getcors(x::Matrix{Float64})
   inds = getclust(transpose(x))
   Σ = cor(x)

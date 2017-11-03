@@ -12,6 +12,7 @@ import DatagenCopulaBased: testθ, useρ, useτ, tail, ρ2θ, AMHθ, testbivθ, 
 import DatagenCopulaBased: frankτ2θ, dilog, frankθ, Debye, τ2λ, norm2unifind, makeind, τ2θ, AMHτ2θ
 import DatagenCopulaBased: mocopula, copulagen
 import DatagenCopulaBased: g2tsubcopula!, nestedcopulag, testnestedθϕ, nestedstep
+import DatagenCopulaBased: findsimilar, getclust
 
 include("datagentests.jl")
 include("copulatests.jl")
