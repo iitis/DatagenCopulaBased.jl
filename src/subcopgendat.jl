@@ -103,6 +103,68 @@ function usebivρ(ρ::Float64, copula::String, cor::String)
 end
 
 
+# Nested frechet familly copulas
+
+"""
+  bivfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
+
+Retenares data from nested hierarchical frechet copula with parameters
+vectors α and β, such that ∀ᵢ 0 α[i] + β[i] ≤1 α[i] > 0, and β[i] > 0 |α| = |β|
+
+```jldoctest
+julia> srand(43)
+
+julia> julia> bivfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
+10×3 Array{Float64,2}:
+ 0.996764  0.996764  0.996764
+ 0.204033  0.795967  0.204033
+ 0.979901  0.979901  0.0200985
+ 0.120669  0.879331  0.120669
+ 0.453027  0.453027  0.453027
+ 0.800909  0.199091  0.800909
+ 0.54892   0.54892   0.54892
+ 0.933832  0.933832  0.0661679
+ 0.396943  0.396943  0.396943
+ 0.804096  0.851275  0.955881
+```
+"""
+
+function bivfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
+  length(α) == length(β) || throw(AssertionError("different lengths of parameters"))
+  minimum(α) >= 0 || throw(AssertionError("negative α parameter"))
+  minimum(β) >= 0 || throw(AssertionError("negative β parameter"))
+  maximum(α+β) <= 1 || throw(AssertionError("α[i] + β[i] > 0"))
+  fncopulagen(α, β, rand(t, length(α)+1))
+end
+
+"""
+
+  fncopulagen(α::Vector{Float64}, β::Vector{Float64}, u::Matrix{Float64})
+
+  
+```jldoctest
+
+julia> fncopulagen(2, [0.2, 0.4], [0.1, 0.1], [0.2 0.4 0.6; 0.3 0.5 0.7])
+2×3 Array{Float64,2}:
+ 0.6  0.4  0.2
+ 0.7  0.5  0.3
+
+```
+"""
+
+function fncopulagen(α::Vector{Float64}, β::Vector{Float64}, u::Matrix{Float64})
+  p = invperm(sortperm(u[:,1]))
+  u = u[:,end:-1:1]
+  lx = floor.(Int, size(u,1).*α)
+  li = floor.(Int, size(u,1).*β) + lx
+  for j in 1:size(u, 2)-1
+    u[p[1:lx[j]],j+1] = u[p[1:lx[j]], j]
+    r = p[lx[j]+1:li[j]]
+    u[r,j+1] = 1-u[r,j]
+  end
+  u
+end
+
 """
   bivariatecopulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
 
@@ -111,7 +173,6 @@ given a correlation matrix. Other than Gaussian copulas subcopulas are indicated
 [copulaname::String, number_of_marginal_vatiables::Vector{Int}]
 following bivariate subcopulas families are available: "clayton", "frank", "amh" -- Ali-Mikhail-Haq
 """
-
 
 function bivariatecopulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
   z = gausscopulagen(t, Σ)

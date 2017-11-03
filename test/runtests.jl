@@ -4,7 +4,7 @@ using Distributions
 using HypothesisTests
 using StatsBase
 
-import DatagenCopulaBased: rand2cop, bivariatecopulamix
+import DatagenCopulaBased: rand2cop, bivariatecopulamix, fncopulagen
 import DatagenCopulaBased: logseriescdf, logseriesquantile, levyel, levygen, tiltedlevygen
 import DatagenCopulaBased: Ginv, InvlaJ, sampleInvlaJ, elInvlaF, nestedfrankgen
 import DatagenCopulaBased: getV0, phi

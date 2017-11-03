@@ -210,53 +210,6 @@ function testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula
   length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
 end
 
-# Nested frechet familly copulas
-
-"""
-  nestedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
-
-Retenares data from nested hierarchical frechet copula with parameters
-vectors α and β, such that ∀ᵢ 0 α[i] + β[i] ≤1 α[i] > 0, and β[i] > 0 |α| = |β|
-
-```jldoctest
-julia> srand(43)
-
-julia> julia> nestedfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
-10×3 Array{Float64,2}:
- 0.996764  0.996764  0.996764
- 0.204033  0.795967  0.204033
- 0.979901  0.979901  0.0200985
- 0.120669  0.879331  0.120669
- 0.453027  0.453027  0.453027
- 0.800909  0.199091  0.800909
- 0.54892   0.54892   0.54892
- 0.933832  0.933832  0.0661679
- 0.396943  0.396943  0.396943
- 0.804096  0.851275  0.955881
-```
-"""
-
-function nestedfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
-  length(α) == length(β) || throw(AssertionError("different lengths of parameters"))
-  minimum(α) >= 0 || throw(AssertionError("negative α parameter"))
-  minimum(β) >= 0 || throw(AssertionError("negative β parameter"))
-  maximum(α+β) <= 1 || throw(AssertionError("α[i] + β[i] > 0"))
-  fncopulagen(t, α, β, rand(t, length(α)+1))
-end
-
-
-function fncopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64}, u::Matrix{Float64})
-  p = invperm(sortperm(u[:,1]))
-  u = u[:,end:-1:1]
-  lx = floor.(Int, t.*α)
-  li = floor.(Int, t.*β) + lx
-  for j in 1:size(u, 2)-1
-    u[p[1:lx[j]],j+1] = u[p[1:lx[j]], j]
-    r = p[lx[j]+1:li[j]]
-    u[r,j+1] = 1-u[r,j]
-  end
-  u
-end
 
 # copula mix
 

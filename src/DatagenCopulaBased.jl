@@ -16,5 +16,5 @@ module DatagenCopulaBased
   export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshalolkincopulagen
   export archcopulagen, bivariatecopgen
   export cormatgen, copulamix, convertmarg!
-  export nestedfrechetcopulagen, nestedarchcopulagen
+  export bivfrechetcopulagen, nestedarchcopulagen
 end
