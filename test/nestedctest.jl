@@ -14,22 +14,28 @@
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
 end
 
+@testset "nested archimedean copulas halpers" begin
+  srand(43)
+  u = nestedcopulag("clayton", [2, 2], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
+  @test u ≈ [0.193949 0.230553 0.515404 0.557686; 0.712034 0.761276 0.190189 0.208867] atol=1.0e-5
+  srand(43)
+  @test nestedstep("clayton", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5) ≈ [0.374625 0.836357; 0.0381504 0.500485] atol=1.0e-5
+end
+
+@testset "nested archimedean copulas exceptions" begin
+  @test_throws(AssertionError, testnestedθϕ([2, 2], [2.1, 2.2], 0.5, "gumbel"))
+  @test_throws(AssertionError, testnestedθϕ([2, 2], [2.1, 2.2], 3.5, "gumbel"))
+  @test_throws(AssertionError, testnestedθϕ([2, 2], [0.8, 1.1], 0.5, "amh"))
+  @test_throws(AssertionError, testnestedθϕ([2, 2], [0.8], 0.5, "amh"))
+  @test_throws(AssertionError, nestedarchcopulagen(100000, [2, 2], [2., 2.], 0.5, "fran"))
+  @test_throws(AssertionError, nestedarchcopulagen(500000, [2.2, 3.6, 1.1], "gumbel"))
+  @test_throws(AssertionError, nestedarchcopulagen(500000, [4.2, 3.6, 0.1], "gumbel"))
+end
+
 @testset "nested gumbel copula" begin
-  @testset "hierarchical" begin
-    srand(42)
-    x = nestedgumbelcopula(500000, [4.2, 3.6, 1.1])
-    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
-    @test corkendall(x)[1:2,:] ≈ [1. 0.7619 0.72222 0.0909; 0.7619 1. 0.72222 0.0909] atol=1.0e-2
-    @test tail(x[:,2], x[:,3], "r", 0.01) ≈ 2-2^(1/3.6) atol=1.0e-1
-    @test tail(x[:,3], x[:,4], "r", 0.01) ≈ 2-2^(1/1.1) atol=1.0e-2
-    @test tail(x[:,1], x[:,2], "l", 0.00001) ≈ 0
-  end
   @testset "single nested" begin
     srand(44)
-    x = nestedarchcopulagen("gumbel", 500000, [2,2], [4.2, 6.1], 2.1, 1)
+    x = nestedarchcopulagen(500000, [2,2], [4.2, 6.1], 2.1, "gumbel", 1)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -46,7 +52,7 @@ end
   end
   @testset "double nested" begin
     srand(43)
-    x = nestedgumbelcopula(200000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2)
+    x = nestedarchcopulagen(200000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2, "gumbel")
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -58,13 +64,23 @@ end
     @test tail(x[:,1], x[:,2], "l", 0.00001) ≈ 0
     @test tail(x[:,1], x[:,3], "l", 0.00001) ≈ 0
   end
+  @testset "hierarchical" begin
+    srand(42)
+    x = nestedarchcopulagen(500000, [4.2, 3.6, 1.1], "gumbel")
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+    @test corkendall(x)[1:2,:] ≈ [1. 0.7619 0.72222 0.0909; 0.7619 1. 0.72222 0.0909] atol=1.0e-2
+    @test tail(x[:,2], x[:,3], "r", 0.01) ≈ 2-2^(1/3.6) atol=1.0e-1
+    @test tail(x[:,3], x[:,4], "r", 0.01) ≈ 2-2^(1/1.1) atol=1.0e-2
+    @test tail(x[:,1], x[:,2], "l", 0.00001) ≈ 0
+  end
 end
-
-
 
 @testset "nested Ali-Mikhail-Haq copula" begin
   srand(43)
-  x = nestedarchcopulagen("amh", 200000, [3, 2], [0.8, 0.7], 0.5, 2)
+  x = nestedarchcopulagen(200000, [3, 2], [0.8, 0.7], 0.5, "amh", 2)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -86,7 +102,7 @@ end
 
 @testset "nested Frank copula" begin
   srand(44)
-  x = nestedarchcopulagen("frank", 250000, [3, 2],  [8., 10.], 2., 2)
+  x = nestedarchcopulagen(250000, [3, 2],  [8., 10.], 2., "frank", 2)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -109,7 +125,7 @@ end
 
 @testset "nested Clayton copula" begin
   srand(43)
-  x = nestedarchcopulagen("clayton", 500000, [2, 3],  [3., 4.], 1.5, 2)
+  x = nestedarchcopulagen(500000, [2, 3],  [3., 4.], 1.5, "clayton", 2)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -165,7 +181,6 @@ end
   @test cor(y)≈ [1. 0.; 0. 1.] atol=1.0e-3
   @test makeind(Σ, "clayton" => [1,2]) == [1,2,4]
 end
-
 
 @testset "copula mixture" begin
   srand(44)
