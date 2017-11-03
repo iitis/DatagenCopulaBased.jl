@@ -72,43 +72,60 @@ end
 
 
 """
-  function frechetcopula(t::Int, n::Int, α::Float64
+  function frechetcopulagen(t::Int, n::Int, α::Float64)
 
-Returns t realisation of n variate data generated from one parameter frechet copula
-being a combination of maximal copla with  weight α and independent copula with  weight 1-α
+Returns t realisation of n variate data generated from one parameter frechet multidimentional copula,
+a combination of maximal copla with  weight α and independent copula with  weight 1-α
 
 ```jldoctest
 julia> srand(43);
 
-julia> frechetcopula(10, 2, 0.)
+julia> frechetcopulagen(10, 2, 0.5)
 10×2 Array{Float64,2}:
- 0.180975  0.661781
+ 0.180975  0.180975
  0.775377  0.0742681
- 0.888934  0.125437
+ 0.888934  0.888934
  0.924876  0.0950087
- 0.408278  0.130474
+ 0.408278  0.408278
  0.912603  0.740184
- 0.828727  0.00463791
+ 0.828727  0.828727
  0.400537  0.0288987
- 0.429437  0.521601
+ 0.429437  0.429437
  0.955881  0.851275
 ```
 """
 
 
 function frechetcopulagen(t::Int, n::Int, α::Float64)
-  0 <= α <=1 || throw(AssertionError("generaton not supported for α ∉ [0,1]"))
+  0 <= α <= 1 || throw(AssertionError("generaton not supported for α ∉ [0,1]"))
   u = rand(t, n)
   p = invperm(sortperm(u[:,1]))
   l = floor(Int, t*α)
   for i in 1:n
-    u[1:l,i] = u[1:l, 1]
+    u[p[1:l],i] = u[p[1:l], 1]
   end
-  u[p,:]
+  u
 end
 
 
 # Archimedean copulas
+"""
+  getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
+
+Returns Vector{Float} or Vector{Int} of realisations of axiliary variable V0
+used to ganarate data from 1d archimedean copula with parameter Θ, given v:
+realisations of 1d variable uniformly distributed on [0,1]
+
+```jldoctest
+
+julia> getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton")
+4-element Array{Float64,1}:
+ 0.0641848
+ 0.274996
+ 0.708326
+ 1.64237
+```
+"""
 
 function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
   if copula == "clayton"
@@ -123,7 +140,23 @@ function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
   v
 end
 
-function phi(u::Matrix{T}, θ::Union{Float64, Int}, copula::String) where T <:AbstractFloat
+"""
+  phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
+
+Given a matrix t realisations of n variate data ℜᵗⁿ ∋ u = -log(rand(t,n))./V0
+returns it transformed through an inverse generator of archimedean copula. Output
+is distributed uniformly on [0,1]ⁿ
+
+```jldoctest
+
+julia> julia> phi([0.2 0.6; 0.4 0.8], 2., "clayton")
+2×2 Array{Float64,2}:
+ 0.845154  0.6742
+ 0.745356  0.620174
+```
+"""
+
+function phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
   if copula == "clayton"
     return (1 + θ.*u).^(-1/θ)
   elseif copula == "amh"
@@ -139,9 +172,16 @@ end
 """
   copulagen(copula::String, r::Matrix{Float}, θ::Union{Float64, Int})
 
-Auxiliary function used to generate data from clayton, gumbel, frank or amh copula
+Auxiliary function used to generate data from archimedean copula (clayton, gumbel, frank or amh)
 parametrised by a single parameter θ given a matrix of independent [0,1] distributerd
 random vectors.
+
+```jldoctest
+  julia> copulagen("clayton", [0.2 0.6 0.9; 0.4 0.5 0.8], 2.)
+  2×2 Array{Float64,2}:
+   0.675778  0.851993
+   0.687482  0.736394
+```
 
 """
 
@@ -164,23 +204,27 @@ julia> srand(43);
 
 julia> archcopulagen(10, 2, 1, "clayton")
 10×2 Array{Float64,2}:
-  0.325965  0.984025
-  0.364814  0.484407
-  0.514236  0.990846
-  0.523757  0.55038
-  0.204864  0.398564
-  0.890124  0.916516
-  0.247198  0.746308
-  0.126174  0.882004
-  0.462986  0.377842
-  0.950937  0.934698
+ 0.770331  0.932834
+ 0.472847  0.0806845
+ 0.970749  0.653029
+ 0.622159  0.0518025
+ 0.402461  0.228549
+ 0.946375  0.842883
+ 0.809076  0.129038
+ 0.747983  0.433829
+ 0.374341  0.437269
+ 0.973066  0.910103
+
  ```
 """
 
 function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
                                                               rev::Bool = false,
                                                               cor::String = "")
-  if cor == "pearson"
+  copula in ["clayton", "amh", "frank", "gumbel"] || throw(AssertionError("$(copula) is not valid copula family"))
+  if (θ < 0)*(n == 2)*(copula != "gumbel")
+    return archcopulagen(t, [θ], copula; rev=rev, cor=cor)
+  elseif cor == "pearson"
     θ = useρ(θ , copula)
   elseif cor == "kendall"
     θ = useτ(θ , copula)
@@ -191,6 +235,11 @@ function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
   rev? 1-u: u
 end
 
+"""
+  function testθ(θ::Union{Float64, Int}, copula::String)
+
+Tests the parameter θ value for archimedean copula, returns void
+"""
 
 function testθ(θ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
@@ -202,6 +251,19 @@ function testθ(θ::Union{Float64, Int}, copula::String)
   end
 end
 
+"""
+  useρ(ρ::Float64, copula::String)
+
+Tests the available pearson correlation for archimedean copula, returns Float,
+corresponding copula parameter θ.
+```jldoctest
+
+julia> useρ(0.75, "gumbel")
+2.294053859606698
+```
+
+"""
+
 function useρ(ρ::Float64, copula::String)
   0 < ρ < 1 || throw(AssertionError("correlation coeficiant must fulfill 0 < ρ < 1"))
   if copula == "amh"
@@ -210,6 +272,18 @@ function useρ(ρ::Float64, copula::String)
   ρ2θ(ρ, copula)
 end
 
+"""
+  useτ(ρ::Float64, copula::String)
+
+Tests the available kendall's correlation for archimedean copula, returns Float,
+corresponding copula parameter θ.
+
+```jldoctest
+
+julia> useτ(0.5, "clayton")
+2.0
+```
+"""
 
 function useτ(τ::Float64, copula::String)
   0 < τ < 1 || throw(AssertionError("correlation coeficiant must fulfill 0 < τ < 1"))
@@ -218,8 +292,6 @@ function useτ(τ::Float64, copula::String)
   end
   τ2θ(τ, copula)
 end
-
-
 
 
 """
@@ -234,18 +306,20 @@ If reversed = true, returns data from reversed Marshal-Olkin copula.
 
 ```jldoctest
 
+julia> srand(43)
+
 julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
 10×2 Array{Float64,2}:
- 0.875948   0.813807
- 0.902229   0.852105
- 0.386377   0.22781
- 0.666248   0.381651
- 0.10115    0.0283248
- 0.0666898  0.00202552
- 0.99636    0.994344
- 0.0926391  0.95373
- 0.50927    0.5957
- 0.782477   0.682792
+ 0.99636   0.994344
+ 0.167268  0.0619408
+ 0.977418  0.965093
+ 0.495167  0.0247053
+ 0.410336  0.250159
+ 0.778989  0.678064
+ 0.50927   0.350059
+ 0.925875  0.887095
+ 0.353646  0.219006
+ 0.782477  0.686799
  ```
 """
 
@@ -256,6 +330,25 @@ function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::B
   U = mocopula(rand(t,2^n-1), n, λ)
   reverse? 1-U: U
 end
+
+
+"""
+  mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
+
+  Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Marshal-Olkin
+  copula with parameter vector λ of non-negative elements λₛ, given [0,1]ᵗˣˡ ∋ u, where
+  l = 2ⁿ-1
+
+```jldoctest
+
+  julia> mocopula([0.2 0.3 0.4; 0.3 0.4 0.6; 0.4 0.5 0.7], 2, [1., 1.5, 2.])
+  3×2 Array{Float64,2}:
+   0.252982  0.201189
+   0.464758  0.409039
+   0.585662  0.5357
+
+```
+"""
 
 function mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
   s = collect(combinations(1:n))
@@ -329,10 +422,10 @@ julia> srand(43);
 
 julia> cormatgen(4)
 4×4 Array{Float64,2}:
-  1.0        0.566747  -0.34848   -0.413496
-  0.566747   1.0       -0.496956  -0.575852
- -0.34848   -0.496956   1.0        0.612688
- -0.413496  -0.575852   0.612688   1.0
+  1.0        0.574741  -0.789649  -0.654538
+  0.574741   1.0       -0.717196  -0.610049
+ -0.789649  -0.717196   1.0        0.703387
+ -0.654538  -0.610049   0.703387   1.0  
 ```
 """
 

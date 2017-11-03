@@ -52,12 +52,6 @@ end
   @test cormatgen(3, 0.8, true, true) ≈ [ 1.0 0.586417 -0.461157; 0.586417 1.0 -0.732091; -0.461157 -0.732091 1.0] atol=1.0e-5
 end
 
-@testset "copula gen" begin
-  c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
-  @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
-end
-
-
 @testset "gaussian copula" begin
   srand(43)
   x = gausscopulagen(500000, [1. 0.5; 0.5 1.])
@@ -99,6 +93,23 @@ end
   x = frechetcopulagen(500000, 2, .0)
   @test cor(x) ≈ [1. 0.; 0. 1.] atol=1.0e-2
 end
+
+@testset "archimedean copulas axiliary functions" begin
+  @test getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton") ≈ [0.0641848, 0.274996, 0.708326, 1.64237] atol=1.0e-4
+  @test phi([0.2 0.6; 0.4 0.8], 2., "clayton") ≈ [0.845154  0.6742; 0.745356  0.620174] atol=1.0e-4
+  c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
+  @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
+  @test useτ(0.5, "clayton") == 2.
+  @test useρ(0.75, "gumbel") ≈ 2.294053859606698
+end
+
+@testset "archimedean copulas exceptions" begin
+  @test_throws(AssertionError, testθ(0.5, "gumbel"))
+  @test_throws(AssertionError, useρ(0.6, "amh"))
+  @test_throws(AssertionError, useτ(0.45, "amh"))
+  @test_throws(AssertionError, archcopulagen(100000, 4, -0.6, "frank"))
+end
+
 @testset "gumbel copula" begin
   srand(43)
   x = archcopulagen(500000, 3, 2., "gumbel");
@@ -135,6 +146,11 @@ end
   srand(43)
   x = archcopulagen(500000, 2, 0.5, "clayton"; cor = "kendall")
   @test corkendall(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-3
+  srand(43)
+  x = archcopulagen(500000, 2, -0.9, "clayton")
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test corkendall(x)[1,2] ≈ -0.9/(2-0.9) atol=1.0e-3
 end
 @testset "frank copula" begin
   srand(43)
@@ -161,6 +177,8 @@ end
   @test corkendall(x) ≈ [1. 0.25; 0.25 1.] atol=1.0e-3
 end
 @testset "Marhall-Olkin copula" begin
+  m = [0.252982 0.201189;  0.464758 0.409039; 0.585662 0.5357]
+  @test mocopula([0.2 0.3 0.4; 0.3 0.4 0.6; 0.4 0.5 0.7], 2, [1., 1.5, 2.]) ≈ m atol=1.0e-4
   srand(43)
   x = marshalolkincopulagen(100000, [1.1, 0.2, 0.6])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
