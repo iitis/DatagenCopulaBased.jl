@@ -1,14 +1,6 @@
 α = 0.025
 
 @testset "heplers" begin
-  @testset "axiliary functions" begin
-    srand(43)
-    @test cormatgen(2) ≈ [1.0 0.911683; 0.911683 1.0] atol=1.0e-5
-    srand(44)
-    @test cormatgen(3, 0.8, true, false) ≈ [ 1.0 0.586417 0.461157; 0.586417 1.0 0.732091; 0.461157 0.732091 1.0] atol=1.0e-5
-    srand(44)
-    @test cormatgen(3, 0.8, true, true) ≈ [ 1.0 0.586417 -0.461157; 0.586417 1.0 -0.732091; -0.461157 -0.732091 1.0] atol=1.0e-5
-  end
   @testset "tail dependencies" begin
     v1 = vcat(zeros(5), 0.5*ones(5), zeros(5), 0.5*ones(70), ones(5), 0.5*ones(5), ones(5));
     v2 = vcat(zeros(10), 0.5*ones(80), ones(10))
@@ -36,38 +28,7 @@
   end
 end
 
-@testset "data generators" begin
-  @testset "copula gen" begin
-    c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
-    @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
-  end
-  @testset "logseries dist" begin
-    @test logseriescdf(0.01)[1:3] ≈ [0.0, 0.994992, 0.999967] atol=1.0e-5
-    @test logseriesquantile(0.9, [0.25, 0.5, 0.75]) == [1, 2, 5]
-    srand(43)
-    v = logseriesquantile(0.4, rand(1000000))
-    @test mean(v) ≈ 1.304 atol=1.0e-2
-    @test std(v) ≈ 0.687 atol=1.0e-2
-    @test skewness(v) ≈ 3.1 atol=1.0e-2
-    @test kurtosis(v) ≈ 13.5 atol=1.0
-  end
-  @testset "stable levy dist" begin
-    srand(43)
-    @test levygen(2., [0.2, 0.4, 0.6, 0.8]) ≈ [0.159748, 0.181703, 3.20539, 6.91497] atol=1.0e-4
-  end
-  @testset "nested copulas data generators" begin
-    @test Ginv(0.5, 0.5) ≈ 1.2732395447351625
-    @test InvlaJ(4, 0.5) ≈ 0.7265625
-    @test sampleInvlaJ(0.5, 0.5) == 1
-    @test sampleInvlaJ(0.5, 0.8) == 8
-    srand(43)
-    @test elInvlaF(4., 2.) == 7
-    srand(43)
-    @test elInvlaF(4., .5) == 16
-    srand(43)
-    @test nestedfrankgen(5., 3., [1, 1, 2]) == [3, 1, 49]
-  end
-end
+
 
 @testset "transform marginals" begin
   x1 = [0.2 0.4; 0.4 0.6; 0.6 0.8]
@@ -81,6 +42,21 @@ end
   srand(43)
   @test_throws AssertionError convertmarg!(randn(1000, 2), Normal)
 end
+
+@testset "generate corelation matrix" begin
+  srand(43)
+  @test cormatgen(2) ≈ [1.0 0.911683; 0.911683 1.0] atol=1.0e-5
+  srand(44)
+  @test cormatgen(3, 0.8, true, false) ≈ [ 1.0 0.586417 0.461157; 0.586417 1.0 0.732091; 0.461157 0.732091 1.0] atol=1.0e-5
+  srand(44)
+  @test cormatgen(3, 0.8, true, true) ≈ [ 1.0 0.586417 -0.461157; 0.586417 1.0 -0.732091; -0.461157 -0.732091 1.0] atol=1.0e-5
+end
+
+@testset "copula gen" begin
+  c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
+  @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
+end
+
 
 @testset "gaussian copula" begin
   srand(43)

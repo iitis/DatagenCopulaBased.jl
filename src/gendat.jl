@@ -42,6 +42,19 @@ function levyel(θ::Union{Int, Float64})
   γ*v*sin(1/θ*(pi/2+ϕ))*(cos(pi/(2*θ))*cos(ϕ))^(-θ)
 end
 
+
+"""
+Return a Vectof(Floast} of  of pseudo cdf of Levy stable distribution with parameters
+α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0, given a vector of Floats - u
+
+"""
+
+function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
+  p = invperm(sortperm(u))
+  v = [levyel(θ) for a in u]
+  sort(v)[p]
+end
+
 """
   tiltedlevygen(V0::Vector{Float64}, α::Float64)
 
@@ -66,21 +79,6 @@ function tiltedlevygen(V0::Vector{Float64}, α::Float64)
   end
   ret.*V0.^α
 end
-
-
-
-"""
-Raturn a Vectof(Floast} of  of pseudo cdf of Levy stable distribution with parameters
-α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0, given a vector of Floats - u
-
-"""
-
-function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
-  p = invperm(sortperm(u))
-  v = [levyel(θ) for a in u]
-  sort(v)[p]
-end
-
 
 
 """
@@ -147,7 +145,7 @@ function elInvlaF(θ₁::Float64, θ₀::Float64)
 end
 
 """
-  frankngen(θ₁::Float64, θ₀::Float64, V0::Vector{Int})
+  nestedfrankgen(θ₁::Float64, θ₀::Float64, V0::Vector{Int})
 
 Return vector of int, samples of inverse laplacea trensform of nested
 Frak copula given parametes and V0 - vector of samples if invlaplace of perents copula
