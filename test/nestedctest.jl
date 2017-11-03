@@ -157,7 +157,7 @@ end
   @test cor(y)≈ [1. 0.; 0. 1.] atol=1.0e-3
   @test makeind(Σ, "clayton" => [1,2]) == [1,2,4]
   x = [0.1 0.2 0.3 0.4; 0.2 0.3 0.4 0.5; 0.2 0.2 0.4 0.4; 0.1 0.3 0.5 0.6]
-  @test findsimilar(x, [1,2]) == 4
+  @test findsimilar(x, [1,2]) == [4]
   srand(43)
   @test getclust(randn(4,100)) == [1,1,1,1]
 end

@@ -322,7 +322,7 @@ end
 """
   findsimilar(x::Matrix{Float64}, ind::Vector{Int})
 
-Returns Int, an index of most simillar vector to those indexed by ind from x
+Returns Array{Int64,1}, an index of most simillar vector to those indexed by ind from x
 
 ```jldoctest
 
