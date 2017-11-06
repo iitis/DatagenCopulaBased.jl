@@ -132,7 +132,7 @@ end
                                                     ϕ::Vector{Float64}, θ₀::Float64,
                                                     copula::String = "gumbel")
 
-Returns t realisations of ∑ᵢ ∑ⱼ nᵢⱼ variate data of double nested gumbel copula.
+Returns t realisations of ∑ᵢ ∑ⱼ nᵢⱼ variate data from double nested gumbel copula.
 C_θ(C_ϕ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_ϕₖ(C_Ψₖ₁(u,...), ..., C_Ψₖ,ₗₖ(u,...)))
  where lᵢ = length(n[i])
 
