@@ -187,6 +187,7 @@ julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton", 1)
  0.773414  0.812113   0.639333  0.527118  0.545043
  0.958656  0.871822   0.958339  0.801866  0.862751
 
+```
 
 #### If `copula == "gumbel"` further nesting is supported.
 
