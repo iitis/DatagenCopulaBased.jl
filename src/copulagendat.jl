@@ -428,7 +428,7 @@ end
   # generates covariance matrix
 
   """
-    cormatgen(n::Int, ρ::Float64 = 0.5, ordered = false, altersing::Bool = true)
+    cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
 
 Returns symmetric correlation matrix Σ of size n x n, with reference correlation 0 < ρ < 1.
 If ordered = false, Σ elements varies arround ρ, i.e. σᵢⱼ ≈ ρ+δ else they drop

@@ -168,7 +168,7 @@ end
   d=["clayton" => [2,3,4,15,16], "amh" => [1,20], "gumbel" => [9,10], "frank" => [7,8],
   "mo" => [11,12], "frechet" => [5,6,13]]
   srand(44)
-  x = copulamix(100000, Σ, d; λ = [2.5, 3.1, 20.])
+  x = copulamix(100000, Σ, d; λ = [6.5, 2.1])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -196,11 +196,9 @@ end
   @test tail(x[:,9], x[:,10], "l", 0.0001) ≈ 0 atol=1.0e-1
   @test tail(x[:,7], x[:,8], "r", 0.0001) ≈ 0 atol=1.0e-2
   @test tail(x[:,7], x[:,8], "l", 0.0001) ≈ 0 atol=1.0e-2
-  println(vecnorm(Σ))
-  println(vecnorm(cor(quantile(Normal(0,1.), x))))
   d=["gumbel" => [1,2,3,4], "mo" => [5,6,7]]
   srand(44)
-  x = copulamix(100000, Σ, d; λ = [2.5, .7, 1.1, 20.])
+  x = copulamix(100000, Σ, d; λ = [10.5, 5.1, 1.1, 20.])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -208,6 +206,4 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,7], Uniform(0,1))) > α
-  println(vecnorm(Σ))
-  println(vecnorm(cor(quantile(Normal(0,1.), x))))
 end
