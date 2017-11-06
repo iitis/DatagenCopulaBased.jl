@@ -536,24 +536,22 @@ julia> quantile(Levy(0, 1), u)
 The following function would allow us to generate `t > 2` realisations of `n` variate data with
 marginals numerates by `i` from Gaussian copula with given correlation matrix
 `Σ` and replace
-some sub-copulas (with marginals numerates by `j₁, j₂, ..., jₛ: jₖ = [jₖ₁, ..., jₖₙₖ]`) to non-Gaussian one. The function returns an output `[0,1]ⁿ ∋  u: ∀ᵢ uᵢ ∼ Uniform(0,1)` such that the overall correlation of `u`
-is similar to an overall correlation given by correlation matrix `Σ`, i.e. `||Σ|| ≈ ||cor(quantile(Normal(0,1), u))||`, where `||.||` is a vector norm.
+some sub-copulas (with marginals numerates by `j₁, j₂, ..., jₛ: jₖ = [jₖ₁, ..., jₖₙₖ]`) by non-Gaussian one. The function returns `[0,1]ⁿ ∋  u: ∀ᵢ uᵢ ∼ Uniform(0,1)` such that the overall correlation of `u`
+is similar to the overall correlation given by correlation matrix `Σ`, i.e. `||Σ|| ≈ ||cor(quantile(Normal(0,1), u))||`, where `||.||` is a vector norm.
 
-Following conditions on marginals is required `∀ₖₗ jₖ ∩ jₗ = ∅` and `∀ₖ jₖ ⊂ i`
-and `∑ₖ length(jₖ) ≤ n + δ` where `δ` is an integer such as `δ = 0, 1`  that
-depends no sub-copulas chosen. For reminding multi-index `i \ ∪ ₖ jₖ`
-we have Gaussian sub-copula, for `jₖ` we have a k'th non-Gaussian sub copula
-and for reminding cases where indices belong to different sets the correlation
-is more complicated.
+Following conditions on multi-indices are required `∀ₖₗ jₖ ∩ jₗ = ∅` and `∀ₖ jₖ ⊆ i`
+and `∑ₖ length(jₖ) ≤ n + δ` where `δ` is an integer such as `δ = 0, 1` and
+depends no sub-copulas chosen. For chosen `jₖ` we have a k'th non-Gaussian sub copula, for multi-index `g = i \ ∪ ₖ jₖ`
+we have Gaussian sub-copula. If we chose a multi-index which parts belong to different `jₖ` or different `jₖ` and `g`
+the sub-copula is more complex.
 
 Families of sub-copual and corresponding marginals `jₖ` are supplied
-in the form of the Vector{Pair{String,Vector{Int64}}}. Following suc-copula
-families are supported:
+in the form of the Vector{Pair{String,Vector{Int64}}}, following families are supported:
 
-* Archimedean: nested (ob bivariate) "gumbel", "frank", "clayton", "amh" copulas will be used,
+* Archimedean: nested (or bivariate) "gumbel", "frank", "clayton" or/and "amh" copula
 * "t-student"
-* "frechet" - mixture of bivariate frechet copulas will be used,
-*  "mo" - "Marshal-Olkin" copula will be used, however it is supported only for multi-index of size 2 or 3.
+* "frechet" - mixture of bivariate frechet copulas,
+*  "mo" - "Marshal-Olkin" copula is supported only for `length(jₖ) = 2 or 3`.
 
 To generate data run:
 
@@ -565,12 +563,14 @@ julia> copulamix(t::Int, Σ::Matrix{Float}, inds::Vector{Pair{String,Vector{Int6
 
 The function takes also following named parameters:
 
-* λ vector of chosen parameters of "Marshal-Olkin" copula, in bivariate case
+* λ - vector of chosen parameters of "Marshal-Olkin" copula, in bivariate case
 [λ₁ λ₂] - by default = [6., 3.], in tri-variate case [λ₁ λ₂ λ₃, λ₁₂₃] - by
-default = [6., 3., 1., 15.], parameters λᵢⱼ
+default = [6., 3., 1., 15.], reminding parameters λᵢⱼ
 are calculated from required Pearson correlation;
- * ν is a parameter of t-student copula, the number of degrees of freedom,
-* a is a vector if the difference of frechet bivariate copulas parameters, a = α - β.
+ * ν - is a parameter of t-student copula, the number of degrees of freedom,
+* a - is a difference of frechet bivariate copulas parameters, a = α - β.
+
+For exemplary use see:
 
 ```
 
