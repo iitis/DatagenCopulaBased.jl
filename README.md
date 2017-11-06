@@ -384,7 +384,11 @@ To generate `t` realisations of `length(α)+1` multivariate  data using two para
 julia> bivfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
 
 ```
-In other words `∀i∈[1, length(θ)]` data are generated from following Frechet copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`.
+In other words `∀i∈[1, length(θ)]` data are generated from following Frechet copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly 
+distributed on `[0,1]`, hence we got a multivariate copula, defined by subsequent bivariate sub-copulas.
+The relation between marginals `i` and `j`: `i ≠ j+1` are defined by a sequence of
+bivariate copulas. For some parameters `α,β` such copula would be equivalent to a hierarhically nested copula.
+
 
 ```julia
 julia> srand(43)
