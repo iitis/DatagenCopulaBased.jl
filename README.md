@@ -531,23 +531,22 @@ julia> quantile(Levy(0, 1), u)
 
 ```
 
-## Copula mixture.
+## Copula mixture
 
-Suppose we want to generate `t > 2` realisations of `n` variate data with
+The following function would allow us to generate `t > 2` realisations of `n` variate data with
 marginals numerates by `i` from Gaussian copula with given correlation matrix
 `Σ` and replace
-some sub copulas (with marginals numerates by `j₁₁, ... j₁ₙ₁, j₂₁, ... j₂ₙ₂, ...,  jₛ₁, ... jₛₙₛ `) to non-Gaussian one. We tend to achieve an output `u: ∀ᵢ uᵢ ∼ Uniform(0,1)` such that the overall correlation of `u`
-is similar to an overall correlation given by correlation matrix `Σ` in the
-following way `|Σ| ≈ |quantile(Normal(0,1), u)|`
+some sub-copulas (with marginals numerates by `j₁, j₂, ..., jₛ: jₖ = [jₖ₁, ..., jₖₙₖ]`) to non-Gaussian one. The function returns an output `[0,1]ⁿ ∋  u: ∀ᵢ uᵢ ∼ Uniform(0,1)` such that the overall correlation of `u`
+is similar to an overall correlation given by correlation matrix `Σ`, i.e. `||Σ|| ≈ ||cor(quantile(Normal(0,1), u))||`, where `||.||` is a vector norm.
 
 Following conditions on marginals is required `∀ₖₗ jₖ ∩ jₗ = ∅` and `∀ₖ jₖ ⊂ i`
-and `∑ₖ |jₖ| ≤ |i| + δ` where `δ` is an integer such as `δ = 0, 1`  that
-depends which aub-copulas are used. For reminding multi-index `i \ ∪ ₖ jₖ`
+and `∑ₖ length(jₖ) ≤ n + δ` where `δ` is an integer such as `δ = 0, 1`  that
+depends no sub-copulas chosen. For reminding multi-index `i \ ∪ ₖ jₖ`
 we have Gaussian sub-copula, for `jₖ` we have a k'th non-Gaussian sub copula
 and for reminding cases where indices belong to different sets the correlation
 is more complicated.
 
-Families of sub-copual and corresponding marginals `jₛ₁, ... jₛₙₛ` are supplied
+Families of sub-copual and corresponding marginals `jₖ` are supplied
 in the form of the Vector{Pair{String,Vector{Int64}}}. Following suc-copula
 families are supported:
 

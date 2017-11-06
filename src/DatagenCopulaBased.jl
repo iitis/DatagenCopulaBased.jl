@@ -4,6 +4,7 @@ module DatagenCopulaBased
   using NLsolve
   using Combinatorics
   using PyCall
+  using HypothesisTests
   @pyimport scipy.cluster.hierarchy as sch
 
   include("gendat.jl")
