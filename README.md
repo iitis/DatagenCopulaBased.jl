@@ -290,7 +290,7 @@ julia> marshalolkincopulagen(t::Int, λ::Vector{Float64}; reverse::Bool = false)
 
 Number of marginals is `n = ceil(Int, log(2, length(λ)-1))`.
 Parameters are ordered as follow: `λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]`
-If `reversed = true`, returns data from reversed Marshal-Olkin copula.
+If `reversed = true`, returns data from reversed Marshal-Olkin copula , i.e. generates data `[u₁, ..., uᵢ, ..., uₙ]` from given Marshall-Olkin copula and perform transformation `∀ᵢ uᵢ → 1-uᵢ`
 
 
 ```julia
@@ -312,8 +312,9 @@ julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
 
 ```
 
-To generate data from the  Marshall-Olkin copula we use algorithm presented in M. Hofert, 
-'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174
+To generate data from the  Marshall-Olkin copula we use algorithm presented P. Embrechts, F. Lindskog, A McNeil 'Modelling Dependence with Copulas and Applications to Risk Management' ,2001
+∗∗
+
 
 ### Frechet familly copulas
 
