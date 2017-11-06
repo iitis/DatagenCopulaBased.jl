@@ -569,7 +569,7 @@ The function takes also following named parameters:
 default = [6., 3., 1., 15.], reminding parameters λᵢⱼ
 are calculated from required Pearson correlation;
  * ν - is a parameter of t-student copula, the number of degrees of freedom,
-* a - is a difference of frechet bivariate copulas parameters, a = α - β.
+* a - is a difference of frechet bivariate copulas parameters, a = α - β, by default a = [0.1, 0.1, ...].
 
 For exemplary use see:
 
