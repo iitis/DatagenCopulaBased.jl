@@ -152,9 +152,86 @@ investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistica
 
 ### Nested archimedean copulas
 
+To generate `t` realisations of `∑ᵢ nᵢ + m` variete data from nested archimedean copulas,  McNeil, A.J., 2008. 'Sampling nested Archimedean copulas'. Journal of Statistical Computation and Simulation 78, 567–581, run:
+
+```julia
+
+julia> nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String, m::Int = 0)
+
+```
+
+Here `n` is a vector of number of variates of child copulas, `ϕ` are their parameters, `θ` is a parameter of parentes copula. Here last `m` variates are generated using parentes copula only.
+Only such nesting that child and parentes copulas are from the same familly is supported. Neasitng comdition requires `θ ≤ minimum(ϕ)`.
 
 
+```julia 
 
+julia> srand(43);
+
+julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton", 1)
+10×5 Array{Float64,2}:
+ 0.414567  0.683167   0.9953    0.607738  0.793386
+ 0.533001  0.190563   0.17076   0.273119  0.78807 
+ 0.572782  0.161307   0.418821  0.110356  0.661781
+ 0.623807  0.140974   0.295422  0.454368  0.477065
+ 0.386276  0.266261   0.559423  0.449874  0.294137
+ 0.219757  0.122586   0.371318  0.298965  0.507315
+ 0.322658  0.0627113  0.738565  0.919912  0.19471 
+ 0.131938  0.0672061  0.364721  0.220329  0.662842
+ 0.773414  0.812113   0.639333  0.527118  0.545043
+ 0.958656  0.871822   0.958339  0.801866  0.862751
+
+ 
+#### If `copula == "gumbel"` further nesting is supported.
+
+
+To generatet `t` realisations of `length(θ)+1` variate data from hierarchically nested Gumbel copula:
+`C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)` run:
+
+```julia
+
+julia>   nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
+
+```
+
+Nesting condition `θ_{i+1} ≤ θᵢ`
+
+```julia
+
+julia> srand(43)
+
+julia> x = nestedarchcopulagen(5, [4., 3., 2.], "gumbel")
+
+5×4 Array{Float64,2}:
+ 0.483466  0.621572  0.241025  0.312664
+ 0.827237  0.696634  0.768802  0.730543
+ 0.401159  0.462126  0.412573  0.72571
+ 0.970726  0.964746  0.940314  0.934625
+ 0.684486  0.614142  0.690664  0.401897
+```
+
+To generate `t` realisations of `∑ᵢ ∑ⱼ nᵢⱼ` variate data from double nested gumbel copula:
+`C_θ(C_ϕ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_ϕₖ(C_Ψₖ₁(u,...), ..., C_Ψₖ,ₗₖ(u,...)))`
+ where `lᵢ = length(n[i])` run:
+
+```julia
+
+julia> nestedarchcopulagen::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, ϕ::Vector{Float64}, θ₀::Float64, copula::String = "gumbel")
+
+```
+
+```julia
+  julia> srand(43)
+
+  julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2, "gumbel")
+  5×6 Array{Float64,2}:
+   0.464403  0.711722   0.883035   0.896706   0.888614   0.826514
+   0.750596  0.768193   0.0659561  0.0252472  0.996014   0.989127
+   0.825211  0.712079   0.581356   0.507739   0.882675   0.84959
+   0.276326  0.0827071  0.240836   0.434629   0.0184611  0.031363
+   0.208422  0.504727   0.27561    0.639089   0.481855   0.573715
+
+```
 
 ### mixture of bivariate archimedean subcopulas
 

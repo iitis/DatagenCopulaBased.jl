@@ -41,24 +41,24 @@ Journal of Statistical Computation and Simulation 78, 567–581.
 ```jldoctest
 julia> srand(43);
 
-julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton")
-10×4 Array{Float64,2}:
- 0.508525  0.77119   0.998605   0.794352
- 0.81838   0.402435  0.73695    0.902096
- 0.893028  0.422345  0.993419   0.77742
- 0.780068  0.217094  0.0967999  0.151466
- 0.181468  0.121059  0.320481   0.251282
- 0.896416  0.743234  0.777731   0.678068
- 0.719641  0.186449  0.290359   0.48974
- 0.466004  0.256329  0.972178   0.892362
- 0.389778  0.435092  0.123796   0.097651
- 0.930812  0.802301  0.787261   0.49137
+julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton", 1)
+10×5 Array{Float64,2}:
+ 0.414567  0.683167   0.9953    0.607738  0.793386
+ 0.533001  0.190563   0.17076   0.273119  0.78807
+ 0.572782  0.161307   0.418821  0.110356  0.661781
+ 0.623807  0.140974   0.295422  0.454368  0.477065
+ 0.386276  0.266261   0.559423  0.449874  0.294137
+ 0.219757  0.122586   0.371318  0.298965  0.507315
+ 0.322658  0.0627113  0.738565  0.919912  0.19471
+ 0.131938  0.0672061  0.364721  0.220329  0.662842
+ 0.773414  0.812113   0.639333  0.527118  0.545043
+ 0.958656  0.871822   0.958339  0.801866  0.862751
 
 ```
 """
 
 function nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64,
-                                                                        copula::String, m::Int = 0)
+                                                     copula::String, m::Int = 0)
   copula in ["clayton", "amh", "frank", "gumbel"] || throw(AssertionError("$(copula) copula is not supported"))
   nestedcopulag(copula, n, ϕ, θ, rand(t, sum(n)+m+1))
 end
@@ -168,7 +168,7 @@ end
 """
   nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
 
-Returns t realisations of length(θ)+1 variate data of hierarchically nested Gumbel copula.
+Returns t realisations of length(θ)+1 variate data from hierarchically nested Gumbel copula.
 C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)
 
 ```jldoctest
