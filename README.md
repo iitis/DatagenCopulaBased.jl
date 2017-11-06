@@ -243,8 +243,8 @@ julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2
 ### Mixture of bivariate archimedean sub-copulas
 
 
-To generate `t` realisations of `length(θ)+1` using one parameter bivariate sub-copulas with parameter `θᵢ` for each
-neighbour marginals (i'th and i+1'th) i.e. `∀i∈[1, length(θ)]` data are generated from `C_{θᵢ}(uᵢ, u_{i+1})` run:
+To generate `t` realisations of `length(θ)+1` using one parameter bivariate archimedean sub-copulas from the same familly, with parameter `θᵢ` for each
+neighbour marginals (i'th and i+1'th)  run:
 
 ```julia
 
@@ -252,10 +252,12 @@ julia> bivariatecopgen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::
 
 ```
 
-Due to features of bivariate copulas, each marginal `uᵢ` is uniformly 
+In other words `∀i∈[1, length(θ)]` data are generated form the following archimedean copula `C_{θᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly 
 distributed on `[0,1]`, hence we got a multivariate copula, defined by 
-subsequent 
-bivariate sub-copulas. Following families are supported: "clayton", "frank" and 
+subsequent bivariate sub-copulas. The relation between marginals `i` and `j`: `i ≠ j+1` are defined by a sequence of
+bivariate copulas. 
+
+Following families are supported: "clayton", "frank" and 
 "amh" -  Ali-Mikhail-Haq. Conditions for `θᵢ` parameters are such as in 
 bivariate copulas cases. Dislike the nested copula example, ordering of `θ` elements do not matter.
 Reversed copula and the use of correlations instead of copula parameter are also 
@@ -316,7 +318,7 @@ To generate data from the  Marshall-Olkin copula we use algorithm presented P. E
 ∗∗
 
 
-### Frechet familly copulas
+## Frechet familly copulas
 
 To generate `t` realisation of `n` variate one parameter Frechet copula `Cf = α C_{max} + (1-α) C_{⟂}`, where `0 ≤ α ≤ 1` run:
 
@@ -369,6 +371,38 @@ julia> frechetcopulagen(10, 2, 0.3, 0.2)
  0.851275    0.955881 
  
  ```
+ 
+### Mixture of bivariate Frechet sub-copulas
+
+
+To generate `t` realisations of `length(α)+1` multivariate  data using two parameter bivariate Frechet sub-copulas with parameter `αᵢ` and
+`βᵢ` for each neighbour  (i'th and i+1'th) marginals  run:
+
+
+```julia
+
+julia> bivfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
+
+```
+In other words `∀i∈[1, length(θ)]` data are generated from following Frechet copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`.
+
+```julia
+julia> srand(43)
+
+julia> julia> bivfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
+10×3 Array{Float64,2}:
+ 0.996764  0.996764  0.996764
+ 0.204033  0.795967  0.204033
+ 0.979901  0.979901  0.0200985
+ 0.120669  0.879331  0.120669
+ 0.453027  0.453027  0.453027
+ 0.800909  0.199091  0.800909
+ 0.54892   0.54892   0.54892
+ 0.933832  0.933832  0.0661679
+ 0.396943  0.396943  0.396943
+ 0.804096  0.851275  0.955881
+```
+
 
 ## Helpers
 
