@@ -41,7 +41,7 @@ end
                                               rev::Bool = false, cor::String = "")
 
 Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
-To generate data uses Archimedean one parameter bivariate sub-copulas with parameters θᵢ ≠ 0 for each
+To generate data uses Archimedean one parameter bivariate sub-copulas for each
 neighbour marginals (i'th and i+1'th).
 
 Following copula families are supported: clayton, frank and amh -- Ali-Mikhail-Haq.
@@ -66,6 +66,7 @@ julia> bivariatecopgen(10, [4., 11.], "frank")
  0.955881  0.953623   0.969038
 ```
 """
+
 
 VFI = Union{Vector{Float64}, Vector{Int}}
 
