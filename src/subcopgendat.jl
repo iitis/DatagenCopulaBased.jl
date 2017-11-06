@@ -1,3 +1,19 @@
+### Following R. Nelsen 'An Introduction to Copulas', Springer Science & Business Media, 1999 - 216,
+### for bivariate Archimedean copulas `C(u₁,u₂)` data can be generated as follow:
+### * draw `u₁ = rand()`,
+### * define `w = ∂C(u₁, u₂)\∂u₁` and inverse `u₂ = f(w, u₁)`,
+### * draw  `w = rand()`
+### * return a pair u₁, u₂.
+
+### This method can be applied in practice for Clayton, Frank and Ali-Mikhail-Haq copula. If we use
+### this method recursively, we can get `n`-variate data with uniform marginals on
+### `[0,1]`, where each neighbour pair
+### of marginals `uᵢ uⱼ` for `j = i+1` are draw form a bivariate subcopula with
+### parameter `θᵢ`, the only condition for `θᵢ`
+### is such as for a corresponding bivariate copula.
+
+
+
 """
   rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
 
@@ -21,7 +37,8 @@ function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
 end
 
 """
-  bivariatecopgen(t::Int, θ::Vector{Float64})
+  bivariatecopgen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::String;
+                                              rev::Bool = false, cor::String = "")
 
 Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
 To generate data uses Archimedean one parameter bivariate sub-copulas with parameters θᵢ ≠ 0 for each
@@ -50,8 +67,9 @@ julia> bivariatecopgen(10, [4., 11.], "frank")
 ```
 """
 
-function bivariatecopgen(t::Int, θ::Vector{Float64}, copula::String; rev::Bool = false,
-                                                                    cor::String = "")
+VFI = Union{Vector{Float64}, Vector{Int}}
+
+function bivariatecopgen(t::Int, θ::VFI, copula::String; rev::Bool = false, cor::String = "")
   if ((cor == "pearson") | (cor == "kendall"))
     θ = map(i -> usebivρ(i, copula, cor), θ)
   else
@@ -73,12 +91,12 @@ clayton bivariate sub-copulas with parameters (θᵢ ≥ -1) ^ ∧ (θᵢ ≠ 0)
 amh -- Ali-Mikhail-Haq bivariate sub-copulas with parameters -1 ≥ θᵢ ≥ 1
 frank bivariate sub-copulas with parameters (θᵢ ≠ 0)
 """
-function testbivθ(θ::Union{Float64}, copula::String)
-  !(0. in θ) || throw(AssertionError("not supported for θ = 0"))
+function testbivθ(θ::Union{Float64, Int}, copula::String)
+  !(0. in θ)|(copula == "amh") || throw(AssertionError("not supported for θ = 0"))
   if copula == "clayton"
     θ >= -1 || throw(AssertionError("not supported for θ < -1"))
   elseif copula == "amh"
-    -1 <= θ <= 1|| throw(AssertionError("not supported for θ < -1 or > 1"))
+    -1 <= θ <= 1|| throw(AssertionError("amh biv. copula supported only for -1 ≤ θ ≤ 1"))
   end
 end
 
@@ -141,7 +159,7 @@ end
 
   fncopulagen(α::Vector{Float64}, β::Vector{Float64}, u::Matrix{Float64})
 
-  
+
 ```jldoctest
 
 julia> fncopulagen(2, [0.2, 0.4], [0.1, 0.1], [0.2 0.4 0.6; 0.3 0.5 0.7])

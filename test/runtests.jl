@@ -14,7 +14,7 @@ import DatagenCopulaBased: mocopula, copulagen
 import DatagenCopulaBased: g2tsubcopula!, nestedcopulag, testnestedθϕ, nestedstep
 import DatagenCopulaBased: findsimilar, getclust
 
-#include("datagentests.jl")
-#include("copulatests.jl")
-#include("bivcoptests.jl")
+include("datagentests.jl")
+include("copulatests.jl")
+include("bivcoptests.jl")
 include("nestedctest.jl")

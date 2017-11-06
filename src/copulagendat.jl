@@ -225,8 +225,9 @@ julia> archcopulagen(10, 2, 1, "clayton")
 function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
                                                               rev::Bool = false,
                                                               cor::String = "")
+  cor in ["pearson", "kendall", ""] || throw(AssertionError("$(cor) correlation not supported"))
   copula in ["clayton", "amh", "frank", "gumbel"] || throw(AssertionError("$(copula) copula is not supported"))
-  if (θ < 0)*(n == 2)*(copula != "gumbel")
+  if *(n == 2)*((copula != "gumbel")*(θ < 0) | (copula == "amh")*(θ in [0,1]))
     return bivariatecopgen(t, [θ], copula; rev=rev, cor=cor)
   elseif cor == "pearson"
     θ = useρ(θ , copula)
@@ -249,7 +250,7 @@ function testθ(θ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
     θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
   elseif copula == "amh"
-    1 > θ > 0 || throw(AssertionError("generator not supported for θ ≥ 1 or θ ≤ 0"))
+    1 > θ > 0 || throw(AssertionError("amh multiv. copula supported only for 0 < θ < 1"))
   else
     θ > 0 || throw(AssertionError("generaton not supported for θ ≤ 0"))
   end
