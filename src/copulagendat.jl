@@ -96,7 +96,7 @@ julia> frechetcopulagen(10, 2, 0.5)
 """
 
 
-function frechetcopulagen(t::Int, n::Int, α::Float64)
+function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
   0 <= α <= 1 || throw(AssertionError("generaton not supported for α ∉ [0,1]"))
   u = rand(t, n)
   p = invperm(sortperm(u[:,1]))
@@ -107,6 +107,19 @@ function frechetcopulagen(t::Int, n::Int, α::Float64)
   u
 end
 
+
+"""
+  frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
+
+Two parameters Frechet copula C = α C_{max} + β C_{min} + (1- α - β) C_{⟂}, supported
+only for n == 2
+"""
+
+
+function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
+  n == 2 || throw(AssertionError("two parameters Frechet copula supported only for n = 2"))
+  bivfrechetcopulagen(t, [α], [β])
+end
 
 # Archimedean copulas
 """

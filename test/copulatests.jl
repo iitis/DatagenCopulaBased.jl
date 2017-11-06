@@ -92,6 +92,12 @@ end
   srand(43)
   x = frechetcopulagen(500000, 2, .0)
   @test cor(x) ≈ [1. 0.; 0. 1.] atol=1.0e-2
+  x = frechetcopulagen(500000, 2, 0.8, 0.1);
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test cor(x) ≈ [1. 0.7; 0.7 1.] atol=1.0e-2
+  @test tail(x[:,1], x[:,2], "l") ≈ 0.8 atol=1.0e-1
+  @test tail(x[:,1], x[:,2], "r") ≈ 0.8 atol=1.0e-1
 end
 
 @testset "archimedean copulas axiliary functions" begin

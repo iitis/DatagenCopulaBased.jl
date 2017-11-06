@@ -312,19 +312,63 @@ julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
 
 ```
 
-To generate data from the  Marshall-Olkin copula we use algorithm presented P. Embrechts, F. Lindskog, A McNeil 'Modelling Dependence with Copulas and Applications to Risk Management' ,2001
+To generate data from the  Marshall-Olkin copula we use algorithm presented P. Embrechts, F. Lindskog, A McNeil 'Modelling Dependence with Copulas and Applications to Risk Management', 2001
 ∗∗
 
 
 ### Frechet familly copulas
 
-The use of the product copula means that each marginal variable is generated 
-independently. 
+To generate `t` realisation of `n` variate one parameter Frechet copula `Cf = α C_{max} + (1-α) C_{⟂}`, where `0 ≤ α ≤ 1` run:
+
 
 ```julia
-julia> productcopula(t::Int, n::Int)
+julia> frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
 ```
 
+```julia
+
+julia> srand(43);
+
+julia> frechetcopulagen(10, 2, 0.5)
+10×2 Array{Float64,2}:
+ 0.180975  0.180975
+ 0.775377  0.0742681
+ 0.888934  0.888934
+ 0.924876  0.0950087
+ 0.408278  0.408278
+ 0.912603  0.740184
+ 0.828727  0.828727
+ 0.400537  0.0288987
+ 0.429437  0.429437
+ 0.955881  0.851275
+```
+
+Two parameters Frachet copula, `C = α C_{max} + β C_{min} + (1- α - β) C_{⟂}` is supported only for `n == 2`:
+
+```
+julia> frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
+```
+
+Here where `0 ≤ α` , where `0 ≤ β` and `α + β ≤ 1`
+
+``` julia
+
+julia> srand(43);
+
+julia> frechetcopulagen(10, 2, 0.3, 0.2)
+10×2 Array{Float64,2}:
+ 0.661781    0.661781  
+ 0.0742681   0.775377  
+ 0.125437    0.874563  
+ 0.0950087   0.924876  
+ 0.130474    0.130474  
+ 0.740184    0.912603  
+ 0.00463791  0.00463791
+ 0.0288987   0.400537  
+ 0.521601    0.478399  
+ 0.851275    0.955881 
+ 
+ ```
 
 ## Helpers
 
