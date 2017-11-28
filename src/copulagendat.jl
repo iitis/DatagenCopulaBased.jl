@@ -30,7 +30,7 @@ function gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
   z = transpose(rand(MvNormal(Σ),t))
   for i in 1:size(Σ, 1)
     d = Normal(0, sqrt.(Σ[i,i]))
-    z[:,i] = cdf(d, z[:,i])
+    z[:,i] = cdf.(d, z[:,i])
   end
   z
 end
@@ -65,7 +65,7 @@ function tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::I
   U = rand(Chisq(ν), size(z, 1))
   for i in 1:size(Σ, 1)
     x = z[:,i].*sqrt.(ν./U)./Σ[i,i]
-    z[:,i] = cdf(TDist(ν), x)
+    z[:,i] = cdf.(TDist(ν), x)
   end
   z
 end
@@ -142,9 +142,9 @@ julia> getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton")
 
 function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
   if copula == "clayton"
-    return quantile(Gamma(1/θ, θ), v)
+    return quantile.(Gamma(1/θ, θ), v)
   elseif copula == "amh"
-    return 1+quantile(Geometric(1-θ), v)
+    return 1+quantile.(Geometric(1-θ), v)
   elseif copula == "frank"
     return logseriesquantile(1-exp(-θ), v)
   elseif copula == "gumbel"
@@ -421,7 +421,7 @@ function convertmarg!(U::Matrix{T}, d::UnionAll, p::VecVec = [fill([0,1], size(U
     if testunif
       pvalue(ExactOneSampleKSTest(U[:,i],Uniform(0,1)))>0.0001 || throw(AssertionError("$i marg. not unif."))
     end
-    @inbounds U[:,i] = quantile(d(p[i]...), U[:,i])
+    @inbounds U[:,i] = quantile.(d(p[i]...), U[:,i])
   end
 end
 

@@ -11,7 +11,7 @@ function g2tsubcopula!(z::Matrix{Float64}, cormat::Matrix{Float64}, subn::Array{
   p = TDist(nu)
   for i in subn
     w = quantile(Normal(0, cormat[i,i]), z[:,i])
-    z[:,i] = cdf(p, w.*sqrt.(nu./U))
+    z[:,i] = cdf.(p, w.*sqrt.(nu./U))
   end
 end
 
@@ -256,7 +256,7 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::VP; λ::Vector{Float64} = 
   testind(inds)
   x = transpose(rand(MvNormal(Σ),t))
   xgauss = copy(x)
-  x = cdf(Normal(0,1), x)
+  x = cdf.(Normal(0,1), x)
   for p in inds
     ind = p[2]
     v = norm2unifind(xgauss, Σ, makeind(xgauss, p))
@@ -360,7 +360,7 @@ function norm2unifind(x::Matrix{Float64}, Σ::Matrix{Float64}, i::Vector{Int})
   a, s = eig(Σ[i,i])
   w = x[:, i]*s./transpose(sqrt.(a))
   w[:, end] = sign(cov(x[:, i[1]], w[:, end]))*w[:, end]
-  cdf(Normal(0,1), w)
+  cdf.(Normal(0,1), w)
 end
 
 """

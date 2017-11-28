@@ -36,7 +36,7 @@ Return Float, given parameter ϴ of dostribution
 
 function levyel(θ::Union{Int, Float64})
   ϕ = pi*rand()-pi/2
-  v = quantile(Exponential(1.), rand())
+  v = quantile.(Exponential(1.), rand())
   γ = (cos(pi/(2*θ)))^θ
   v = ((cos(pi/(2*θ)+(1/θ-1)*ϕ))/v)^(θ-1)
   γ*v*sin(1/θ*(pi/2+ϕ))*(cos(pi/(2*θ))*cos(ϕ))^(-θ)
