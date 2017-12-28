@@ -5,6 +5,7 @@ module DatagenCopulaBased
   using Combinatorics
   using PyCall
   using HypothesisTests
+  using Cubature
   @pyimport scipy.cluster.hierarchy as sch
 
   include("gendat.jl")

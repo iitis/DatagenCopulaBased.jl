@@ -19,9 +19,9 @@
   end
   @testset "parameter from pearson cor" begin
     @test dilog(0.5) ≈ 0.5822405264650125
-    @test ρ2θ(1/3, "clayton") ≈ 0.5799054034685394
+    @test ρ2θ(1/3, "clayton") ≈ 0.58754 atol=1.0e-5
     @test ρ2θ(1/3, "frank") ≈ 2.1164969117225363
-    @test ρ2θ(0.5, "gumbel") ≈ 1.5390534821085031
+    @test ρ2θ(0.5, "gumbel") ≈ 1.5410704204332681
     @test ρ2θ(0.2, "amh") ≈ 0.5168580913147318
     @test frankθ(1/3) ≈ 2.1164969117225363
     @test AMHθ(0.2) ≈ 0.5168580913147318
@@ -45,11 +45,17 @@ end
 
 @testset "generate corelation matrix" begin
   srand(43)
-  @test cormatgen(2) ≈ [1.0 0.911683; 0.911683 1.0] atol=1.0e-5
+  c = cormatgen(2)
+  println(c)
+  @test c ≈ [1.0 0.911482; 0.911482 1.0] atol=1.0e-5
   srand(44)
-  @test cormatgen(3, 0.8, true, false) ≈ [ 1.0 0.586417 0.461157; 0.586417 1.0 0.732091; 0.461157 0.732091 1.0] atol=1.0e-5
+  c = cormatgen(3, 0.8, true, false)
+  println(c)
+  @test c ≈ [1.0 0.586006 0.460863; 0.586006 1.0 0.731886; 0.460863 0.731886 1.0] atol=1.0e-5
   srand(44)
-  @test cormatgen(3, 0.8, true, true) ≈ [ 1.0 0.586417 -0.461157; 0.586417 1.0 -0.732091; -0.461157 -0.732091 1.0] atol=1.0e-5
+  c = cormatgen(3, 0.8, true, true)
+  println(c)
+  @test c ≈ [1.0 0.586006 -0.460863; 0.586006 1.0 -0.731886; -0.460863 -0.731886 1.0] atol=1.0e-5
 end
 
 @testset "gaussian copula" begin
@@ -106,7 +112,7 @@ end
   c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
   @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
   @test useτ(0.5, "clayton") == 2.
-  @test useρ(0.75, "gumbel") ≈ 2.294053859606698
+  @test useρ(0.75, "gumbel") ≈ 2.285220798876495
 end
 
 @testset "archimedean copulas exceptions" begin

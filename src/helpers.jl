@@ -106,26 +106,51 @@ end
 # pearson ρ to copulas parameter
 
 """
- ρ2τ(ρ::Float64)
+ ρ2θ(ρ::Union{Float64, Int}, copula::String)
 
- Returns a Float, a clayton or gumbel copula kendall's tau correlation, given
-pearson correlation, uses the empirical model
+ Returns a Float, an archimedean copula parameter given expected Spermann correlation
+ ρ and a copula.
 
 """
-ρ2τ(ρ::Float64) = (ρ < 0.75)?  0.622*ρ +0.157*ρ^2: -0.04+0.207*ρ-0.075*ρ^2+0.579*asin(ρ)
-
 function ρ2θ(ρ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
-    return 1/(1-ρ2τ(ρ))
+    return gumbelθ(ρ)
   elseif copula == "clayton"
-    τ = (ρ < 0)? -ρ2τ(-ρ): ρ2τ(ρ)
-    return 2*τ/(1-τ)
+    return claytonθ(ρ)
   elseif copula == "frank"
     return frankθ(ρ)
   elseif copula == "amh"
     return AMHθ(ρ)
   end
   0.
+end
+
+### Helpers for given copulas
+
+function Ccl(x::Vector{Float64}, θ::Union{Int, Float64})
+  if θ > 0
+    return (x[1]^(-θ)+x[2]^(-θ)-1)^(-1/θ)
+  else
+    return (maximum([x[1]^(-θ)+x[2]^(-θ)-1, 0]))^(-1/θ)
+  end
+end
+
+Cg(x::Vector{Float64}, θ::Union{Int, Float64}) = exp(-((-log(x[1]))^θ+(-log(x[2]))^θ)^(1/θ))
+
+function gumbelθ(ρ)
+  function f1!(θ, fvec)
+    p = θ[1]
+    fvec[1] = 12*hcubature(x-> Cg(x, p), [0,0],[1,1])[1]-3-ρ
+  end
+  return nlsolve(f1!, [ρ]).zero[1]
+end
+
+function claytonθ(ρ)
+  function f1!(θ, fvec)
+    p = θ[1]
+    fvec[1] = 12*hcubature(x-> Ccl(x, p), [0,0],[1,1])[1]-3-ρ
+  end
+  return nlsolve(f1!, [ρ]).zero[1]
 end
 
 dilog(x::Float64) = quadgk(t -> log(t)/(1-t), 1, x)[1]

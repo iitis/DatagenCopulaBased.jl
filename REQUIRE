@@ -7,4 +7,5 @@ NLsolve
 Combinatorics
 PyCall
 StatsBase
+Cubature
 
