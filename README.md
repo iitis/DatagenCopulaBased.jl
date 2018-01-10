@@ -10,7 +10,7 @@ In terms of probabilistic the function `C: [0,1]ⁿ → [0,1]` is the
 
 This  module use following copula families to generate data:
 * Elliptical copulas (Gaussian, t-Student),
-* Archimedean copulas (Claytin, Frank, Gumbel, Ali-Mikhail-Haq), including nested ones,
+* Archimedean copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq), including nested ones,
 * Frechet familly copulas (maximal, minimal, independent),
 * Marshal-Olkin copula,
 * various copula mixtures, models with different sub-copulas for different sub-sets of marginals.
