@@ -37,11 +37,11 @@ function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
 end
 
 """
-  bivariatecopgen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::String;
+  chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::String;
                                               rev::Bool = false, cor::String = "")
 
 Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
-To generate data uses Archimedean one parameter bivariate sub-copulas for each
+To generate data uses chain of Archimedean one parameter bivariate copula for each
 neighbour marginals (i'th and i+1'th).
 
 Following copula families are supported: clayton, frank and amh -- Ali-Mikhail-Haq.
@@ -52,7 +52,7 @@ It cor == pearson, kendall, uses correlation coeficient as a parameter
 ```jldoctest
 julia> srand(43);
 
-julia> bivariatecopgen(10, [4., 11.], "frank")
+julia> chaincopulagen(10, [4., 11.], "frank")
 10×3 Array{Float64,2}:
  0.180975  0.386303   0.879254
  0.775377  0.247895   0.144803
@@ -70,7 +70,7 @@ julia> bivariatecopgen(10, [4., 11.], "frank")
 
 VFI = Union{Vector{Float64}, Vector{Int}}
 
-function bivariatecopgen(t::Int, θ::VFI, copula::String; rev::Bool = false, cor::String = "")
+function chaincopulagen(t::Int, θ::VFI, copula::String; rev::Bool = false, cor::String = "")
   if ((cor == "pearson") | (cor == "kendall"))
     θ = map(i -> usebivρ(i, copula, cor), θ)
   else
@@ -122,10 +122,10 @@ function usebivρ(ρ::Float64, copula::String, cor::String)
 end
 
 
-# Nested frechet familly copulas
+# chain frechet copulas
 
 """
-  bivfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
+  chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
 
 Retenares data from nested hierarchical frechet copula with parameters
 vectors α and β, such that ∀ᵢ 0 α[i] + β[i] ≤1 α[i] > 0, and β[i] > 0 |α| = |β|
@@ -133,7 +133,7 @@ vectors α and β, such that ∀ᵢ 0 α[i] + β[i] ≤1 α[i] > 0, and β[i] > 
 ```jldoctest
 julia> srand(43)
 
-julia> julia> bivfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
+julia> julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
 10×3 Array{Float64,2}:
  0.996764  0.996764  0.996764
  0.204033  0.795967  0.204033
@@ -148,7 +148,7 @@ julia> julia> bivfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
 ```
 """
 
-function bivfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
+function chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
   length(α) == length(β) || throw(AssertionError("different lengths of parameters"))
   minimum(α) >= 0 || throw(AssertionError("negative α parameter"))
   minimum(β) >= 0 || throw(AssertionError("negative β parameter"))
@@ -182,25 +182,4 @@ function fncopulagen(α::Vector{Float64}, β::Vector{Float64}, u::Matrix{Float64
     u[r,j+1] = 1-u[r,j]
   end
   u
-end
-
-"""
-  bivariatecopulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
-
-Returns Matrix{Float} t x n of t realisations of n variate uniform random variable
-given a correlation matrix. Other than Gaussian copulas subcopulas are indicated in inds =
-[copulaname::String, number_of_marginal_vatiables::Vector{Int}]
-following bivariate subcopulas families are available: "clayton", "frank", "amh" -- Ali-Mikhail-Haq
-"""
-
-function bivariatecopulamix(t::Int, Σ::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
-  z = gausscopulagen(t, Σ)
-  for p in inds
-    j = p[2]
-    for i in 2:length(j)
-      θ = ρ2θ(Σ[j[i-1],j[i]], p[1])
-      z[:,j[i]] = rand2cop(z[:,j[i-1]], θ, p[1])
-    end
-  end
-  z
 end

@@ -8,14 +8,18 @@ module DatagenCopulaBased
   using Cubature
   @pyimport scipy.cluster.hierarchy as sch
 
-  include("gendat.jl")
-  include("copulagendat.jl")
-  include("subcopgendat.jl")
+  include("sampleunivdists.jl")
+  include("archcopcorrelations.jl")
+  include("archcopulagendat.jl")
+  include("nestedarchcopulagendat.jl")
+  include("chaincopulagendat.jl")
+  include("subcopulasgendat.jl")
   include("helpers.jl")
-  include("nestedcopula.jl")
+  include("copulagendat.jl")
+
 
   export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshalolkincopulagen
-  export archcopulagen, bivariatecopgen
+  export archcopulagen, chaincopulagen
   export cormatgen, copulamix, convertmarg!
-  export bivfrechetcopulagen, nestedarchcopulagen
+  export chainfrechetcopulagen, nestedarchcopulagen
 end

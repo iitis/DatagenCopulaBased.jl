@@ -241,7 +241,7 @@ julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2
 
 ```
 
-### Mixture of bivariate archimedean sub-copulas
+### Chain of bivariate archimedean sub-copulas
 
 
 To generate `t` realisations of `length(θ)+1` using one parameter bivariate archimedean sub-copulas from the same familly, with parameter `θᵢ` for each
@@ -249,7 +249,7 @@ neighbour marginals (i'th and i+1'th)  run:
 
 ```julia
 
-julia> bivariatecopgen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::String; rev::Bool = false, cor::String = "")
+julia> chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::String; rev::Bool = false, cor::String = "")
 
 ```
 
@@ -268,7 +268,7 @@ supported.
 
 julia> srand(43);
 
-julia> bivariatecopgen(10, [4., 11.], "frank")
+julia> chaincopulagen(10, [4., 11.], "frank")
 10×3 Array{Float64,2}:
  0.180975  0.386303   0.879254
  0.775377  0.247895   0.144803
@@ -374,16 +374,16 @@ julia> frechetcopulagen(10, 2, 0.3, 0.2)
 
  ```
 
-### Mixture of bivariate Frechet sub-copulas
+### Chain of bivariate Frechet sub-copulas
 
 
-To generate `t` realisations of `length(α)+1` multivariate  data using two parameter bivariate Frechet sub-copulas with parameter `αᵢ` and
+To generate `t` realisations of `length(α)+1` multivariate  data using a chain two parameter bivariate Frechet sub-copulas with parameter `αᵢ` and
 `βᵢ` for each neighbour  (i'th and i+1'th) marginals  run:
 
 
 ```julia
 
-julia> bivfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
+julia> chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
 
 ```
 In other words `∀i∈[1, length(θ)]` data are generated from following Frechet copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
@@ -396,7 +396,7 @@ a hierarchically nested copula.
 ```julia
 julia> srand(43)
 
-julia> julia> bivfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
+julia> julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
 10×3 Array{Float64,2}:
  0.996764  0.996764  0.996764
  0.204033  0.795967  0.204033
