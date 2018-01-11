@@ -43,7 +43,7 @@ end
   @test tail(xt[:,1], xt[:,2], "l") ≈ λ atol=1.0e-1
   @test tail(xt[:,1], xt[:,2], "r") ≈ λ atol=1.0e-1
   convertmarg!(xt, Normal)
-  @test corspearman(xt) ≈ [1. rho; rho 1.] atol=1.0e-2
+  @test cor(xt) ≈ [1. rho; rho 1.] atol=1.0e-2
 end
 @testset "frechet copula" begin
   srand(43)

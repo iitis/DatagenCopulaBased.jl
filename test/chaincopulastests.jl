@@ -70,7 +70,7 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-  @test corspearman(x) ≈ [1. 0.6 0.2; 0.6 1. 0.2; 0.2 0.2 1.]
+  @test corspearman(x) ≈ [1. 0.6 0.2; 0.6 1. 0.2; 0.2 0.2 1.] atol=1.0e-3
   @test tail(x[:,1], x[:,2], "r") ≈ 0.8 atol=1.0e-1
   @test tail(x[:,2], x[:,3], "r") ≈ 0.5 atol=1.0e-1
 end

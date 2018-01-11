@@ -137,8 +137,8 @@ julia> archcopulagen(10, 2, 1, "clayton")
 
 ```
 
- * If `cor = kendall`, uses Kendall's τ correlation coefficients `θ`.
- * If `cor = pearson`, uses Pearson ρ correlation coefficient instead of `θ`.
+ * If `cor = Kendall`, uses Kendall's τ correlation coefficients `θ`.
+ * If `cor = Spearman`, uses Spearman ρ correlation coefficient instead of `θ`.
  * If `reversed = true` returns data from reversed copula.
 
 To generate data from reversed copula:
