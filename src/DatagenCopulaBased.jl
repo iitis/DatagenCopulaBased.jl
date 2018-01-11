@@ -14,8 +14,8 @@ module DatagenCopulaBased
   include("nestedarchcopulagendat.jl")
   include("chaincopulagendat.jl")
   include("subcopulasgendat.jl")
-  include("helpers.jl")
   include("copulagendat.jl")
+  include("marshalolkincopcorr.jl")
 
 
   export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshalolkincopulagen

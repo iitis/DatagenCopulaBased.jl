@@ -70,6 +70,23 @@ function tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::I
   z
 end
 
+### Frechet familly
+
+"""
+  frechetρ2αβ(ρ::Vector{Float64}, a::Vector{Float64})
+
+Returns Vector{Float}, Vector{Float}, parameters of the frechet copula given a
+sequential correlation and parameter a = α- β or β - α
+"""
+function frechetρ2αβ(ρ::Vector{Float64}, a::Vector{Float64})
+  la = length(a)
+  l = length(ρ)
+  a = (l > la)? hcat(a, transpose(0.1*ones(l - la))): a
+  a = [minimum([a[i], 0.5-ρ[i]/2, 0.5+ρ[i]/2]) for i in 1:l]
+  α = [(ρ[i] >= 0)? ρ[i] + a[i]: a[i] for i in 1:l]
+  β = [(ρ[i] < 0)? -ρ[i] + a[i]: a[i] for i in 1:l]
+  α, β
+end
 
 """
   function frechetcopulagen(t::Int, n::Int, α::Float64)
@@ -95,7 +112,6 @@ julia> frechetcopulagen(10, 2, 0.5)
 ```
 """
 
-
 function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
   0 <= α <= 1 || throw(AssertionError("generaton not supported for α ∉ [0,1]"))
   u = rand(t, n)
@@ -106,7 +122,6 @@ function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
   end
   u
 end
-
 
 """
   frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
@@ -121,6 +136,7 @@ function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int
   chainfrechetcopulagen(t, [α], [β])
 end
 
+### Marshal olkin familly
 
 """
   marshalolkincopulagen(t::Int, λ::Vector{Float64})

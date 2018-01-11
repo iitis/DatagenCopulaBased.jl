@@ -1,13 +1,5 @@
 α = 0.025
 
-@testset "tail dependencies" begin
-  v1 = vcat(zeros(5), 0.5*ones(5), zeros(5), 0.5*ones(70), ones(5), 0.5*ones(5), ones(5));
-  v2 = vcat(zeros(10), 0.5*ones(80), ones(10))
-  @test tail(v1, v2,  "l", 0.1) ≈ 0.5
-  @test tail(v1, v2, "r", 0.1) ≈ 0.5
-end
-
-
 @testset "transform marginals" begin
   x1 = [0.2 0.4; 0.4 0.6; 0.6 0.8]
   convertmarg!(x1, TDist, [[10],[10]])
