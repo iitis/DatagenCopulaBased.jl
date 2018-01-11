@@ -115,6 +115,8 @@ dilog(x::Float64) = quadgk(t -> log(t)/(1-t), 1, x)[1]
 function AMHθ(ρ::Float64)
   if ρ == 0.
     return 0.
+  elseif ρ <= -0.272
+    return -0.9999999
   elseif -0.272 < ρ < 0.475
     function f1!(θ, fvec)
       p = θ[1]

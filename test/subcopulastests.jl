@@ -7,7 +7,7 @@
   y = norm2unifind(x, Σ, [1,2])
   @test pvalue(ExactOneSampleKSTest(y[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
-  @test cor(y)≈ [1. 0.; 0. 1.] atol=1.0e-3
+  @test corspearman(y)≈ [1. 0.; 0. 1.] atol=1.0e-3
   @test makeind(Σ, "clayton" => [1,2]) == [1,2,4]
   x = [0.1 0.2 0.3 0.4; 0.2 0.3 0.4 0.5; 0.2 0.2 0.4 0.4; 0.1 0.3 0.5 0.6]
   @test findsimilar(x, [1,2]) == [4]

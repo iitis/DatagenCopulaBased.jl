@@ -3,7 +3,7 @@
 # Hepers
 
 @testset "correlations" begin
-  @testset "kendall's cor" begin
+  @testset "Kendall cor" begin
     @test Debye(0.5, 1) ≈ 0.8819271567906056
     @test τ2λ([0.4], [4.2, 1.2]) ≈ [4.2, 1.2, 3.6]
     @test τ2θ(0.6, "frank") ≈ 7.929642284264058
@@ -13,7 +13,7 @@
     @test τ2θ(1/4, "amh") ≈ 0.8384520912688538
     @test AMHτ2θ(1/4) ≈ 0.8384520912688538
   end
-  @testset "pearson cor" begin
+  @testset "Spearman cor" begin
     @test dilog(0.5) ≈ 0.5822405264650125
     @test ρ2θ(1/3, "clayton") ≈ 0.58754 atol=1.0e-5
     @test ρ2θ(1/3, "frank") ≈ 2.1164969117225363
@@ -56,11 +56,11 @@ end
   @test tail(x[:,1], x[:,2], "r", 0.00001) ≈ 0.
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   srand(43)
-  x = archcopulagen(500000, 2, 0.5, "gumbel"; cor = "kendall")
+  x = archcopulagen(500000, 2, 0.5, "gumbel"; cor = "Kendall")
   @test corkendall(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-4
   srand(43)
-  x = archcopulagen(500000, 2, 0.5, "gumbel"; cor = "pearson")
-  @test cor(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
+  x = archcopulagen(500000, 2, 0.5, "gumbel"; cor = "Spearman")
+  @test corspearman(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
 end
 @testset "clayton copula" begin
   srand(43)
@@ -73,7 +73,7 @@ end
   @test tail(x[:,1], x[:,2], "r", 0.0001) ≈ 0
   @test corkendall(x) ≈ [1. 1/3 1/3; 1/3 1. 1/3; 1/3 1/3 1.] atol=1.0e-2
   srand(43)
-  x = archcopulagen(500000, 2, 0.5, "clayton"; cor = "kendall")
+  x = archcopulagen(500000, 2, 0.5, "clayton"; cor = "Kendall")
   @test corkendall(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-3
   srand(43)
   x = archcopulagen(500000, 2, -0.9, "clayton")
@@ -90,7 +90,7 @@ end
   @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
   @test tail(x[:,2], x[:,3], "r", 0.0001) ≈ 0
   srand(43)
-  x = archcopulagen(500000, 2, 0.2, "frank"; cor = "kendall")
+  x = archcopulagen(500000, 2, 0.2, "frank"; cor = "Kendall")
   @test corkendall(x) ≈ [1. 0.2; 0.2 1.] atol=1.0e-3
 end
 @testset "Ali-Mikhail-Haq copula" begin
@@ -102,6 +102,6 @@ end
   @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
   @test tail(x[:,1], x[:,2], "r", 0.0001) ≈ 0
   @test corkendall(x)[1:2, 1:2] ≈ [1. 0.23373; 0.23373 1.] atol=1.0e-3
-  x = archcopulagen(500000, 2, 0.25, "amh"; cor = "kendall")
+  x = archcopulagen(500000, 2, 0.25, "amh"; cor = "Kendall")
   @test corkendall(x) ≈ [1. 0.25; 0.25 1.] atol=1.0e-3
 end

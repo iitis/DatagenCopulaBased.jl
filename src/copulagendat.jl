@@ -277,9 +277,9 @@ function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::
   1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
   x = zeros(4*n,n)
   if ordered
-    x = chaincopulagen(4*n, [fill(ρ, (n-1))...], "clayton"; cor = "pearson")
+    x = chaincopulagen(4*n, [fill(ρ, (n-1))...], "clayton"; cor = "Spearman")
   else
-    x = archcopulagen(4*n, n, ρ, "clayton"; cor = "pearson")
+    x = archcopulagen(4*n, n, ρ, "clayton"; cor = "Spearman")
   end
   convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n]; testunif = false)
   altersing? cor(x.*transpose(rand([-1, 1],n))): cor(x)

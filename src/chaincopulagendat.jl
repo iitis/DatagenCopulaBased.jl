@@ -67,18 +67,20 @@ julia> chaincopulagen(10, [4., 11.], "frank")
 ```
 """
 
-
 VFI = Union{Vector{Float64}, Vector{Int}}
+chaincopulagen(t::Int, θ::VFI, copula::String; rev::Bool = false, cor::String = "") =
+chaincopulagen(t, θ, [fill(copula, length(θ))...] ; rev = rev, cor= cor)
 
-function chaincopulagen(t::Int, θ::VFI, copula::String; rev::Bool = false, cor::String = "")
-  if ((cor == "pearson") | (cor == "kendall"))
-    θ = map(i -> usebivρ(i, copula, cor), θ)
+
+function chaincopulagen(t::Int, θ::VFI, copula::Vector{String}; rev::Bool = false, cor::String = "")
+  if ((cor == "Spearman") | (cor == "Kendall"))
+    θ = map(i -> usebivρ(θ[i], copula[i], cor), 1:length(θ))
   else
-    map(i -> testbivθ(i, copula), θ)
+    map(i -> testbivθ(θ[i], copula[i]), 1:length(θ))
   end
   u = rand(t,1)
   for i in 1:length(θ)
-    u = hcat(u, rand2cop(u[:, i], θ[i], copula))
+    u = hcat(u, rand2cop(u[:, i], θ[i], copula[i]))
   end
   rev? 1-u : u
 end
@@ -111,14 +113,14 @@ For amh copula pearson correlation fulfilling -0.2816 > ρᵢ >= .5. while kenda
 function usebivρ(ρ::Float64, copula::String, cor::String)
   if copula == "amh"
       -0.2816 < ρ <= 0.5 || throw(AssertionError("correlation coeficiant must fulfill -0.2816 < ρ <= 0.5"))
-    if cor == "kendall"
+    if cor == "Kendall"
       -0.18 < ρ < 1/3 || throw(AssertionError("correlation coeficiant must fulfill -0.2816 < ρ <= 1/3"))
     end
   else
     -1 < ρ < 1 || throw(AssertionError("correlation coeficiant must fulfill -1 < ρ < 1"))
     !(0. in ρ) || throw(AssertionError("not supported for ρ = 0"))
   end
-  (cor == "kendall")? τ2θ(ρ, copula): ρ2θ(ρ, copula)
+  (cor == "Kendall")? τ2θ(ρ, copula): ρ2θ(ρ, copula)
 end
 
 

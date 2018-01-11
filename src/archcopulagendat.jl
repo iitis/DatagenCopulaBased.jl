@@ -115,13 +115,13 @@ julia> archcopulagen(10, 2, 1, "clayton")
 function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
                                                               rev::Bool = false,
                                                               cor::String = "")
-  cor in ["pearson", "kendall", ""] || throw(AssertionError("$(cor) correlation not supported"))
+  cor in ["Spearman", "Kendall", ""] || throw(AssertionError("$(cor) correlation not supported"))
   copula in ["clayton", "amh", "frank", "gumbel"] || throw(AssertionError("$(copula) copula is not supported"))
   if *(n == 2)*((copula != "gumbel")*(θ < 0) | (copula == "amh")*(θ in [0,1]))
     return chaincopulagen(t, [θ], copula; rev=rev, cor=cor)
-  elseif cor == "pearson"
+  elseif cor == "Spearman"
     θ = useρ(θ , copula)
-  elseif cor == "kendall"
+  elseif cor == "Kendall"
     θ = useτ(θ , copula)
   else
     testθ(θ, copula)
