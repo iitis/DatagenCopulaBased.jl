@@ -1,6 +1,5 @@
 module DatagenCopulaBased
   using Distributions
-  using QuadGK
   using NLsolve
   using Combinatorics
   using PyCall
@@ -17,9 +16,9 @@ module DatagenCopulaBased
   include("copulagendat.jl")
   include("marshalolkincopcorr.jl")
 
-
-  export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshalolkincopulagen
-  export archcopulagen, chaincopulagen
-  export cormatgen, copulamix, convertmarg!
-  export chainfrechetcopulagen, nestedarchcopulagen
+  export archcopulagen, chaincopulagen, nestedarchcopulagen
+  export cormatgen, convertmarg!
+  export tstudentcopulagen, gausscopulagen
+  export frechetcopulagen, marshalolkincopulagen, chainfrechetcopulagen
+  export copulamix
 end
