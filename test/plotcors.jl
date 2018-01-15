@@ -62,5 +62,5 @@ end
 
 plotcor(Cg, vcat([1.01], [i for i in 1.2:0.2:10.]))
 plotcor(Cf, [i for i in -10.:0.2:10.])
-plotcor(Ccl, vcat([i for i in -1.:0.2:-0.1.], [i for i in 0.1.:0.2:10.]))
+plotcor(Ccl, vcat([i for i in -1.:0.2:-0.1], [i for i in 0.1:0.2:10.]))
 plotcor(Camh, [i for i in -1.:0.05:1.])
