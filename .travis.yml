@@ -1,0 +1,21 @@
+language: julia
+os:
+  - linux
+  - osx
+julia:
+  - 0.6
+# - nightly
+notifications:
+  email: false
+addons:
+  apt:
+    packages:
+      - hdf5-tools
+script:
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia --depwarn=no -e 'Pkg.add("Distributions"); Pkg.add("NLsolve")'
+  - julia --depwarn=no -e 'Pkg.add("Combinatorics"); Pkg.add("HypothesisTests")'
+  - julia --depwarn=no -e 'Pkg.add("Cubature"); Pkg.add("PyCall")'
+  - julia -e 'Pkg.clone("https://github.com/ZKSI/DatagenCopulaBased.jl"); Pkg.build("DatagenCopulaBased"); Pkg.test("DatagenCopulaBased"; coverage=true)'
+after_success:
+  - julia -e 'cd(Pkg.dir("DatagenCopulaBased")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder())'

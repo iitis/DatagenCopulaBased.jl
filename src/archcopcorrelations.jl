@@ -93,18 +93,20 @@ end
 
 Cg(x::Vector{Float64}, θ::Union{Int, Float64}) = exp(-((-log(x[1]))^θ+(-log(x[2]))^θ)^(1/θ))
 
+gumbelρ(θ::Union{Int, Float64}) = 12*hcubature(x-> Cg(x, θ), [0,0],[1,1])[1]-3
+
 function gumbelθ(ρ)
   function f1!(θ, fvec)
-    p = θ[1]
-    fvec[1] = 12*hcubature(x-> Cg(x, p), [0,0],[1,1])[1]-3-ρ
+    fvec[1] = gumbelρ(θ[1])-ρ
   end
   return nlsolve(f1!, [ρ]).zero[1]
 end
 
+claytonρ(θ::Union{Int, Float64}) = 12*hcubature(x-> Ccl(x, θ), [0,0],[1,1])[1]-3
+
 function claytonθ(ρ)
   function f1!(θ, fvec)
-    p = θ[1]
-    fvec[1] = 12*hcubature(x-> Ccl(x, p), [0,0],[1,1])[1]-3-ρ
+    fvec[1] = claytonρ(θ[1])-ρ
   end
   return nlsolve(f1!, [ρ]).zero[1]
 end
