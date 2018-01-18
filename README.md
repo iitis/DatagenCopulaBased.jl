@@ -1,5 +1,8 @@
 # DatagenCopulabased.jl
 
+https://travis-ci.org/ZKSI/DatagenCopulaBased.jl.svg?branch=master
+
+
 Copula based generator of `t` realisations of `n`-dimensions random variable. Data are returned in a form of matrix `U`: `size(U) = (t,n)`, where
 realisations of each marginal, i.e. `U[:,i]`, are uniformly distributed on `[0,1]`. Interdependence between
 marginals are determined by a given copula. See U. Cherubini, E. Luciano, W. Vecchiato, 'Copula Methods in Finance', Wiley 2004.
@@ -249,7 +252,7 @@ neighbour marginals (i'th and i+1'th)  run:
 
 ```julia
 
-julia> chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::String; rev::Bool = false, cor::String = "")
+julia> chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::Vector{String}; rev::Bool = false, cor::String = "")
 
 ```
 
@@ -268,7 +271,7 @@ supported.
 
 julia> srand(43);
 
-julia> chaincopulagen(10, [4., 11.], "frank")
+julia> chaincopulagen(10, [4., 11.], ["frank", "frank"])
 10×3 Array{Float64,2}:
  0.180975  0.386303   0.879254
  0.775377  0.247895   0.144803
