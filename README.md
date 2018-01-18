@@ -1,6 +1,7 @@
 # DatagenCopulabased.jl
 
-https://travis-ci.org/ZKSI/DatagenCopulaBased.jl.svg?branch=master
+[![Build Status](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl.svg?branch=master)](https://travis-ci.or/ZKSI/DatagenCopulaBased.jl)
+
 
 
 Copula based generator of `t` realisations of `n`-dimensions random variable. Data are returned in a form of matrix `U`: `size(U) = (t,n)`, where
