@@ -5,6 +5,7 @@ module DatagenCopulaBased
   using HypothesisTests
   using Cubature
   using PyCall
+  using StatsBase
   @pyimport scipy.cluster.hierarchy as sch
 
   include("sampleunivdists.jl")

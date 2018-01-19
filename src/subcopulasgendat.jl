@@ -88,6 +88,7 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::VP; λ::Vector{Float64} = 
   for p in inds
     ind = p[2]
     v = norm2unifind(xgauss, Σ, makeind(xgauss, p))
+    #v = rand(t, length(makeind(xgauss, p)))
     if p[1] == "mo"
       length(ind) < 4 || throw(DomainError("not supported for Marshal-Olkin subcopula of number of marginals > 3"))
       map = collect(combinations(1:length(ind),2))
@@ -235,7 +236,7 @@ data, mean correlations in each cluster and indices of clusters.
 """
 function getcors(x::Matrix{Float64})
   inds = getclust(transpose(x))
-  Σ = cor(x)
+  Σ = corspearman(x)
   m = meanΣ(Σ)
   k = maximum(inds)
   m1 = zeros(k)
