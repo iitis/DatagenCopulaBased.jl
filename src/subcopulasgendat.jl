@@ -87,7 +87,7 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::VP; λ::Vector{Float64} = 
   x = cdf.(Normal(0,1), x)
   for p in inds
     ind = p[2]
-    v = norm2unifind(xgauss, Σ, makeind(xgauss, p))
+    v = norm2unifind(xgauss, makeind(xgauss, p))
     #v = rand(t, length(makeind(xgauss, p)))
     if p[1] == "mo"
       length(ind) < 4 || throw(DomainError("not supported for Marshal-Olkin subcopula of number of marginals > 3"))
@@ -112,6 +112,30 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::VP; λ::Vector{Float64} = 
     end
   end
   x
+end
+
+"""
+  ncop2arch(x::Matrix{Float64}, inds::VP)
+
+Takes a matrix of data fram Gaussin multivariate distribution.
+Return a matrix of size x, where chosen set of marginals has a copula changed to Archimedean one.
+"""
+
+function ncop2arch(x::Matrix{Float64}, inds::VP)
+  testind(inds)
+  S = transpose(sqrt.(diag(cov(x))))
+  x = (x-mean(x, 1)[1])./S
+  xgauss = copy(x)
+  x = cdf.(Normal(0,1), x)
+  for p in inds
+    ind = p[2]
+    v = norm2unifind(xgauss, makeind(xgauss, p))
+    m1, m, n = getcors(xgauss[:,ind])
+    ϕ = [ρ2θ(abs.(m1[i]), p[1]) for i in 1:length(m1)]
+    θ = ρ2θ(abs.(m), p[1])
+    x[:,ind] = nestedcopulag(p[1], [length(s) for s in n], ϕ, θ, v)
+  end
+  quantile.(Normal(0,1), x).*S
 end
 
 """
@@ -185,7 +209,8 @@ independent uniformly distributed data based on marginals of x indexed by a give
 multiindex i.
 """
 
-function norm2unifind(x::Matrix{Float64}, Σ::Matrix{Float64}, i::Vector{Int})
+function norm2unifind(x::Matrix{Float64}, i::Vector{Int})
+  Σ = cor(x)
   a, s = eig(Σ[i,i])
   w = x[:, i]*s./transpose(sqrt.(a))
   w[:, end] = sign(cov(x[:, i[1]], w[:, end]))*w[:, end]

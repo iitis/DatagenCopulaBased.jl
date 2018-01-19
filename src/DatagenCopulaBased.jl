@@ -18,7 +18,7 @@ module DatagenCopulaBased
   include("marshalolkincopcor.jl")
 
   export archcopulagen, chaincopulagen, nestedarchcopulagen
-  export cormatgen, convertmarg!
+  export cormatgen, convertmarg!, ncop2arch
   export tstudentcopulagen, gausscopulagen
   export frechetcopulagen, marshalolkincopulagen, chainfrechetcopulagen
   export copulamix

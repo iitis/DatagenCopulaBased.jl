@@ -4,7 +4,7 @@
   Σ = [1 0.5 0.5 0.6; 0.5 1 0.5 0.6; 0.5 0.5 1. 0.6; 0.6 0.6 0.6 1.]
   srand(43)
   x = transpose(rand(MvNormal(Σ),500000))
-  y = norm2unifind(x, Σ, [1,2])
+  y = norm2unifind(x, [1,2])
   @test pvalue(ExactOneSampleKSTest(y[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
   @test corspearman(y)≈ [1. 0.; 0. 1.] atol=1.0e-3
@@ -27,6 +27,28 @@ end
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
 end
 
+@testset "convert sub-copula" begin
+  srand(42)
+  Σ = cormatgen(20, 0.8, false, false)
+  S = rand([0.8, 0.9, 1, 1.1, 1.2], 20)
+  y = rand(MvNormal(Σ), 500000)'
+  y = y.*S'
+  d=["clayton" => [1,2,3,4,8]]
+  x = ncop2arch(y, d)
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(0,S[1]))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Normal(0,S[2]))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(0,S[3]))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(0,S[4]))) > α
+  @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) ≈ 0 atol=5.0e-2
+  @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) ≈ 0 atol=5.0e-2
+  @test maximum(abs.(cor(y)-cor(x))) < 0.14
+  #cg = cumulants(y, 4)
+  #c = cumulants(x, 4)
+  #@test vecnorm(cg[3]) < 1
+  #@test vecnorm(cg[4]) < 1
+  #@test vecnorm(c[3]) > 10
+  #@test vecnorm(c[4]) > 10
+end
 
 @testset "sub copulas based generator" begin
   srand(44)
@@ -49,8 +71,8 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,12], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,15], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,20], Uniform(0,1))) > α
-  λₗ = (2^(-1/ρ2θ(Σ[2,3], "clayton")))
-  λᵣ = (2-2.^(1./ρ2θ(Σ[9,10], "gumbel")))
+  λₗ = (2^(-1/ρ2θ(corspearman(x[:,2], x[:,3]), "clayton")))
+  λᵣ = (2-2.^(1./ρ2θ(corspearman(x[:,9], x[:,10]), "gumbel")))
   λamh = (Σ[1,20] >= 0.5)? 0.5 : 0.
   @test tail(x[:,2], x[:,3], "l") ≈ λₗ atol=1.0e-1
   @test tail(x[:,5], x[:,6], "l") ≈ Σ[5,6] + 0.1 atol=1.0e-1
