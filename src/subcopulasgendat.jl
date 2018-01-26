@@ -88,12 +88,10 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::VP; λ::Vector{Float64} = 
   for p in inds
     ind = p[2]
     v = norm2unifind(xgauss, makeind(xgauss, p))
-    #v = rand(t, length(makeind(xgauss, p)))
     if p[1] == "mo"
       length(ind) < 4 || throw(DomainError("not supported for Marshal-Olkin subcopula of number of marginals > 3"))
       map = collect(combinations(1:length(ind),2))
-      ρ = [Σ[ind[k[1]], ind[k[2]]] for k in map]
-      τ = [moρ2τ(r) for r in ρ]
+      τ = [corkendall(xgauss[:,ind[k[1]]], xgauss[:,ind[k[2]]]) for k in map]
       x[:,ind] = mocopula(v, length(ind), τ2λ(τ, λ))
     elseif p[1] == "frechet"
       l = length(ind)-1

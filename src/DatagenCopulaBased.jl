@@ -1,11 +1,13 @@
 module DatagenCopulaBased
   using Distributions
-  using NLsolve
   using Combinatorics
   using HypothesisTests
   using Cubature
   using PyCall
   using StatsBase
+  using QuadGK
+  using Roots
+
   @pyimport scipy.cluster.hierarchy as sch
 
   include("sampleunivdists.jl")

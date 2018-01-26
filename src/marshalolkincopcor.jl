@@ -19,10 +19,8 @@ function τ2λ(τ::Vector{Float64}, λ::Vector{Float64})
 end
 
 function moρ2τ(ρ::Float64)
-  function f1!(τ, fvec)
-    fvec[1] = 1/2.*sin.(τ[1]*pi/2)+τ[1]/2 - ρ[1]
-  end
-  return nlsolve(f1!, [ρ]).zero[1]
+  f(τ) = 1/2.*sin.(τ[1]*pi/2)+τ[1]/2 - ρ[1]
+  fzero(f, -0.999, 0.999)
 end
 
 

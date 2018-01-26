@@ -4,7 +4,7 @@
 Returns float64, Debye function Dₖ(x) value
 """
 
-Debye(x::Float64, k::Int=1) = k/x^k*(quadgk(i -> i^k/(exp(i)-1), 0, x)[1])
+Debye(x, k::Int=1) = k/x^k*(quadgk(i -> i^k/(exp(i)-1), 0, x)[1])
 
 # kendall's τ to copulas parameters
 
@@ -34,10 +34,13 @@ Returns a Frank copula θ parameter, givem Kendall's τ
 """
 
 function frankτ2θ(τ::Float64)
-  function f1!(θ, fvec)
-    fvec[1] = 1+4*(Debye(θ[1])-1)/θ[1] - τ
+  f(θ) = 1+4*(Debye(θ)-1)/θ - τ
+  if τ > 0.
+    return fzero(f, τ, 100.)
+  elseif τ < 0.
+    return fzero(f, -100., τ)
   end
-  return nlsolve(f1!, [τ]).zero[1]
+  0.
 end
 
 """
@@ -48,13 +51,15 @@ Returns Ali-Mikhail-Haq copula θ parameter, givem Kendall's τ
 
 
 function AMHτ2θ(τ::Float64)
+  f(θ) = (1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2))-τ
   if τ >= 0.28
     return 0.999999
-  elseif -2/11 < τ < 0.28
-    function f1!(θ, fvec)
-      fvec[1] = (1 - 2*(*(1-θ[1])*(1-θ[1])log(1-θ[1]) + θ[1])/(3*θ[1]^2))-τ
-    end
-    return nlsolve(f1!, [τ]).zero[1]
+  elseif 0. < τ < 0.28
+    return fzero(f, 0.01, 0.99)
+  elseif -2/11 < τ < 0.
+    return fzero(f, -0.99, -0.01)
+  elseif τ == 0
+    return 0.
   end
   -0.999999999
 end
@@ -70,18 +75,18 @@ end
 """
 function ρ2θ(ρ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
-    return gumbelθ(ρ)
+    return gumbelρ2θ(ρ)
   elseif copula == "clayton"
-    return claytonθ(ρ)
+    return claytonρ2θ(ρ)
   elseif copula == "frank"
-    return frankθ(ρ)
+    return frankρ2θ(ρ)
   elseif copula == "amh"
-    return AMHθ(ρ)
+    return AMHρ2θ(ρ)
   end
   0.
 end
 
-### Helpers for given copulas
+### Clayton and gumbel copulas
 
 function Ccl(x::Vector{Float64}, θ::Union{Int, Float64})
   if θ > 0
@@ -93,45 +98,50 @@ end
 
 Cg(x::Vector{Float64}, θ::Union{Int, Float64}) = exp(-((-log(x[1]))^θ+(-log(x[2]))^θ)^(1/θ))
 
-gumbelρ(θ::Union{Int, Float64}) = 12*hcubature(x-> Cg(x, θ), [0,0],[1,1])[1]-3
+dilog(x) = quadgk(t -> log(t)/(1-t), 1, x)[1]
 
-function gumbelθ(ρ)
-  function f1!(θ, fvec)
-    fvec[1] = gumbelρ(θ[1])-ρ
-  end
-  return nlsolve(f1!, [ρ]).zero[1]
+# converts parameter to correlations and vice versa
+
+gumbelθ2ρ(θ) = 12*hcubature(x-> Cg(x, θ), [0,0],[1,1])[1]-3
+
+function gumbelρ2θ(ρ)
+  f(θ) = gumbelθ2ρ(θ)-ρ
+  return fzero(f, 1.001, 100.)
 end
 
-claytonρ(θ::Union{Int, Float64}) = 12*hcubature(x-> Ccl(x, θ), [0,0],[1,1])[1]-3
+ claytonθ2ρ(θ) = 12*hcubature(x-> Ccl(x, θ), [0,0],[1,1])[1]-3
 
-function claytonθ(ρ)
-  function f1!(θ, fvec)
-    fvec[1] = claytonρ(θ[1])-ρ
+function claytonρ2θ(ρ)
+  f(θ) = claytonθ2ρ(θ)-ρ
+  if ρ > .0
+    return fzero(f, .001, 100.)
+  elseif ρ < .0
+    return fzero(f, -1., -0.001)
+  else
+    return 0.
   end
-  return nlsolve(f1!, [ρ]).zero[1]
 end
 
-dilog(x::Float64) = quadgk(t -> log(t)/(1-t), 1, x)[1]
-
-
-function AMHθ(ρ::Float64)
+function AMHρ2θ(ρ::Float64)
+  f(p) = (12*(1+p)*dilog(1-p)-24*(1-p)*log(1-p))/p^2-3*(p+12)/p-ρ
   if ρ == 0.
     return 0.
   elseif ρ <= -0.272
     return -0.9999999
-  elseif -0.272 < ρ < 0.475
-    function f1!(θ, fvec)
-      p = θ[1]
-      fvec[1] = (12*(1+p)*dilog(1-p)-24*(1-p)*log(1-p))/p^2-3*(p+12)/p-ρ
-    end
-    return nlsolve(f1!, [ρ]).zero[1]
+  elseif 0 < ρ < 0.475
+    return fzero(f, 0.01, 0.99)
+  elseif -0.272 < ρ < 0.
+    return fzero(f, -0.99, -0.001)
   end
   0.99999999
 end
 
-function frankθ(ρ::Float64)
-  function f1!(θ, fvec)
-    fvec[1] = 1+12*(Debye(θ[1], 2)- Debye(θ[1]))/θ[1]-ρ
+function frankρ2θ(ρ::Float64)
+    f(θ) = 1+12*(Debye(θ, 2)- Debye(θ))/θ-ρ
+    if ρ > 0.
+    return fzero(f, ρ, 100.)
+  elseif ρ < 0.
+    return fzero(f, -100., ρ)
   end
-  return nlsolve(f1!, [ρ]).zero[1]
+  0.
 end

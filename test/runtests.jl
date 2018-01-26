@@ -8,11 +8,13 @@ import DatagenCopulaBased: rand2cop, bivariatecopulamix, fncopulagen
 import DatagenCopulaBased: logseriescdf, logseriesquantile, levyel, levygen, tiltedlevygen
 import DatagenCopulaBased: Ginv, InvlaJ, sampleInvlaJ, elInvlaF, nestedfrankgen
 import DatagenCopulaBased: getV0, phi
-import DatagenCopulaBased: testθ, useρ, useτ, ρ2θ, AMHθ, testbivθ, usebivρ
-import DatagenCopulaBased: frankτ2θ, dilog, frankθ, Debye, τ2λ, norm2unifind, makeind, τ2θ, AMHτ2θ
+import DatagenCopulaBased: testθ, useρ, useτ, testbivθ, usebivρ
+import DatagenCopulaBased: τ2λ, moρ2τ, norm2unifind
+import DatagenCopulaBased: dilog, Debye, frankτ2θ, τ2θ, AMHτ2θ, Ccl, Cg
+import DatagenCopulaBased: gumbelθ2ρ, claytonθ2ρ, gumbelρ2θ, claytonρ2θ, frankρ2θ, ρ2θ, AMHρ2θ
 import DatagenCopulaBased: mocopula, copulagen
 import DatagenCopulaBased: g2tsubcopula!, nestedcopulag, testnestedθϕ, nestedstep
-import DatagenCopulaBased: findsimilar, getclust
+import DatagenCopulaBased: findsimilar, getclust, makeind
 
 include("tailtest.jl")
 include("archcopulatests.jl")

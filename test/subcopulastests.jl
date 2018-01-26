@@ -51,7 +51,7 @@ end
 end
 
 @testset "sub copulas based generator" begin
-  srand(44)
+  srand(45)
   Σ = cormatgen(20, 0.5, false, false)
   d=["clayton" => [2,3,4,15,16], "amh" => [1,20], "gumbel" => [9,10], "frank" => [7,8],
   "mo" => [11,12], "frechet" => [5,6,13]]

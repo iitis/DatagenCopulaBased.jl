@@ -13,7 +13,8 @@ addons:
       - hdf5-tools
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia --depwarn=no -e 'Pkg.add("Distributions"); Pkg.add("NLsolve")'
+  - julia --depwarn=no -e 'Pkg.add("Distributions"); Pkg.add("Roots")'
+  - julia --depwarn=no -e 'Pkg.add("QuadGK")'
   - julia --depwarn=no -e 'Pkg.add("Combinatorics"); Pkg.add("HypothesisTests")'
   - julia --depwarn=no -e 'Pkg.add("Cubature"); Pkg.add("PyCall")'
   - julia --depwarn=no -e 'using PyCall; ENV["PYTHON"]=""; Pkg.build("PyCall")'

@@ -72,6 +72,10 @@ end
   @test tail(x[:,1], x[:,2], "r") ≈ 0.8 atol=1.0e-1
 end
 
+@testset "Marhall-Olkin helpers" begin
+  @test τ2λ([0.4], [4.2, 1.2]) ≈ [4.2, 1.2, 3.6]
+  @test moρ2τ(0.6) ≈ 0.5 atol=1.0e-2
+end
 @testset "Marhall-Olkin copula" begin
   m = [0.252982 0.201189;  0.464758 0.409039; 0.585662 0.5357]
   @test mocopula([0.2 0.3 0.4; 0.3 0.4 0.6; 0.4 0.5 0.7], 2, [1., 1.5, 2.]) ≈ m atol=1.0e-4
