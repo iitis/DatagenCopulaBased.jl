@@ -284,3 +284,11 @@ function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::
   convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n]; testunif = false)
   altersing? cor(x.*transpose(rand([-1, 1],n))): cor(x)
 end
+
+
+function cormatgen1(n::Int = 20)
+  a = rand(n,n)
+  b = a*a'
+  c = b./maximum(b)
+  c - diagm(diag(c))+eye(c)
+end
