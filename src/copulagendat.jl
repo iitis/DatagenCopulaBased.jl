@@ -264,29 +264,15 @@ If altersing = true, some σ are positive and some negative, else ∀ᵢⱼ σ�
 ```jldoctest
 julia> srand(43);
 
-julia> cormatgen(4)
-4×4 Array{Float64,2}:
-  1.0        0.574741  -0.789649  -0.654538
-  0.574741   1.0       -0.717196  -0.610049
- -0.789649  -0.717196   1.0        0.703387
- -0.654538  -0.610049   0.703387   1.0
+julia> julia> cormatgen(2)
+2×2 Array{Float64,2}:
+ 1.0       0.660768
+ 0.660768  1.0
 ```
 """
 
-function cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
-  1 > ρ > 0 || throw(AssertionError("only 1 > ρ > 0 supported"))
-  x = zeros(4*n,n)
-  if ordered
-    x = chaincopulagen(4*n, [fill(ρ, (n-1))...], "clayton"; cor = "Spearman")
-  else
-    x = archcopulagen(4*n, n, ρ, "clayton"; cor = "Spearman")
-  end
-  convertmarg!(x, TDist, [[rand([2,4,5,6,7,8,9,10])] for i in 1:n]; testunif = false)
-  altersing? cor(x.*transpose(rand([-1, 1],n))): cor(x)
-end
 
-
-function cormatgen1(n::Int = 20)
+function cormatgen(n::Int = 20)
   a = rand(n,n)
   b = a*a'
   c = b./maximum(b)

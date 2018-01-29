@@ -419,38 +419,21 @@ julia> julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
 
 ### Correlation matrix generation
 
-To generate a `n x n` correlation matrix `Σ`, with reference correlation `0 > ρ > 1` run:
+To generate a `n x n` correlation matrix `Σ`:
 
 ```julia
-julia> cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
+julia> cormatgen(n::Int)
 ```
-
- * If `ordered = false` `Σ` elements varies around `ρ`, i.e. `σᵢⱼ ≈ ρ+δ`, else they drop
-as indices differences rise, i.e. `σᵢⱼ ≳ σᵢₖ` as `|i-j| < |i-k|`.
- * If `altersing = true`, some `σ` are positive and some negative, else `∀ᵢⱼ σᵢⱼ ≥ 0`.
 
 ```julia
 julia> srand(43);
 
 julia> cormatgen(4)
 4×4 Array{Float64,2}:
-  1.0        0.574741  -0.789649  -0.654538
-  0.574741   1.0       -0.717196  -0.610049
- -0.789649  -0.717196   1.0        0.703387
- -0.654538  -0.610049   0.703387   1.0
-```
-```
-
-```julia
-julia> srand(43);
-
-julia> cormatgen(4, 0.5, true)
-4×4 Array{Float64,2}:
-  1.0        -0.417562  -0.435673  -0.0977413
- -0.417562    1.0        0.703997   0.389709 
- -0.435673    0.703997   1.0        0.536093 
- -0.0977413   0.389709   0.536093   1.0  
-
+ 1.0       0.396865  0.339354  0.193335
+ 0.396865  1.0       0.887028  0.51934
+ 0.339354  0.887028  1.0       0.551519
+ 0.193335  0.51934   0.551519  1.0     
 ```
 
 ### Converting marginals

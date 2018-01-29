@@ -36,22 +36,19 @@ end
 
 @testset "convert sub-copula" begin
   srand(42)
-  Σ = cormatgen(20, 0.8, false, false)
-  S = rand([0.8, 0.9, 1, 1.1, 1.2], 20)
+  Σ = cormatgen(25)
+  S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   y = rand(MvNormal(Σ), 500000)'
   y = y.*S'
-  d=["clayton" => [1,2,3,4,8]]
+  d=["clayton" => [1,2,3,4,9]]
   x = ncop2arch(y, d)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(0,S[1]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Normal(0,S[2]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(0,S[3]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(0,S[4]))) > α
-  @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) ≈ 0 atol=5.0e-2
-  @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) ≈ 0 atol=5.0e-2
-  @test maximum(abs.(cor(y)-cor(x))) < 0.14
-  println(vecnorm(cor(y)-cor(x))/vecnorm(cor(y)))
-  println(vecnorm(cov(y)-cov(x))/vecnorm(cov(y)))
-  println(maximum(abs.(cor(y)-cor(x))))
+  @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.055
+  @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.055
+  @test maximum(abs.(cor(y)-cor(x))) < 0.12
   #cg = cumulants(y, 4)
   #c = cumulants(x, 4)
   #@test vecnorm(cg[3]) < 1
@@ -61,26 +58,18 @@ end
 end
 
 @testset "sub copulas based generator" begin
-  srand(45)
-  Σ = cormatgen(20, 0.5, false, false)
+  srand(42)
+  Σ = cormatgen(20)
   d=["clayton" => [2,3,4,15,16], "amh" => [1,20], "gumbel" => [9,10], "frank" => [7,8],
   "mo" => [11,12], "frechet" => [5,6,13]]
-  srand(44)
+  srand(42)
   x = copulamix(100000, Σ, d; λ = [6.5, 2.1])
-  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,7], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,8], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,9], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,10], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,11], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,12], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,15], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,20], Uniform(0,1))) > α
   λₗ = (2^(-1/ρ2θ(corspearman(x[:,2], x[:,3]), "clayton")))
   λᵣ = (2-2.^(1./ρ2θ(corspearman(x[:,9], x[:,10]), "gumbel")))
   λamh = (Σ[1,20] >= 0.5)? 0.5 : 0.
@@ -107,8 +96,8 @@ end
 end
 
 @testset "copula chain based generator" begin
-  srand(43)
-  Σ = cormatgen(15, 0.8, true,true)
+  srand(42)
+  Σ = cormatgen(15)
   d=["clayton" => [2,3,4,5,6], "amh" => [1,14], "frank" => [7,8]]
   x = bivariatecopulamix(100000, Σ, d);
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α

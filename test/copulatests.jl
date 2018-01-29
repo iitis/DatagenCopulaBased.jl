@@ -15,13 +15,7 @@ end
 
 @testset "generate corelation matrix" begin
   srand(43)
-  @test cormatgen(2) ≈ [1.0 0.911482; 0.911482 1.0] atol=1.0e-5
-  srand(44)
-  c = cormatgen(3, 0.8, true, false)
-  @test c ≈ [1.0 0.586006 0.460863; 0.586006 1.0 0.731886; 0.460863 0.731886 1.0] atol=1.0e-5
-  srand(44)
-  c = cormatgen(3, 0.8, true, true)
-  @test c ≈ [1.0 0.586006 -0.460863; 0.586006 1.0 -0.731886; -0.460863 -0.731886 1.0] atol=1.0e-5
+  @test cormatgen(2) ≈ [1.0 0.660768; 0.660768 1.0] atol=1.0e-5
 end
 
 @testset "gaussian copula" begin
