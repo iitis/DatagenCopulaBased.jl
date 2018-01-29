@@ -560,7 +560,7 @@ are calculated from required Pearson correlation;
 
 For exemplary use see:
 
-```
+```julia
 
 julia> d = ["mo" => [1,2,3], "clayton" => [4,5,6]];
 
