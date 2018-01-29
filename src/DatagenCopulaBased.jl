@@ -3,12 +3,11 @@ module DatagenCopulaBased
   using Combinatorics
   using HypothesisTests
   using Cubature
-  using PyCall
   using StatsBase
   using QuadGK
   using Roots
+  using Iterators
 
-  @pyimport scipy.cluster.hierarchy as sch
 
   include("sampleunivdists.jl")
   include("archcopcorrelations.jl")

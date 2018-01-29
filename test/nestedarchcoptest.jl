@@ -3,15 +3,16 @@
 #@everywhere using DatagenCopulaBased
 
 
-@testset "nested archimedean copulas halpers" begin
+@testset "nested archimedean copulas helpers" begin
   srand(43)
-  u = nestedcopulag("clayton", [2, 2], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
+  u = nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
   @test u ≈ [0.193949 0.230553 0.515404 0.557686; 0.712034 0.761276 0.190189 0.208867] atol=1.0e-5
   srand(43)
   @test nestedstep("clayton", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5) ≈ [0.374625 0.836357; 0.0381504 0.500485] atol=1.0e-5
 end
 
 @testset "nested archimedean copulas exceptions" begin
+  nestedarchcopulagen(100000, [2, 2], [2., 2.], 0.5, "frank")
   @test_throws(AssertionError, testnestedθϕ([2, 2], [2.1, 2.2], 0.5, "gumbel"))
   @test_throws(AssertionError, testnestedθϕ([2, 2], [2.1, 2.2], 3.5, "gumbel"))
   @test_throws(AssertionError, testnestedθϕ([2, 2], [0.8, 1.1], 0.5, "amh"))

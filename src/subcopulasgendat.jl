@@ -100,12 +100,12 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::VP; λ::Vector{Float64} = 
     elseif p[1] == "t-student"
       g2tsubcopula!(x, Σ, ind, ν)
     elseif length(ind) > 2
-      m1, m, n = getcors(xgauss[:,ind])
+      m1, m, inds = getcors(xgauss[:,ind], div(length(ind),2)+1)
       ϕ = [ρ2θ(abs.(m1[i]), p[1]) for i in 1:length(m1)]
       θ = ρ2θ(abs.(m), p[1])
-      x[:,ind] = nestedcopulag(p[1], [length(s) for s in n], ϕ, θ, v)
+      x[:,ind] = nestedcopulag(p[1], inds, ϕ, θ, v)
     else
-      θ = ρ2θ(Σ[ind[1], ind[2]], p[1])
+      θ = ρ2θ(corspearman(xgauss[:,ind[1]], xgauss[:,ind[2]]), p[1])
       x[:,ind] = copulagen(p[1], v, θ)
     end
   end
@@ -128,10 +128,15 @@ function ncop2arch(x::Matrix{Float64}, inds::VP)
   for p in inds
     ind = p[2]
     v = norm2unifind(xgauss, makeind(xgauss, p))
-    m1, m, n = getcors(xgauss[:,ind])
-    ϕ = [ρ2θ(abs.(m1[i]), p[1]) for i in 1:length(m1)]
-    θ = ρ2θ(abs.(m), p[1])
-    x[:,ind] = nestedcopulag(p[1], [length(s) for s in n], ϕ, θ, v)
+    if length(ind) == 2
+      θ = ρ2θ(corspearman(xgauss[:,ind[1]], xgauss[:,ind[2]]), p[1])
+      x[:,ind] = copulagen(p[1], v, θ)
+    else
+      m1, m, inds = getcors(xgauss[:,ind], div(length(ind),2)+1)
+      ϕ = [ρ2θ(abs.(m1[i]), p[1]) for i in 1:length(m1)]
+      θ = ρ2θ(abs.(m), p[1])
+      x[:,ind] = nestedcopulag(p[1], inds, ϕ, θ, v)
+    end
   end
   quantile.(Normal(0,1), x).*S
 end
@@ -185,19 +190,17 @@ julia> findsimilar(x, [1,2])
  4
 ```
 """
-function findsimilar(x::Matrix{Float64}, ind::Vector{Int})
-  maxd =Float64[]
-  for i in 1:size(x,1)
-    if !(i in ind)
-      y = vcat(x[ind,:], transpose(x[i,:]))
-      push!(maxd, sum(sch.maxdists(sch.linkage(y, "average", "correlation"))))
-    else
-      push!(maxd, Inf)
-    end
-  end
-  find(maxd .== minimum(maxd))
-end
 
+function findsimilar(x::Matrix{Float64}, ind::Vector{Int})
+  Σ = cor(x')
+  n = size(x, 1)
+  maxd =Float64[]
+  index = setdiff(collect(1:size(x,1)), ind)
+  for i in index
+    push!(maxd, mean(map(j -> Σ[j, i], ind)))
+  end
+  index[findmax(maxd)[2]]
+end
 
 """
   norm2unifind(x::Matrix{Float64}, Σ::Matrix{Float64}, i::Vector{Int})
@@ -215,41 +218,23 @@ function norm2unifind(x::Matrix{Float64}, i::Vector{Int})
   cdf.(Normal(0,1), w)
 end
 
-"""
-  getclust(x::Matrix{Float64})
-
-Returns Array{Int} of that indicates a clusters of marginals given a data matrix
-
-``` jldoctest
-julia> srand(43)
-
-julia> getclust(randn(4,100))
-4-element Array{Int32,1}:
- 1
- 1
- 1
- 1
-```
-"""
-
-function getclust(x::Matrix{Float64})
-  Z=sch.linkage(x, "average", "correlation")
-  clusts = sch.fcluster(Z, 1, criterion="maxclust")
-  for i in 2:size(x,1)
-    b = sch.fcluster(Z, i, criterion="maxclust")
-    if minimum([count(b.==j) for j in 1:i]) > 1
-      clusts = b
-    end
-  end
-  clusts
-end
 
 """
   meanΣ(Σ::Matrix{Float64})
 
 Returns Float64, a mean of the mean of lower diagal elements of a matrix
+
+```jldoctest
+
+julia> s= [1. 0.2 0.3; 0.2 1. 0.4; 0.3 0.4 1.];
+
+julia> meanΣ(s)
+0.3
+```
 """
+
 meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[find(tril(Σ-eye(Σ)).!=0)]))
+
 
 """
   getcors(x::Matrix{Float64})
@@ -257,18 +242,33 @@ meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[find(tril(Σ-eye(Σ)).!=0)]))
 retruns Float64, Vector{Float64} and Venctor{Vector{Int}}, a general mean correlation of
 data, mean correlations in each cluster and indices of clusters.
 """
-function getcors(x::Matrix{Float64})
-  inds = getclust(transpose(x))
+
+
+function getcors(x::Matrix{Float64}, k::Int)
   Σ = corspearman(x)
-  m = meanΣ(Σ)
-  k = maximum(inds)
-  m1 = zeros(k)
-  ind = Array{Int}[]
-  for i in 1:k
-    j = find(inds .==i)
-    m1[i] = meanΣ(Σ[j,j])
-    push!(ind, j)
-  end
-  m = (m < minimum(m1))? m: minimum(m1)
-  m1, m, ind
+  ind, m1 = getclust(Σ, k)
+  n = size(Σ,1)
+  m = (sum(Σ-eye(Σ))-sum(Σ[ind,ind]-eye(Σ[ind,ind])))/(n^2-n+length(ind)-length(ind)^2)
+  [m1], m, [ind]
+end
+
+
+"""
+  getclust(Σ::Matrix{Float64}, p::Int = 2)
+
+Returns Array{Int} of size p that indicates a clustert of higher correlated marginals
+and its correlation
+
+``` jldoctest
+julia> srand(43)
+
+julia> getclust(cor(rand(100, 4)))
+
+julia> ([2, 3], 0.10631347336426306)
+```
+"""
+
+function getclust(Σ::Matrix{Float64}, p::Int = 2)
+  x = findmax( meanΣ(Σ[inds,inds]) for inds =subsets(1:size(Σ, 1), p))
+  collect(subsets(1:size(Σ, 1), p))[x[2]], x[1]
 end

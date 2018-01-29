@@ -4,7 +4,6 @@ Distributions
 QuadGK
 Roots
 Combinatorics
-PyCall
+Iterators
 StatsBase
 Cubature
-

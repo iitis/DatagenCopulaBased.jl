@@ -40,11 +40,16 @@ julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton", 1)
 
 ```
 """
+function nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String, m::Int = 0)
+  n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+  nestedarchcopulagen(t, sum(n)+m, n1, ϕ, θ, copula)
+end
 
-function nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64,
-                                                     copula::String, m::Int = 0)
+
+function nestedarchcopulagen(t::Int, n::Int, n1::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64,
+                                                     copula::String)
   copula in ["clayton", "amh", "frank", "gumbel"] || throw(AssertionError("$(copula) copula is not supported"))
-  nestedcopulag(copula, n, ϕ, θ, rand(t, sum(n)+m+1))
+  nestedcopulag(copula, n1, ϕ, θ, rand(t, n+1))
 end
 
 """
@@ -63,16 +68,15 @@ julia> nestedcopulag("clayton", [2, 2], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2
  ```
 """
 
-function nestedcopulag(copula::String, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, r::Matrix{Float64})
-  testnestedθϕ(n, ϕ, θ, copula)
+function nestedcopulag(copula::String, n::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64,
+                                                        r::Matrix{Float64})
+  testnestedθϕ(map(length, n), ϕ, θ, copula)
   V0 = getV0(θ, r[:,end], copula)
-  X = nestedstep(copula, r[:,1:n[1]], V0, ϕ[1], θ)
-  cn = cumsum(n)
+  X = r[:,1:end-1]
+  X[:,n[1]] = nestedstep(copula, r[:,n[1]], V0, ϕ[1], θ)
   for i in 2:length(n)
-    u = r[:,cn[i-1]+1:cn[i]]
-    X = hcat(X, nestedstep(copula, u, V0, ϕ[i], θ))
+    X[:,n[i]] = nestedstep(copula, r[:,n[i]], V0, ϕ[i], θ)
   end
-  X = hcat(X, r[:,sum(n)+1:end-1])
   phi(-log.(X)./V0, θ, copula)
 end
 

@@ -7,12 +7,19 @@
   y = norm2unifind(x, [1,2])
   @test pvalue(ExactOneSampleKSTest(y[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
-  @test corspearman(y)≈ [1. 0.; 0. 1.] atol=1.0e-3
+  @test corspearman(y) ≈ [1. 0.; 0. 1.] atol=1.0e-3
   @test makeind(Σ, "clayton" => [1,2]) == [1,2,4]
   x = [0.1 0.2 0.3 0.4; 0.2 0.3 0.4 0.5; 0.2 0.2 0.4 0.4; 0.1 0.3 0.5 0.6]
-  @test findsimilar(x, [1,2]) == [4]
+  @test findsimilar(x, [1,2]) == 4
   srand(43)
-  @test getclust(randn(4,100)) == [1,1,1,1]
+  x = randn(100, 4)
+  a,b,c = getcors(x,2)
+  @test c == [[1, 2]]
+  @test b ≈ -0.05690969096909691
+  @test a ≈ [0.0976898] atol=1.0e-6
+  @test getclust(cor(x), 2)[1] == [2, 3]
+  s= [1. 0.2 0.3; 0.2 1. 0.4; 0.3 0.4 1.]
+  @test meanΣ(s) == 0.3
 end
 
 @testset "t-student subcopula" begin
@@ -42,6 +49,9 @@ end
   @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) ≈ 0 atol=5.0e-2
   @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) ≈ 0 atol=5.0e-2
   @test maximum(abs.(cor(y)-cor(x))) < 0.14
+  println(vecnorm(cor(y)-cor(x))/vecnorm(cor(y)))
+  println(vecnorm(cov(y)-cov(x))/vecnorm(cov(y)))
+  println(maximum(abs.(cor(y)-cor(x))))
   #cg = cumulants(y, 4)
   #c = cumulants(x, 4)
   #@test vecnorm(cg[3]) < 1
