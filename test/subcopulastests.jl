@@ -41,7 +41,7 @@ end
   y = rand(MvNormal(Σ), 500000)'
   y = y.*S'
   d=["clayton" => [1,2,3,4,9]]
-  x = ncop2arch(y, d)
+  x = gcop2arch(y, d)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(0,S[1]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Normal(0,S[2]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(0,S[3]))) > α

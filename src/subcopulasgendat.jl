@@ -73,7 +73,7 @@ julia> copulamix(10, Σ, d)
  0.228135   0.200149  0.268541    0.780435  0.596068   0.445581   0.514078
  0.685846   0.299556  0.258419    0.381806  0.576986   0.376558   0.306041
  0.642151   0.940707  0.951272    0.566305  0.720493   0.0103265  0.807028
- 0.0899659  0.224153  0.294587    0.076334  0.0420721  0.387212   0.520707 
+ 0.0899659  0.224153  0.294587    0.076334  0.0420721  0.387212   0.520707
 
 ```
 """
@@ -113,13 +113,13 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::VP; λ::Vector{Float64} = 
 end
 
 """
-  ncop2arch(x::Matrix{Float64}, inds::VP)
+  gcop2arch(x::Matrix{Float64}, inds::VP)
 
 Takes a matrix of data fram Gaussin multivariate distribution.
 Return a matrix of size x, where chosen set of marginals has a copula changed to Archimedean one.
 """
 
-function ncop2arch(x::Matrix{Float64}, inds::VP)
+function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = false)
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
   x = (x-mean(x, 1)[1])./S
@@ -127,9 +127,9 @@ function ncop2arch(x::Matrix{Float64}, inds::VP)
   x = cdf.(Normal(0,1), x)
   for p in inds
     ind = p[2]
-    v = norm2unifind(xgauss, makeind(xgauss, p))
-    if length(ind) == 2
-      θ = ρ2θ(corspearman(xgauss[:,ind[1]], xgauss[:,ind[2]]), p[1])
+    v = naive? rand(size(xgauss, 1), length(ind)+1): norm2unifind(xgauss, makeind(xgauss, p))
+    if notnested | (length(ind) == 2)
+      θ = ρ2θ(meanΣ(corspearman(xgauss)[ind, ind]), p[1])
       x[:,ind] = copulagen(p[1], v, θ)
     else
       m1, m, inds = getcors(xgauss[:,ind], div(length(ind),2)+1)
