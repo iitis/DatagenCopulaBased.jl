@@ -48,7 +48,7 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(0,S[4]))) > α
   @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.055
   @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.055
-  @test maximum(abs.(cor(y)-cor(x))) < 0.12
+  @test maximum(abs.(cor(y)-cor(x))) < 0.125
   #cg = cumulants(y, 4)
   #c = cumulants(x, 4)
   #@test vecnorm(cg[3]) < 1
