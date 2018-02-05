@@ -38,7 +38,7 @@ end
   srand(42)
   Σ = cormatgen(25)
   Σ1 =0.8*ones(25,25) + 0.2*eye(25)
-  Σ = 0.6*Σ + 0.4*Σ1
+  Σ = 0.3*Σ + 0.7*Σ1
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   y = rand(MvNormal(Σ), 500000)'
   y = y.*S'
@@ -50,6 +50,8 @@ end
   @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.04
   @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.041
   @test maximum(abs.(cor(y)-cor(x))) < 0.08
+  println(maximum(abs.(cor(y)-cor(x))))
+  println(vecnorm(cor(y)-cor(x))/vecnorm(cor(y)))
   #cg = cumulants(y, 4)
   #c = cumulants(x, 4)
   #@test vecnorm(cg[3]) < 1
