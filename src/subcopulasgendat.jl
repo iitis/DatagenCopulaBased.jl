@@ -127,7 +127,7 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = fals
   x = cdf.(Normal(0,1), x)
   for p in inds
     ind = p[2]
-    v = naive? rand(size(xgauss, 1), length(ind)+1): norm2unifind(xgauss, makeind(xgauss, p))
+    v = naive? rand(size(xgauss, 1), length(ind)+1): norm2unifind1(xgauss, ind)
     if notnested | (length(ind) == 2)
       θ = ρ2θ(meanΣ(corspearman(xgauss)[ind, ind]), p[1])
       x[:,ind] = copulagen(p[1], v, θ)
@@ -203,6 +203,20 @@ function findsimilar(x::Matrix{Float64}, ind::Vector{Int})
   index[findmax(maxd)[2]]
 end
 
+function findsimilar1(x::Matrix{Float64}, ind::Vector{Int})
+  Σ = cor(x')
+  n = size(x, 1)
+  maxd =Float64[]
+  index = setdiff(collect(1:size(x,1)), ind)
+  for i in index
+    push!(maxd, mean(map(j -> Σ[j, i], ind)))
+  end
+  maxd1 = sort(maxd)
+  println(maxd1)
+  ii = find(maxd .== maxd1[div(end,2)])
+  #println(iii)
+  index[ii]
+end
 """
   norm2unifind(x::Matrix{Float64}, Σ::Matrix{Float64}, i::Vector{Int})
 
@@ -211,6 +225,16 @@ independent uniformly distributed data based on marginals of x indexed by a give
 multiindex i.
 """
 
+function norm2unifind1(x::Matrix{Float64}, i::Vector{Int})
+  j = setdiff(collect(1:size(x, 2)), i)
+  x = hcat(x[:,i], randn(size(x,1)))
+  Σ = cor(x)
+  a, s = eig(Σ)
+  w = x*s./transpose(sqrt.(a))
+  w[:, end] = sign(cov(x[:, 1], w[:, end]))*w[:, end]
+  cdf.(Normal(0,1), w)
+end
+
 function norm2unifind(x::Matrix{Float64}, i::Vector{Int})
   Σ = cor(x)
   a, s = eig(Σ[i,i])
@@ -218,7 +242,6 @@ function norm2unifind(x::Matrix{Float64}, i::Vector{Int})
   w[:, end] = sign(cov(x[:, i[1]], w[:, end]))*w[:, end]
   cdf.(Normal(0,1), w)
 end
-
 
 """
   meanΣ(Σ::Matrix{Float64})

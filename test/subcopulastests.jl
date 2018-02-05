@@ -1,5 +1,5 @@
 α = 0.025
-
+#=
 @testset "sub copulas helpers" begin
   Σ = [1 0.5 0.5 0.6; 0.5 1 0.5 0.6; 0.5 0.5 1. 0.6; 0.6 0.6 0.6 1.]
   srand(43)
@@ -21,7 +21,7 @@
   s= [1. 0.2 0.3; 0.2 1. 0.4; 0.3 0.4 1.]
   @test meanΣ(s) == 0.3
 end
-
+=#
 @testset "t-student subcopula" begin
   srand(43)
   x = gausscopulagen(3, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.])
@@ -37,6 +37,8 @@ end
 @testset "convert sub-copula" begin
   srand(42)
   Σ = cormatgen(25)
+  Σ1 =0.8*ones(25,25) + 0.2*eye(25)
+  Σ = 0.6*Σ + 0.4*Σ1
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   y = rand(MvNormal(Σ), 500000)'
   y = y.*S'
@@ -45,9 +47,9 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(0,S[1]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(0,S[3]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(0,S[4]))) > α
-  @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.065
-  @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.065
-  @test maximum(abs.(cor(y)-cor(x))) < 0.13
+  @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.04
+  @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.041
+  @test maximum(abs.(cor(y)-cor(x))) < 0.08
   #cg = cumulants(y, 4)
   #c = cumulants(x, 4)
   #@test vecnorm(cg[3]) < 1
