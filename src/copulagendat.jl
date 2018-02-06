@@ -278,3 +278,5 @@ function cormatgen(n::Int = 20)
   c = b./maximum(b)
   c - diagm(diag(c))+eye(c)
 end
+
+cormatgen(n::Int, α::Float64) = α*cormatgen(n)+(1-α)*eye(n)
