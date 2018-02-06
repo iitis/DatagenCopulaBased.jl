@@ -29,7 +29,6 @@ function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
   end
   v
 end
-
 """
   phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
 

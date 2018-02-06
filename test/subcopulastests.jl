@@ -4,13 +4,16 @@
   Σ = [1 0.5 0.5 0.6; 0.5 1 0.5 0.6; 0.5 0.5 1. 0.6; 0.6 0.6 0.6 1.]
   srand(43)
   x = transpose(rand(MvNormal(Σ),500000))
-  y = norm2unifind(x, [1,2])
+  y = norm2unifind(x, [1,2], "frechet")
   @test pvalue(ExactOneSampleKSTest(y[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
   @test corspearman(y) ≈ [1. 0.; 0. 1.] atol=1.0e-3
-  @test makeind(Σ, "clayton" => [1,2]) == [1,2,4]
+  y = norm2unifind(x, [1,2])
+  @test pvalue(ExactOneSampleKSTest(y[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(y[:,3], Uniform(0,1))) > α
+  @test corspearman(y) ≈ [1. 0. 0.; 0. 1. 0.; 0. 0. 1.] atol=1.0e-3
   x = [0.1 0.2 0.3 0.4; 0.2 0.3 0.4 0.5; 0.2 0.2 0.4 0.4; 0.1 0.3 0.5 0.6]
-  @test findsimilar(x, [1,2]) == 4
   srand(43)
   x = randn(100, 4)
   a,b,c = getcors(x,2)

@@ -15,7 +15,7 @@ import DatagenCopulaBased: dilog, Debye, frankτ2θ, τ2θ, AMHτ2θ, Ccl, Cg
 import DatagenCopulaBased: gumbelθ2ρ, claytonθ2ρ, gumbelρ2θ, claytonρ2θ, frankρ2θ, ρ2θ, AMHρ2θ
 import DatagenCopulaBased: mocopula, copulagen
 import DatagenCopulaBased: g2tsubcopula!, nestedcopulag, testnestedθϕ, nestedstep
-import DatagenCopulaBased: findsimilar, getcors, makeind, getclust, meanΣ
+import DatagenCopulaBased: getcors, getclust, meanΣ
 
 include("tailtest.jl")
 include("archcopulatests.jl")
