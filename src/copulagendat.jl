@@ -279,4 +279,35 @@ function cormatgen(n::Int = 20)
   c - diagm(diag(c))+eye(c)
 end
 
-cormatgen(n::Int, α::Float64) = α*cormatgen(n)+(1-α)*eye(n)
+function cormatgen_constant(n::Int, α::Float64)
+  @assert 0 <= α <= 1 "α should satisfy 0 <= α <= 1"
+  α*ones(n, n)+(1-α)*eye(n)
+end
+
+function random_unit_vector(dim::Int)
+  result = rand(Normal(), dim, 1)
+  result /= norm(result)
+end
+
+function cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1.-α)/2.)
+  @assert 0 <= ϵ <= 1-α "ϵ must satisfy 0 <= ϵ <= 1-α"
+  result = cormatgen_constant(n, α)
+  u = hcat([random_unit_vector(n) for i=1:n]...)
+  result += ϵ*(u'*u)
+  result - ϵ*eye(result)
+end
+
+function cormatgen_toeplitz(n::Int, ρ::Float64)
+  @assert 0 <= ρ <= 1 "ρ needs to satisfy 0 <= ρ <= 1"
+  [ρ^(abs(i-j)) for i=0:n-1, j=0:n-1]
+end
+
+function cormatgen_toeplitz_noised(n::Int, ρ::Float64; ϵ=(1-ρ)/(1+ρ)/2)
+  @assert 0 <= ϵ <= (1-ρ)/(1+ρ) "ϵ must satisfy 0 <= ϵ <= (1-ρ)/(1+ρ)"
+
+  result = cormatgen_toeplitz(n, ρ)
+  u = hcat([random_unit_vector(n) for i=1:n]...)
+  u = hcat([random_unit_vector(n) for i=1:n]...)
+  result += ϵ*(u'*u)
+  result - ϵ*eye(result)
+end

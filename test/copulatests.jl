@@ -16,6 +16,18 @@ end
 @testset "generate corelation matrix" begin
   srand(43)
   @test cormatgen(2) ≈ [1.0 0.660768; 0.660768 1.0] atol=1.0e-5
+
+  @test cormatgen_constant(3, 0.3) == [1 0.3 0.3; 0.3 1 0.3; 0.3 0.3 1]
+  @test cormatgen_toeplitz(3, 0.3) == [1 0.3 0.09; 0.3 1 0.3; 0.09 0.3 1]
+
+  @test cormatgen_constant_noised(10, 0.2, ϵ=0.) == cormatgen_constant(10, 0.2)
+  @test all(eigvals(cormatgen_constant_noised(10, 0.2)) .> 0)
+  @test diag(cormatgen_constant_noised(10, 0.2)) ≈ ones(10)
+
+  @test cormatgen_toeplitz_noised(10, 0.2, ϵ=0.) == cormatgen_toeplitz(10, 0.2)
+  @test all(eigvals(cormatgen_toeplitz_noised(10, 0.2)) .> 0)
+  @test diag(cormatgen_toeplitz_noised(10, 0.2)) ≈ ones(10)
+
 end
 
 @testset "gaussian copula" begin
