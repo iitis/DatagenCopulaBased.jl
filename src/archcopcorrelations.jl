@@ -52,16 +52,16 @@ Returns Ali-Mikhail-Haq copula θ parameter, givem Kendall's τ
 
 function AMHτ2θ(τ::Float64)
   f(θ) = (1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2))-τ
-  if τ >= 0.28
-    return 0.999999
+  if -0.01 < τ < 0.01
+    return 0.0000000000001
+  elseif τ >= 0.28
+    return 0.9999
   elseif 0. < τ < 0.28
     return fzero(f, 0.01, 0.99)
   elseif -2/11 < τ < 0.
     return fzero(f, -0.99, -0.01)
-  elseif τ == 0
-    return 0.
   end
-  -0.999999999
+  -0.9999
 end
 
 # pearson ρ to copulas parameter
@@ -124,16 +124,16 @@ end
 
 function AMHρ2θ(ρ::Float64)
   f(p) = (12*(1+p)*dilog(1-p)-24*(1-p)*log(1-p))/p^2-3*(p+12)/p-ρ
-  if ρ == 0.
-    return 0.
+  if -0.01 < ρ  < 0.01
+    return 0.0000000000001
   elseif ρ <= -0.272
-    return -0.9999999
-  elseif 0 < ρ < 0.475
+    return -0.999999
+  elseif 0. < ρ < 0.47
     return fzero(f, 0.01, 0.99)
   elseif -0.272 < ρ < 0.
-    return fzero(f, -0.99, -0.001)
+    return fzero(f, -0.99, -0.01)
   end
-  0.99999999
+  0.999999
 end
 
 function frankρ2θ(ρ::Float64)
