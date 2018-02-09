@@ -117,12 +117,12 @@ end
 
 function claytonρ2θ(ρ)
   f(θ) = claytonθ2ρ(θ)-ρ
-  if ρ > .03
+  if ρ > .038
     return fzero(f, .001, 100.)
-  elseif ρ < -.03
+  elseif ρ < -.038
     return fzero(f, -1., -0.001)
   else
-    return 0.05
+    return 0.052
   end
 end
 
