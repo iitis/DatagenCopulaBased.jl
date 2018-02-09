@@ -57,9 +57,9 @@ function AMHτ2θ(τ::Float64)
   elseif τ >= 0.28
     return 0.9999
   elseif 0. < τ < 0.28
-    return fzero(f, 0.01, 0.99)
+    return fzero(f, 0.005, 0.995)
   elseif -2/11 < τ < 0.
-    return fzero(f, -0.99, -0.01)
+    return fzero(f, -0.995, -0.005)
   end
   -0.9999
 end
@@ -105,33 +105,37 @@ dilog(x) = quadgk(t -> log(t)/(1-t), 1, x)[1]
 gumbelθ2ρ(θ) = 12*hcubature(x-> Cg(x, θ), [0,0],[1,1])[1]-3
 
 function gumbelρ2θ(ρ)
-  f(θ) = gumbelθ2ρ(θ)-ρ
-  return fzero(f, 1.001, 100.)
+  if ρ < 0.01
+    return 1.
+  else
+    f(θ) = gumbelθ2ρ(θ)-ρ
+    return fzero(f, 1.000001, 100.)
+  end
 end
 
  claytonθ2ρ(θ) = 12*hcubature(x-> Ccl(x, θ), [0,0],[1,1])[1]-3
 
 function claytonρ2θ(ρ)
   f(θ) = claytonθ2ρ(θ)-ρ
-  if ρ > .0
+  if ρ > .03
     return fzero(f, .001, 100.)
-  elseif ρ < .0
+  elseif ρ < -.03
     return fzero(f, -1., -0.001)
   else
-    return 0.
+    return 0.05
   end
 end
 
 function AMHρ2θ(ρ::Float64)
   f(p) = (12*(1+p)*dilog(1-p)-24*(1-p)*log(1-p))/p^2-3*(p+12)/p-ρ
   if -0.01 < ρ  < 0.01
-    return 0.0000000000001
+    return 0.00001
   elseif ρ <= -0.272
     return -0.999999
   elseif 0. < ρ < 0.47
-    return fzero(f, 0.01, 0.99)
+    return fzero(f, 0.005, 0.995)
   elseif -0.272 < ρ < 0.
-    return fzero(f, -0.99, -0.01)
+    return fzero(f, -0.995, -0.005)
   end
   0.999999
 end
