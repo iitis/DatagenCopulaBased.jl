@@ -142,9 +142,9 @@ end
 
 function frankρ2θ(ρ::Float64)
     f(θ) = 1+12*(Debye(θ, 2)- Debye(θ))/θ-ρ
-    if ρ > 0.
+    if ρ > 0.00001
     return fzero(f, ρ, 100.)
-  elseif ρ < 0.
+  elseif ρ < -0.00001
     return fzero(f, -100., ρ)
   end
   0.
