@@ -133,10 +133,10 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = fals
       x[:,ind] = copulagen(p[1], v, θ)
     else
       k = maximum([2, div(length(ind),2)])
-      m1, m, inds = getcors(xgauss[:,ind], k)
+      m1, m, inds_getcors = getcors(xgauss[:,ind], k)
       ϕ = [ρ2θ(abs.(m1[i]), p[1]) for i in 1:length(m1)]
       θ = ρ2θ(abs.(m), p[1])
-      x[:,ind] = nestedcopulag(p[1], inds, ϕ, θ, v)
+      x[:,ind] = nestedcopulag(p[1], inds_getcors, ϕ, θ, v)
     end
   end
   quantile.(Normal(0,1), x).*S
