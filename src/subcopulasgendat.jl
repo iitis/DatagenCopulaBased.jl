@@ -122,7 +122,8 @@ Return a matrix of size x, where chosen set of marginals has a copula changed to
 function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = false)
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
-  x = (x.-mean(x, 1))./S
+  xbar = mean(x, 1)
+  x = (x.-xbar)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
   for p in inds
@@ -139,7 +140,7 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = fals
       x[:,ind] = nestedcopulag(p[1], part, ϕ, θ, v)
     end
   end
-  quantile.(Normal(0,1), x).*S
+  quantile.(Normal(0,1), x).*S.+xbar
 end
 
 """
