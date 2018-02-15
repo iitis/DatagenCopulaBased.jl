@@ -232,8 +232,6 @@ function getclust(Σ::Matrix{Float64}, p::Int = 2)
 end
 
 
-meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[find(tril(Σ-eye(Σ)).!=0)]))
-
 function mean_outer(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
   Σ_copy = copy(Σ)
   for ind=part
