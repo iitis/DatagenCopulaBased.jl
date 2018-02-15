@@ -132,11 +132,11 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = fals
       θ = ρ2θ(meanΣ(corspearman(xgauss)[ind, ind]), p[1])
       x[:,ind] = copulagen(p[1], v, θ)
     else
-      k = maximum([2, div(length(ind),2)])
-      m1, m, inds_getcors = getcors(xgauss[:,ind], k)
-      ϕ = [ρ2θ(abs.(m1[i]), p[1]) for i in 1:length(m1)]
-      θ = ρ2θ(abs.(m), p[1])
-      x[:,ind] = nestedcopulag(p[1], inds_getcors, ϕ, θ, v)
+      part, ρslocal, ρglobal = getcors_advanced(xgauss[:,ind])
+      ϕ = [ρ2θ(ρ, p[1]) for ρ=ρslocal]
+      θ = ρ2θ(ρglobal, p[1])
+      ind_adjusted = [ind[p] for p=part]
+      x[:,ind] = nestedcopulag(p[1], part, ϕ, θ, v)
     end
   end
   quantile.(Normal(0,1), x).*S
@@ -229,4 +229,63 @@ julia> ([2, 3], 0.10631347336426306)
 function getclust(Σ::Matrix{Float64}, p::Int = 2)
   x = findmax( meanΣ(Σ[inds,inds]) for inds =subsets(1:size(Σ, 1), p))
   collect(subsets(1:size(Σ, 1), p))[x[2]], x[1]
+end
+
+
+meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[find(tril(Σ-eye(Σ)).!=0)]))
+
+function mean_outer(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
+  Σ_copy = copy(Σ)
+  for ind=part
+    Σ_copy[ind,ind] = zeros(length(ind),length(ind))
+  end
+  mean(filter(x->x != 0, vec(Σ_copy)))
+end
+
+"""
+    parameters(x::Matrix{Float64}, part::Vector{Vector{Int}})
+
+Returns parametrization by correlation for data `x` and partition `part` for nested copulas.
+
+
+"""
+function parameters(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
+  ϕ = [meanΣ(Σ[ind,ind]) for ind=part]
+  θ = mean_outer(Σ, part)
+  ϕ, θ
+end
+
+function are_parameters_good(ϕ::Vector{Float64}, θ::Float64)
+  θ < minimum(ϕ)
+end
+
+function Σ_theor(ϕ::Vector{Float64}, θ::Float64, part::Vector{Vector{Int}})
+  n = sum(length.(part))
+  result = fill(θ, n, n)
+  for (ϕind,ind)=zip(ϕ,part)
+    result[ind,ind] =fill(ϕind, length(ind), length(ind))
+  end
+  for i=1:n
+    result[i,i] = 1
+  end
+  result
+end
+
+function getcors_advanced(x::Matrix{Float64})
+  Σ = corspearman(x)
+  var_no = size(Σ, 1)
+  partitions = collect(Combinatorics.SetPartitions(1:var_no))[2:end-1] #first is trivial, last is nested
+  params = (p->parameters(Σ, p)).(partitions)
+  good_inds = find(x->are_parameters_good(x...), params)
+  filtered_params = params[good_inds]
+
+  filtr_parts = partitions[good_inds]
+  opt_val = [vecnorm(Σ_theor(param..., fp) - Σ) for (param, fp)=zip(filtered_params, filtr_parts)]
+  opt_index = findmin(opt_val)[2]
+
+  optpart = filtr_parts[opt_index]
+  optϕ, optθ = filtered_params[opt_index]
+  nontriv = find(x->length(x)>1, filtr_parts[opt_index])
+
+  optpart[nontriv], optϕ[nontriv], optθ
 end
