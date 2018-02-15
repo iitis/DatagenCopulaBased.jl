@@ -19,7 +19,7 @@ julia> getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton")
 
 function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
   if copula == "clayton"
-    return quantile.(Gamma(1/θ, θ), v)
+    return quantile.(Gamma(1/θ, 1), v)
   elseif copula == "amh"
     return 1+quantile.(Geometric(1-θ), v)
   elseif copula == "frank"
@@ -47,7 +47,7 @@ julia> julia> phi([0.2 0.6; 0.4 0.8], 2., "clayton")
 
 function phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
   if copula == "clayton"
-    return (1 + θ.*u).^(-1/θ)
+    return (1 + u).^(-1/θ)
   elseif copula == "amh"
     return (1-θ)./(exp.(u)-θ)
   elseif copula == "frank"
