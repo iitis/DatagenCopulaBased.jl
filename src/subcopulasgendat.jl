@@ -122,7 +122,7 @@ Return a matrix of size x, where chosen set of marginals has a copula changed to
 function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = false)
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
-  x = (x-mean(x, 1)[1])./S
+  x = (x.-mean(x, 1))./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
   for p in inds
