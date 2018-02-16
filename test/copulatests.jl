@@ -28,6 +28,9 @@ end
   @test all(eigvals(cormatgen_toeplitz_noised(10, 0.2)) .> 0)
   @test diag(cormatgen_toeplitz_noised(10, 0.2)) ≈ ones(10)
 
+  srand(43)
+  @test cormatgen_rand(2) ≈ [1.0 0.879086; 0.879086 1.0] atol=1.0e-5
+  @test diag(cormatgen_rand(10)) ≈ ones(10)
 end
 
 @testset "gaussian copula" begin

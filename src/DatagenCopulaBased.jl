@@ -20,7 +20,7 @@ module DatagenCopulaBased
 
   export archcopulagen, chaincopulagen, nestedarchcopulagen
   export cormatgen, cormatgen_constant, cormatgen_toeplitz, convertmarg!, gcop2arch
-  export cormatgen_constant_noised, cormatgen_toeplitz_noised
+  export cormatgen_constant_noised, cormatgen_toeplitz_noised, cormatgen_rand
   export tstudentcopulagen, gausscopulagen
   export frechetcopulagen, marshalolkincopulagen, chainfrechetcopulagen
   export copulamix
