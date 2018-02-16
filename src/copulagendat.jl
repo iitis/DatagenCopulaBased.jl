@@ -283,7 +283,8 @@ function cormatgen_rand(n::Int = 20)
   a = rand(n,n)
   b = a*a'
   diagb = diagm(1./sqrt.(diag(b)))
-  diagb*b*diagb
+  b = diagb*b*diagb
+  (b+b')/2
 end
 
 function cormatgen_constant(n::Int, α::Float64)
