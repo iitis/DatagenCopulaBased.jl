@@ -258,7 +258,7 @@ function parameters(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
 end
 
 function are_parameters_good(ϕ::Vector{Float64}, θ::Float64)
-  θ < minimum(ϕ)
+  θ < minimum(filter(x->!isnan(x), ϕ))
 end
 
 function Σ_theor(ϕ::Vector{Float64}, θ::Float64, part::Vector{Vector{Int}})
@@ -276,7 +276,7 @@ end
 function getcors_advanced(x::Matrix{Float64})
   Σ = corspearman(x)
   var_no = size(Σ, 1)
-  partitions = collect(Combinatorics.SetPartitions(1:var_no))[2:end-1] #first is trivial, last is nested
+  partitions = collect(Combinatorics.SetPartitions(1:var_no))[2:end-1] #TODO popraw first is trivial, last is nested
   params = (p->parameters(Σ, p)).(partitions)
   good_inds = find(x->are_parameters_good(x...), params)
   filtered_params = params[good_inds]
@@ -284,10 +284,6 @@ function getcors_advanced(x::Matrix{Float64})
   filtr_parts = partitions[good_inds]
   opt_val = [vecnorm(Σ_theor(param..., fp) - Σ) for (param, fp)=zip(filtered_params, filtr_parts)]
   opt_index = findmin(opt_val)[2]
-
-  optpart = filtr_parts[opt_index]
-  optϕ, optθ = filtered_params[opt_index]
-  nontriv = find(x->length(x)>1, filtr_parts[opt_index])
-
-  optpart[nontriv], optϕ[nontriv], optθ
+  ϕ, θ = filtered_params[opt_index]
+  filter(x->length(x)>1,filtr_parts[opt_index]), filter(x->!isnan(x), ϕ), θ
 end
