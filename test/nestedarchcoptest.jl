@@ -6,10 +6,10 @@
 @testset "nested archimedean copulas helpers" begin
   srand(43)
   u = nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
-  @test u ≈ [0.164415 0.195523 0.538661 0.580642; 0.29794 0.339438 0.342289 0.374058] atol=1.0e-5
+  @test u ≈ [0.164415 0.195523 0.432165 0.469412; 0.460497 0.514371 0.477051 0.5176] atol=1.0e-5
   srand(43)
   n = nestedstep("clayton", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5)
-  @test n ≈ [0.298469 0.798329; 0.0258962 0.457323] atol=1.0e-5
+  @test n ≈ [0.158978 0.699178; 0.0971577 0.620134] atol=1.0e-5
 end
 
 @testset "nested archimedean copulas exceptions" begin
