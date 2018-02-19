@@ -74,10 +74,10 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,9], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,10], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,11], Uniform(0,1))) > α
-  λₗ = (2^(-1/ρ2θ(corspearman(x[:,2], x[:,3]), "clayton")))
+  λₗ = (2^(-1/ρ2θ(corspearman(x[:,4], x[:,3]), "clayton")))
   λᵣ = (2-2.^(1./ρ2θ(corspearman(x[:,9], x[:,10]), "gumbel")))
   λamh = (Σ[1,20] >= 0.5)? 0.5 : 0.
-  @test tail(x[:,2], x[:,3], "l") ≈ λₗ atol=1.0e-1
+  @test tail(x[:,4], x[:,3], "l") ≈ λₗ atol=1.0e-1
   @test tail(x[:,5], x[:,6], "l") ≈ Σ[5,6] + 0.1 atol=1.0e-1
   @test tail(x[:,5], x[:,6], "r") ≈ Σ[5,6] + 0.1 atol=1.0e-1
   @test tail(x[:,2], x[:,3], "r", 0.0001) ≈ 0 atol=1.0e-2
