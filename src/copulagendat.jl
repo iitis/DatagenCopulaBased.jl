@@ -297,6 +297,22 @@ function cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1.-α)/2.
   result - ϵ*eye(result)
 end
 
+function cormatgen_two_constant(n::Int, α::Float64, β::Float64)
+  @assert α > β "First argument must be greater"
+  result = fill(β, (n,n))
+  result[1:div(n,2),1:div(n,2)] = fill(α, (div(n,2),div(n,2)))
+  result += eye(result) - diagm(diag(result))
+  result
+end
+
+function cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Float64= (1-α)/2)
+  @assert ϵ < 1-α
+  result = cormatgen_two_constant(n, α, β)
+  u = hcat([random_unit_vector(n) for i=1:n]...)
+  result += ϵ*(u'*u)
+  result - ϵ*eye(result)
+end
+
 function cormatgen_toeplitz(n::Int, ρ::Float64)
   @assert 0 <= ρ <= 1 "ρ needs to satisfy 0 <= ρ <= 1"
   [ρ^(abs(i-j)) for i=0:n-1, j=0:n-1]
@@ -306,7 +322,6 @@ function cormatgen_toeplitz_noised(n::Int, ρ::Float64; ϵ=(1-ρ)/(1+ρ)/2)
   @assert 0 <= ϵ <= (1-ρ)/(1+ρ) "ϵ must satisfy 0 <= ϵ <= (1-ρ)/(1+ρ)"
 
   result = cormatgen_toeplitz(n, ρ)
-  u = hcat([random_unit_vector(n) for i=1:n]...)
   u = hcat([random_unit_vector(n) for i=1:n]...)
   result += ϵ*(u'*u)
   result - ϵ*eye(result)
