@@ -71,7 +71,7 @@ function tiltedlevygen(V0::Vector{Float64}, α::Float64)
   for i in 1:t
     x = levyel(α)
     u = rand()
-    while exp(-V0[i]^α*x)/(35*exp(-V0[i])) < u
+    while exp(-V0[i]^α*x)/(100*exp(-V0[i])) < u
       x = levyel(α)
       u = rand()
     end

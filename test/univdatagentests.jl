@@ -15,7 +15,9 @@ end
   srand(43)
   @test levygen(2., [0.2, 0.4, 0.6, 0.8]) ≈ [0.159748, 0.181703, 3.20539, 6.91497] atol=1.0e-4
   srand(43)
-  @test tiltedlevygen([0.2, 0.4, 0.6], 2.) ≈ [0.271861, 0.0285145, 1.11889] atol=1.0e-5
+  ti = tiltedlevygen([0.2, 0.4, 0.6], 2.)
+  println(ti)
+  @test ti ≈ [0.124321, 0.0195033, 0.235731] atol=1.0e-5
 end
 @testset "nested copulas data generators" begin
   @test Ginv(0.5, 0.5) ≈ 1.2732395447351625
