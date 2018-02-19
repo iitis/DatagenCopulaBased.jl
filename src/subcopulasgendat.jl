@@ -129,14 +129,17 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = fals
   for p in inds
     ind = p[2]
     v = naive? rand(size(xgauss, 1), length(ind)+1): norm2unifind(xgauss, ind)
-    if notnested | (length(ind) == 2)
+    if notnested | (length(ind) == 2) | naive
       θ = ρ2θ(meanΣ(corspearman(xgauss)[ind, ind]), p[1])
       x[:,ind] = copulagen(p[1], v, θ)
     else
       part, ρslocal, ρglobal = getcors_advanced(xgauss[:,ind])
-      ϕ = [ρ2θ(ρ, p[1]) for ρ=ρslocal]
-      θ = ρ2θ(ρglobal, p[1])
+      ϕ = [ρ2θ(abs(ρ), p[1]) for ρ=ρslocal]
+      θ = ρ2θ(abs(ρglobal), p[1])
+      println(ϕ)
+      println(θ)
       ind_adjusted = [ind[p] for p=part]
+      println(part)
       x[:,ind] = nestedcopulag(p[1], part, ϕ, θ, v)
     end
   end
