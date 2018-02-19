@@ -134,8 +134,8 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = fals
       x[:,ind] = copulagen(p[1], v, θ)
     else
       part, ρslocal, ρglobal = getcors_advanced(xgauss[:,ind])
-      ϕ = [ρ2θ(ρ, p[1]) for ρ=ρslocal]
-      θ = ρ2θ(ρglobal, p[1])
+      ϕ = [ρ2θ(abs(ρ), p[1]) for ρ=ρslocal]
+      θ = ρ2θ(abs(ρglobal), p[1])
       println(ϕ)
       println(θ)
       ind_adjusted = [ind[p] for p=part]
