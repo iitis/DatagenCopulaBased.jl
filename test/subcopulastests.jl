@@ -43,7 +43,7 @@ end
   Σ1 =0.8*ones(25,25) + 0.2*eye(25)
   Σ = 0.3*Σ + 0.7*Σ1
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
-  y = rand(MvNormal(Σ), 500000)'
+  y = rand(MvNormal(Σ), 100000)'
   y = y.*S'
   d=["clayton" => [1,2,3,4,9]]
   x = gcop2arch(y, d)
@@ -52,7 +52,7 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(0,S[4]))) > α
   @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.045
   @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.045
-  @test maximum(abs.(cor(y)-cor(x))) < 0.1
+  @test maximum(abs.(cor(y)-cor(x))) < 0.11
   #cg = cumulants(y, 4)
   #c = cumulants(x, 4)
   #@test vecnorm(cg[3]) < 1
