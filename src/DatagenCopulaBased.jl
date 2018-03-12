@@ -24,5 +24,5 @@ module DatagenCopulaBased
   export cormatgen_two_constant, cormatgen_two_constant_noised
   export tstudentcopulagen, gausscopulagen
   export frechetcopulagen, marshalolkincopulagen, chainfrechetcopulagen
-  export copulamix
+  export copulamix, gcop2tstudent
 end

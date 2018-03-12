@@ -5,15 +5,14 @@ Changes data generated using gaussian copula to data generated using student
  subcopula at indices subn.
 """
 
-function g2tsubcopula!(z::Matrix{Float64}, cormat::Matrix{Float64}, subn::Array{Int}, nu::Int = 10)
-  d = Chisq(nu)
-  U = rand(d, size(z, 1))
-  p = TDist(nu)
-  for i in subn
-    w = quantile(Normal(0, cormat[i,i]), z[:,i])
-    z[:,i] = cdf.(p, w.*sqrt.(nu./U))
+function g2tsubcopula!(x::Matrix{Float64}, Σ::Matrix{Float64}, ind::Array{Int}, ν::Int = 10)
+  U = rand(Chisq(ν), size(x, 1))
+  for i in ind
+    z = quantile(Normal(0, Σ[i,i]), x[:,i])
+    x[:,i] = cdf.(TDist(ν), z.*sqrt.(ν./U))
   end
 end
+
 
 VP = Vector{Pair{String,Vector{Int64}}}
 
@@ -113,10 +112,87 @@ function copulamix(t::Int, Σ::Matrix{Float64}, inds::VP; λ::Vector{Float64} = 
 end
 
 """
+  gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int)
+
+  Takes x ∈ Rᵗˣⁿ a matrix of t realisations of data from Gaussin n-variate distribution.
+  Return a matrix of size x, where chosen subset of marginals (ind) has a
+   t-Student copula with ν degrees of freedom, all univariate marginals are
+   unchanged
+
+```jldoctest
+
+julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
+
+julia> srand(42)
+
+julia> x = rand(MvNormal(Σ), 6)'
+6×3 Array{Float64,2}:
+ -0.556027  -0.662861   -0.384124
+ -0.299484   1.38993    -0.571326
+ -0.468606  -0.0990787  -2.3464
+  1.00331    1.43902     0.966819
+  0.518149   1.55065     0.989712
+ -0.886205   0.149748   -1.54419
+
+julia> gcop2tstudent(x, [1,2], 6)
+6×3 Array{Float64,2}:
+ -0.514449  -0.49147    -0.384124
+ -0.377933   1.66254    -0.571326
+ -0.430426  -0.0165044  -2.3464
+  0.928668   1.50472     0.966819
+  0.223439   1.12372     0.989712
+ -0.710786   0.239012   -1.54419
+
+```
+"""
+
+function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int)
+  xbar = mean(x, 1)
+  U = rand(Chisq(ν), size(x, 1))
+  y = copy(x)
+  Σ = cov(x)
+  for i in ind
+    z = (y[:,i].-xbar[i])./Σ[i,i].*sqrt.(ν./U)
+    z = cdf.(TDist(ν), z)
+    y[:,i] = quantile.(Normal(xbar[i],Σ[i,i]), z)
+  end
+  y
+end
+
+"""
   gcop2arch(x::Matrix{Float64}, inds::VP)
 
-Takes a matrix of data fram Gaussin multivariate distribution.
-Return a matrix of size x, where chosen set of marginals has a copula changed to Archimedean one.
+Takes x ∈ Rᵗˣⁿ a matrix of t realisations of data from Gaussin n-variate distribution.
+Return a matrix of size x, where chosen subset of marginals (inds[i][2]) has ana Archimedean
+sub-copula (denoted by inds[i][1]), all univariate marginals are unchanged.
+e.g. inds = ["clayton" => [1,2]] a subset of marginals indexed by 1,2 to such with
+Clayton sub-copula
+
+```jldoctest
+
+julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
+
+julia> srand(42)
+
+julia> x = rand(MvNormal(Σ), 6)'
+6×3 Array{Float64,2}:
+ -0.556027  -0.662861   -0.384124
+ -0.299484   1.38993    -0.571326
+ -0.468606  -0.0990787  -2.3464
+  1.00331    1.43902     0.966819
+  0.518149   1.55065     0.989712
+ -0.886205   0.149748   -1.54419
+
+julia> gcop2arch(x, ["clayton" => [1,2]])
+6×3 Array{Float64,2}:
+ -0.742443   0.424851  -0.384124
+  0.211894   0.195774  -0.571326
+ -0.989417  -0.299369  -2.3464
+  0.157683   1.47768    0.966819
+  0.154893   0.893253   0.989712
+ -0.657297  -0.339814  -1.54419
+
+```
 """
 
 function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = false)

@@ -61,6 +61,24 @@ end
   #@test vecnorm(c[4]) > 10
 end
 
+@testset "convert sub-copula" begin
+  srand(42)
+  Σ = cormatgen(25)
+  S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
+  mu = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
+  y = rand(MvNormal(Σ), 100000)'
+  y = y.*S'.+mu'
+  x = gcop2tstudent(y, [1,2,3,4], 10)
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(mu[3],S[3]))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(mu[4],S[4]))) > α
+  @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.015
+  @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.015
+  @test maximum(abs.(cor(y)-cor(x))) < 0.02
+end
+
+
+
 @testset "sub copulas based generator" begin
   srand(42)
   Σ = cormatgen(20)
