@@ -183,7 +183,7 @@ julia> x = rand(MvNormal(Σ), 6)'
   0.518149   1.55065     0.989712
  -0.886205   0.149748   -1.54419
 
-julia> gcop2arch(x, ["clayton" => [1,2]])
+julia> gcop2arch(x, ["clayton" => [1,2]]; naive::Bool = false, notnested::Bool = false)
 6×3 Array{Float64,2}:
  -0.742443   0.424851  -0.384124
   0.211894   0.195774  -0.571326
@@ -195,7 +195,7 @@ julia> gcop2arch(x, ["clayton" => [1,2]])
 ```
 """
 
-function gcop2arch(x::Matrix{Float64}, inds::VP; naive = false, notnested = false)
+function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested::Bool = false)
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
   xbar = mean(x, 1)
