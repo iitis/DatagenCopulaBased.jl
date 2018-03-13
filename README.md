@@ -490,7 +490,7 @@ julia> cormatgen_toeplitz(4, 0.5)
  0.125  0.25  0.5   1.0  
 ```
 
-### Partially random and partially deterministic methods
+### Partially random and partially deterministic cases
 
 To generate constant matrix with noise run:
 
