@@ -404,15 +404,25 @@ julia> julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
 ```
 
 
-## Helpers
+## Correlation matrix generation
 
-### Correlation matrix generation
+We supply a few methods to generate a `n x n` correlation matrix `Σ`.
 
-To generate a `n x n` correlation matrix `Σ`:
+### Fully random cases
+
+to generate randomly a correlation matrix run
 
 ```julia
 julia> cormatgen(n::Int)
 ```
+
+or
+
+```julia
+julia> cormatgen_rand(n::Int)
+```
+
+for different methods we have different outputs:
 
 ```julia
 julia> srand(43);
@@ -422,8 +432,115 @@ julia> cormatgen(4)
  1.0       0.396865  0.339354  0.193335
  0.396865  1.0       0.887028  0.51934
  0.339354  0.887028  1.0       0.551519
- 0.193335  0.51934   0.551519  1.0     
+ 0.193335  0.51934   0.551519  1.0    
+ 
+ julia> srand(43);
+ 
+julia> cormatgen_rand(4)
+4×4 Array{Float64,2}:
+ 1.0       0.963817  0.910257  0.575415
+ 0.963817  1.0       0.97971   0.63646 
+ 0.910257  0.97971   1.0       0.746517
+ 0.575415  0.63646   0.746517  1.0 
 ```
+
+### Deterministic cases
+
+To generate a correlation matrix with constant elements run:
+
+```julia
+julia> cormatgen_constant(n::Int, α::Float64)
+```
+
+parameter `α` should satisfy `0 <= α <= 1`
+
+```julia
+julia> cormatgen_constant(4, 0.4)
+4×4 Array{Float64,2}:
+ 1.0  0.4  0.4  0.4
+ 0.4  1.0  0.4  0.4
+ 0.4  0.4  1.0  0.4
+ 0.4  0.4  0.4  1.0
+```
+the generalisation is
+
+```julia
+julia> cormatgen_two_constant(n::Int, α::Float64, β::Float64)
+```
+parameters should satisfy `0 <= α <= 1` and `α > β`.
+
+```julia
+julia> cormatgen_two_constant(4, 0.5, 0.2)
+4×4 Array{Float64,2}:
+ 1.0  0.5  0.2  0.2
+ 0.5  1.0  0.2  0.2
+ 0.2  0.2  1.0  0.2
+ 0.2  0.2  0.2  1.0
+```
+to generate Toeplitz matrix with parameter `0 <= ρ <= 1` run:
+
+```julia
+julia> cormatgen_toeplitz(n::Int, ρ::Float64)
+
+julia> cormatgen_toeplitz(4, 0.5)
+4×4 Array{Float64,2}:
+ 1.0    0.5   0.25  0.125
+ 0.5    1.0   0.5   0.25 
+ 0.25   0.5   1.0   0.5  
+ 0.125  0.25  0.5   1.0  
+```
+
+### Partially random and partially deterministic methods
+
+To generate constant matrix with noise run:
+
+```julia
+julia> cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1.-α)/2.)
+```
+where the parameter `ϵ` must satisfy `0 <= ϵ <= 1-α`
+
+```julia
+ julia> srand(43);
+ 
+julia> cormatgen_constant_noised(4, 0.5)
+4×4 Array{Float64,2}:
+ 1.0       0.314724  0.590368  0.346992
+ 0.314724  1.0       0.314256  0.512183
+ 0.590368  0.314256  1.0       0.538089
+ 0.346992  0.512183  0.538089  1.0  
+```
+Analogically generate noised two constants matrix run
+
+```julia
+julia> cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Float64= (1-α)/2)
+
+julia> cormatgen_two_constant_noised(4, 0.5, 0.2)
+4×4 Array{Float64,2}:
+ 1.0        0.314724  0.290368  0.0469922
+ 0.314724   1.0       0.014256  0.212183 
+ 0.290368   0.014256  1.0       0.238089 
+ 0.0469922  0.212183  0.238089  1.0   
+```
+Finally to generate noised Toeplitz matrix run:
+
+```julia
+julia> cormatgen_toeplitz_noised(n::Int, ρ::Float64; ϵ=(1-ρ)/(1+ρ)/2)
+```
+where the parameter `ϵ must satisfy 0 <= ϵ <= (1-ρ)/(1+ρ)`
+
+```julia
+julia> srand(43);
+
+julia> cormatgen_two_constant_noised(4, 0.5, 0.2)
+4×4 Array{Float64,2}:
+ 1.0        0.314724  0.290368  0.0469922
+ 0.314724   1.0       0.014256  0.212183 
+ 0.290368   0.014256  1.0       0.238089 
+ 0.0469922  0.212183  0.238089  1.0 
+```
+
+## Helpers
+
 
 ### Converting marginals
 
