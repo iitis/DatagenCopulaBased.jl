@@ -108,7 +108,7 @@ For`2`-dimensional copula generate algorithms see P. Kumar, `Probability Distrib
 of Ali-Mikhail-Haq Copula`, Applied Mathematical Sciences, Vol. 4, 2010, no. 14, 657 - 666, and R. Nelsen 'An Introduction to Copulas', Springer Science & Business Media, 1999 - 216.
 
 
-To generate `t` realisations of `n`-variate data from archimedean copula with parameter θ run
+To generate `t` realisations of `n`-variate data from Archimedean copula with parameter θ run
 
 ```julia
 julia> archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String; rev::Bool = false, cor::String = "")
@@ -147,10 +147,10 @@ Physica A: Statistical Mechanics and its Applications 413, 489-497, 2014, and K.
 investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistical Mechanics and its Applications 413, 77-85, 2014.
 
 
-### Nested archimedean copulas
+### Nested Archimedean copulas
 
 To generate `t` realisations of `∑ᵢ nᵢ + m` variate data from nested
-archimedean copulas,  McNeil, A.J., 2008. 'Sampling nested Archimedean
+Archimedean copulas,  McNeil, A.J., 2008. 'Sampling nested Archimedean
 copulas'. Journal of Statistical Computation and Simulation 78, 567–581, run:
 
 ```julia
@@ -237,10 +237,10 @@ julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2
 
 ```
 
-### Chain of bivariate archimedean sub-copulas
+### Chain of bivariate Archimedean sub-copulas
 
 
-To generate `t` realisations of `length(θ)+1` variate data, using one parameter bivariate archimedean sub-copulas from the same familly, with parameter `θᵢ` for each neighbour marginals (i'th and i+1'th)  run:
+To generate `t` realisations of `length(θ)+1` variate data, using one parameter bivariate Archimedean sub-copulas from the same familly, with parameter `θᵢ` for each neighbour marginals (i'th and i+1'th)  run:
 
 ```julia
 
@@ -248,7 +248,7 @@ julia> chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::V
 
 ```
 
-In other words `∀i∈[1, length(θ)]` data are generated form the following archimedean copula `C_{θᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
+In other words `∀i∈[1, length(θ)]` data are generated form the following Archimedean copula `C_{θᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
 distributed on `[0,1]`, hence we got a multivariate copula, defined by
 subsequent bivariate sub-copulas. The relation between marginals `i` and `j`: `i ≠ j+1` are defined by a sequence of
 bivariate copulas.
@@ -539,6 +539,74 @@ julia> cormatgen_two_constant_noised(4, 0.5, 0.2)
  0.0469922  0.212183  0.238089  1.0 
 ```
 
+## Changes multivariate Gaussian distributed data using copulas
+
+To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of t-Student sub-copula with 
+a parameter `ν` run:
+
+```julia
+julia> gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int)
+```
+all univariate marginal distributions are Gaussian and unaffected by a transformation.
+
+```julia
+
+julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
+
+julia> srand(42)
+
+julia> x = rand(MvNormal(Σ), 6)'
+6×3 Array{Float64,2}:
+ -0.556027  -0.662861   -0.384124
+ -0.299484   1.38993    -0.571326
+ -0.468606  -0.0990787  -2.3464
+  1.00331    1.43902     0.966819
+  0.518149   1.55065     0.989712
+ -0.886205   0.149748   -1.54419
+
+julia> gcop2tstudent(x, [1,2], 6)
+6×3 Array{Float64,2}:
+ -0.514449  -0.49147    -0.384124
+ -0.377933   1.66254    -0.571326
+ -0.430426  -0.0165044  -2.3464
+  0.928668   1.50472     0.966819
+  0.223439   1.12372     0.989712
+ -0.710786   0.239012   -1.54419
+
+```
+To change a chosen marginals subset `inds[i][2]` of multivariate Gaussian distributed data `x` by means of Archimedean sub-copula of family `inds[i][1]` run:
+
+```julia
+julia> gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
+```
+many disjoint subsets numbered by `i` with different Archimedean sub-copulas are possible. As befor all univariate marginal distributions are Gaussian and unaffected by a transformation.
+
+
+```julia
+
+julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
+
+julia> srand(42)
+
+julia> x = rand(MvNormal(Σ), 6)'
+6×3 Array{Float64,2}:
+ -0.556027  -0.662861   -0.384124
+ -0.299484   1.38993    -0.571326
+ -0.468606  -0.0990787  -2.3464
+  1.00331    1.43902     0.966819
+  0.518149   1.55065     0.989712
+ -0.886205   0.149748   -1.54419
+
+julia> gcop2arch(x, ["clayton" => [1,2]])
+6×3 Array{Float64,2}:
+ -0.742443   0.424851  -0.384124
+  0.211894   0.195774  -0.571326
+ -0.989417  -0.299369  -2.3464
+  0.157683   1.47768    0.966819
+  0.154893   0.893253   0.989712
+ -0.657297  -0.339814  -1.54419
+
+```
 ## Helpers
 
 
@@ -692,3 +760,5 @@ julia> copulamix(10, Σ, d)
 # Citing this work
 
 This project was partially financed by the National Science Centre, Poland – project number 2014/15/B/ST6/05204.
+* while reffering to `gcop2tstudent()` - cite ....
+* while reffering to `gcop2arch()` - cite ....
