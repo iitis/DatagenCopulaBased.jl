@@ -2,22 +2,15 @@
 
 [![Build Status](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl.svg?branch=master)](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl)
 
+Copula based data generator. Returns data in a form of a matrix `U`: `size(U) = (t,n)` - being `t` realisations of `n`-variate random variable. Be default each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]`. Interdependence between
+marginals is modelled by apropriate n-variate copula function, see e.g.: U. Cherubini, E. Luciano, W. Vecchiato, 'Copula Methods in Finance', Wiley 2004.
 
-
-Copula based generator of `t` realisations of `n`-dimensions random variable. Data are returned in a form of matrix `U`: `size(U) = (t,n)`, where
-realisations of each marginal, i.e. `U[:,i]`, are uniformly distributed on `[0,1]`. Interdependence between
-marginals are determined by a given copula. See U. Cherubini, E. Luciano, W. Vecchiato, 'Copula Methods in Finance', Wiley 2004.
-
-In terms of probabilistic the function `C: [0,1]ⁿ → [0,1]` is the
-`n`-dimensional copula if it is a joint cumulative distribution of
-`n`-dimensions random variable with all marginals uniformly distributed on `[0,1]`.
-
-This  module use following copula families to generate data:
+This module support following copula families:
 * Elliptical copulas (Gaussian, t-Student),
 * Archimedean copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq), including nested ones,
 * Frechet familly copulas (maximal, minimal, independent),
-* Marshal-Olkin copula,
-* various copula mixtures, models with different sub-copulas for different sub-sets of marginals.
+* Marshal-Olkin copulas,
+* various copula mixtures, models with different sub-copulas for different subsets of marginals.
 
 ## Installation
 
