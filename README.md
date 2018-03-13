@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl.svg?branch=master)](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl)
 
 Copula based data generator. Returns data in a form of a matrix `U`: `size(U) = (t,n)` - being `t` realisations of `n`-variate random variable. Be default each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]`. Interdependence between
-marginals is modelled by apropriate n-variate copula function, see e.g.: U. Cherubini, E. Luciano, W. Vecchiato, 'Copula Methods in Finance', Wiley 2004.
+marginals is modelled by appropriate n-variate copula function, see e.g.: U. Cherubini, E. Luciano, W. Vecchiato, 'Copula Methods in Finance', Wiley 2004.
 
 This module support following copula families:
 * Elliptical copulas (Gaussian, t-Student),
@@ -35,16 +35,16 @@ copula is: `C(u₁, ..., uₙ) = F(F₁⁻¹(u₁), ..., Fₙ⁻¹(uₙ))`.
 
 ### Gaussian copula
 
-Gaussian copula is parametrised by the symmetric correlation matrix `Σ` with
-diag. elements `σᵢᵢ=1` and off-diag. elements `-1 ≤ σᵢⱼ ≤ 1 `, number of
-marginal variables `n = size(Σ, 1) = size(Σ, 2)`.
-If the symmetric covariance matrix is imputed, it will be converted into a
-correlation matrix automatically.
-
-
 ```julia
 julia> gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
 ```
+
+The function returns `U`: `size(U) = (t,n)` - `t` realisations of `n`-variate random variable, each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]` and a cross-correlation is modelled by a Gaussian copula, parametrised by the symmetric positively defined correlation matrix `Σ` with
+ones on diagonals `Σᵢᵢ=1` and all elements `-1 ≤ Σᵢⱼ ≤ 1 `. Number of
+marginal variables is `n = size(Σ, 1) = size(Σ, 2)`.
+If the symmetric covariance matrix without ones on a diagonals is imputed, it will be converted into a
+correlation matrix automatically. 
+
 
 ```julia
 
