@@ -577,9 +577,9 @@ julia> gcop2tstudent(x, [1,2], 6)
 To change a chosen marginals subset `inds[i][2]` of multivariate Gaussian distributed data `x` by means of Archimedean sub-copula of family `inds[i][1]` run:
 
 ```julia
-julia> gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}})
+julia> gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}}; naive::Bool = false, notnested::Bool = false)
 ```
-many disjoint subsets numbered by `i` with different Archimedean sub-copulas are possible. As befor all univariate marginal distributions are Gaussian and unaffected by a transformation.
+many disjoint subsets numbered by `i` with different Archimedean sub-copulas are possible. As before all univariate marginal distributions are Gaussian and unaffected by a transformation. Named parameter `naive` indicates a use of a naive algorithm of data substitution. Named parameter `notnested` means the use of one parameter Archimedean copula instead of a nested one.
 
 
 ```julia
@@ -696,40 +696,29 @@ julia> quantile.(Levy(0, 1), u)
 
 The following function would allow us to generate `t > 2` realisations of `n` variate data with
 marginals numerates by `i` from Gaussian copula with given correlation matrix
-`Σ` and replace
-some sub-copulas (with marginals numerates by `j₁, j₂, ..., jₛ: jₖ = [jₖ₁, ..., jₖₙₖ]`) by non-Gaussian one. The function returns `[0,1]ⁿ ∋  u: ∀ᵢ uᵢ ∼ Uniform(0,1)` such that the overall correlation of `u`
-is similar to the overall correlation given by correlation matrix `Σ`, i.e. `||Σ|| ≈ ||cor(quantile(Normal(0,1), u))||`, where `||.||` is a vector norm.
-
-Following conditions on multi-indices are required `∀ₖₗ jₖ ∩ jₗ = ∅` and `∀ₖ jₖ ⊆ i`
-and `∑ₖ length(jₖ) ≤ n + δ` where `δ` is an integer such as `δ = 0, 1` and
-depends no sub-copulas chosen. For chosen `jₖ` we have a k'th non-Gaussian sub copula, for multi-index `g = i \ ∪ ₖ jₖ`
-we have Gaussian sub-copula. If we chose a multi-index which parts belong to different `jₖ` or different `jₖ` and `g`
-the sub-copula is more complex.
-
-Families of sub-copual and corresponding marginals `jₖ` are supplied
-in the form of the Vector{Pair{String,Vector{Int64}}}, following families are supported:
-
-* Archimedean: nested (or bivariate) "gumbel", "frank", "clayton" or/and "amh" copula
-* "t-student"
-* "frechet" - mixture of bivariate frechet copulas,
-*  "mo" - "Marshal-Olkin" copula is supported only for `length(jₖ) = 2 or 3`.
-
-To generate data run:
+`Σ` and change marginal subsets `j₁, j₂, ..., jₛ`: `∀ₖₗ jₖ ∩ jₗ = ∅` and `∀ₖ jₖ ⊆ (1,2,...,n)` by means of chosen non-Gaussian sub-copulas. The function returns matrix `U` with uniformly distributed columns (marginals), such that the overall correlation of marginals from `U`is similar to `Σ`, i.e. `||Σ|| ≈ ||cor(quantile.(Normal(0,1), U))||`. 
 
 ``` julia
 
 julia> copulamix(t::Int, Σ::Matrix{Float}, inds::Vector{Pair{String,Vector{Int64}}}; λ::Vector{Float} = [6., 3., 1., 15.], ν::Int = 2, a::Vector{Float} = [0.1])
 
 ```
+Here `inds` is a vector of pairs of the copula family and a subset of marginals, following families are supported:
+
+* Archimedean: nested (or bivariate) "gumbel", "frank", "clayton" or/and "amh" copula
+* "t-student"
+* "frechet" - mixture of bivariate frechet copulas,
+*  "mo" - "Marshal-Olkin" copula is supported only for `length(jₖ) = 2 or 3`.
+
 
 The function takes also following named parameters:
 
-* λ - vector of chosen parameters of "Marshal-Olkin" copula, in bivariate case
-[λ₁ λ₂] - by default = [6., 3.], in tri-variate case [λ₁ λ₂ λ₃, λ₁₂₃] - by
-default = [6., 3., 1., 15.], reminding parameters λᵢⱼ
-are calculated from required Pearson correlation;
- * ν - is a parameter of t-student copula, the number of degrees of freedom,
-* a - is a difference of frechet bivariate copulas parameters, a = α - β, by default a = [0.1, 0.1, ...].
+* `λ` - vector of chosen parameters of "Marshal-Olkin" copula, in bivariate case
+`[λ₁ λ₂]` - by default = `[6., 3.]`, in tri-variate case `[λ₁ λ₂ λ₃, λ₁₂₃]` - by
+default = `[6., 3., 1., 15.]`, reminding parameters λᵢⱼ
+are calculated from data correlation;
+ * `ν` - is a parameter of t-Student copula, the number of degrees of freedom,
+* `a` - is a difference of frechet bivariate copulas parameters, `a = α - β`, by default a = `[0.1, 0.1, ...]`.
 
 For exemplary use see:
 
