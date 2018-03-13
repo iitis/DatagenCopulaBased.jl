@@ -240,8 +240,7 @@ julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2
 ### Chain of bivariate archimedean sub-copulas
 
 
-To generate `t` realisations of `length(θ)+1` using one parameter bivariate archimedean sub-copulas from the same familly, with parameter `θᵢ` for each
-neighbour marginals (i'th and i+1'th)  run:
+To generate `t` realisations of `length(θ)+1` variate data, using one parameter bivariate archimedean sub-copulas from the same familly, with parameter `θᵢ` for each neighbour marginals (i'th and i+1'th)  run:
 
 ```julia
 
@@ -255,8 +254,8 @@ subsequent bivariate sub-copulas. The relation between marginals `i` and `j`: `i
 bivariate copulas.
 
 Following families are supported: "clayton", "frank" and
-"amh" -  Ali-Mikhail-Haq. Conditions for `θᵢ` parameters are such as in
-bivariate copulas cases. Dislike the nested copula example, ordering of `θ` elements do not matter.
+"amh" -  Ali-Mikhail-Haq. Conditions for `θᵢ` parameters are such as in corresponding
+bivariate copula case. Dislike the nested copula example, ordering of `θ` elements do not matter.
 Reversed copula and the use of correlations instead of copula parameter are also
 supported.
 
@@ -281,7 +280,7 @@ julia> chaincopulagen(10, [4., 11.], ["frank", "frank"])
 
 ## Marshall-Olkin copula
 
-To generate `t` realisations of `n`-variate data from Marshall-Olkin copula with parameter series `λ` of of non-negative elements `λₛ`, run:
+To generate `t` realisations of `n`-variate data from Marshall-Olkin copula with parameter series `λ` with non-negative elements `λₛ`, run:
 
 ```julia
 julia> marshalolkincopulagen(t::Int, λ::Vector{Float64}; reverse::Bool = false)
@@ -311,7 +310,7 @@ julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
 
 ```
 
-To generate data from the  Marshall-Olkin copula we use algorithm presented P. Embrechts, F. Lindskog, A McNeil 'Modelling Dependence with Copulas and Applications to Risk Management', 2001
+To generate data from the Marshall-Olkin copula we use algorithm presented P. Embrechts, F. Lindskog, A McNeil 'Modelling Dependence with Copulas and Applications to Risk Management', 2001
 ∗∗
 
 
@@ -373,8 +372,7 @@ julia> frechetcopulagen(10, 2, 0.3, 0.2)
 ### Chain of bivariate Frechet sub-copulas
 
 
-To generate `t` realisations of `length(α)+1` multivariate  data using a chain two parameter bivariate Frechet sub-copulas with parameter `αᵢ` and
-`βᵢ` for each neighbour  (i'th and i+1'th) marginals  run:
+To generate `t` realisations of `length(α)+1` multivariate data using a chain two parameter bivariate Frechet sub-copulas with parameter `αᵢ` and `βᵢ` for each neighbour (i'th and i+1'th) marginals run:
 
 
 ```julia
@@ -382,11 +380,10 @@ To generate `t` realisations of `length(α)+1` multivariate  data using a chain 
 julia> chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
 
 ```
-In other words `∀i∈[1, length(θ)]` data are generated from following Frechet copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
+In other words `∀i∈[1, length(θ)]` data are generated from following Frechet sub-copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
 distributed on `[0,1]`, hence we got a multivariate copula, defined by subsequent bivariate sub-copulas.
 The relation between marginals `i` and `j`: `i ≠ j+1` are defined by a sequence of
-bivariate copulas. For some parameters `α,β` such copula would be equivalent to
-a hierarchically nested copula.
+bivariate copulas. 
 
 
 ```julia
