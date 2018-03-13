@@ -66,12 +66,12 @@ julia> gausscopulagen(10)
 
 ### t-Student copula
 
-t-Student copula is parametrised by the symmetric correlation matrix `Σ` (as in the Gaussian copula case) and `ν ∈ N` degrees of freedom.
-
-
 ```julia
 julia> tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
 ```
+
+The function returns `U`: `size(U) = (t,n)` - `t` realisations of `n`-variate random variable, each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]` and a cross-correlation is modelled by a t-Student copula parametrised by the symmetric matrix `Σ` (with ones on diagonals as in a Gaussian case) and by a numver `ν ∈ N`.
+
 
 ```julia
 julia> srand(43);
