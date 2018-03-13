@@ -612,8 +612,7 @@ julia> gcop2arch(x, ["clayton" => [1,2]])
 
 ### Converting marginals
 
-Takes matrix `X` of realisations of `size(X,2) = n` dimensional random variable, with uniform marginals numbered by `i`, and convert those marginals to common distribution
-`d` with parameters `p[i]`
+Takes matrix `X`: `size(X) = (t, n)` ie `t` realisations of `n`-dimensional random variable, with all uniform marginal univariate distributions `∀ᵢ X[:,i] ∼ Uniform(0,1)`, and convert those marginals to common distribution `d` with parameters `p[i]`
 
 ```julia
 julia> convertmarg!(U::Matrix{T}, d::UnionAll, p::Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}; testunif::Bool = true)
@@ -678,7 +677,7 @@ julia> quantile(d(p...), U)
 ```
 
 ```julia
-julia> quantile(Levy(0, 1), u)
+julia> quantile.(Levy(0, 1), u)
 10×2 Array{Float64,2}:
  3.42919    18.3279
  7.14305   112.728
