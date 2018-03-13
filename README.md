@@ -1,4 +1,4 @@
-# DatagenCopulabased.jl
+# DatagenCopulaBased.jl
 
 [![Build Status](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl.svg?branch=master)](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl)
 
