@@ -91,22 +91,20 @@ julia> tstudentcopulagen(10)
 
 ```
 
-
 ## Archimedean copulas
 
 Archimedean one parameter bivariate copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by using the continuous strictly
-decreasing generation function parametrised by `θ`, such that `φ(t): [0,1] →
-[0, ∞)` and `φ⁻¹(s)` is the pseudo-inverse. In `n`-variate case
-`C(u₁,..., uₙ) = φ⁻¹(φ(u₁)+...+φ(uₙ))` is also the copula, but constrains of
-the `θ` parameter are more strict, since in this case `φ⁻¹(s)`
-must be the inverse, see: M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174.
+decreasing generator parametrised by `θ`, such that `φ(t): [0,1] →
+[0, ∞)` and `φ⁻¹(s)` is the pseudo-inverse. 
+
+We define similarly `n`-variate Archimedean copula `C(u₁,..., uₙ) = φ⁻¹(φ(u₁)+...+φ(uₙ))`. Here constrains for the`θ` parameter are more strict, see: M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174.
 
  * Clayton copula - keyword = "clayton": `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ [-1, 0) ∪ (0, ∞)` for `n = 2`,
  * Frank copula - keyword = "frank": `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (-∞, 0) ∪ (0, ∞)` for `n = 2`,
  * Gumbel copula - keyword = "gumbel": `θ ∈ [1, ∞)`,
  * Ali-Mikhail-Haq copula - keyword = "amh": `θ ∈ (0, 1)` for `n > 2` and  `θ ∈ [-1, 1]` for `n = 2`.
 
-For`2`-dimensional copula gtenerate algorithms see P. Kumar, `Probability Distributions and Estimation
+For`2`-dimensional copula generate algorithms see P. Kumar, `Probability Distributions and Estimation
 of Ali-Mikhail-Haq Copula`, Applied Mathematical Sciences, Vol. 4, 2010, no. 14, 657 - 666, and R. Nelsen 'An Introduction to Copulas', Springer Science & Business Media, 1999 - 216.
 
 
@@ -115,6 +113,7 @@ To generate `t` realisations of `n`-variate data from archimedean copula with pa
 ```julia
 julia> archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String; rev::Bool = false, cor::String = "")
 ```
+The function returns `U`: `size(U) = (t,n)` - `t` realisations of `n`-variate random variable, each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]` and a cross-correlation is modelled by corresponding Archimedean copula.
 
 ```julia
 julia> srand(43);
