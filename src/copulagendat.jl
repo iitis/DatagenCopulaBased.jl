@@ -314,7 +314,7 @@ function cormatgen_two_constant(n::Int, α::Float64, β::Float64)
 end
 
 function cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Float64= (1-α)/2)
-  @assert ϵ < 1-α
+  @assert ϵ <= 1-α
   result = cormatgen_two_constant(n, α, β)
   u = hcat([random_unit_vector(n) for i=1:n]...)
   result += ϵ*(u'*u)
