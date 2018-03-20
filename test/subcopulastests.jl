@@ -75,6 +75,7 @@ end
   @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.015
   @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.015
   @test maximum(abs.(cor(y)-cor(x))) < 0.02
+  @test_throws AssertionError gcop2tstudent(y, [1,1,3,4], 10) 
 end
 
 

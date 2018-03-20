@@ -46,10 +46,10 @@ end
 end
 
 @testset "archimedean copulas exceptions" begin
-  @test_throws(AssertionError, testθ(0.5, "gumbel"))
-  @test_throws(AssertionError, useρ(0.6, "amh"))
-  @test_throws(AssertionError, useτ(0.45, "amh"))
-  @test_throws(AssertionError, archcopulagen(100000, 4, -0.6, "frank"))
+  @test_throws AssertionError testθ(0.5, "gumbel")
+  @test_throws AssertionError useρ(0.6, "amh")
+  @test_throws AssertionError useτ(0.45, "amh")
+  @test_throws AssertionError archcopulagen(100000, 4, -0.6, "frank")
 end
 
 @testset "gumbel copula" begin

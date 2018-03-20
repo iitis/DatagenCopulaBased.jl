@@ -12,9 +12,9 @@
 end
 
 @testset "exceptions" begin
-  @test_throws(AssertionError, testbivθ(-2., "clayton"))
-  @test_throws(AssertionError, usebivρ(-.9, "amh", "Spearman"))
-  @test_throws(AssertionError, chaincopulagen(100000, [1.1, 1.6], "gumbel"))
+  @test_throws AssertionError testbivθ(-2., "clayton")
+  @test_throws AssertionError usebivρ(-.9, "amh", "Spearman")
+  @test_throws AssertionError chaincopulagen(100000, [1.1, 1.6], "gumbel")
 end
 
 @testset "archimedean chain copula" begin

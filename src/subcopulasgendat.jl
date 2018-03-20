@@ -147,6 +147,7 @@ julia> gcop2tstudent(x, [1,2], 6)
 """
 
 function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int)
+  unique(ind) == ind || throw(AssertionError("indices must not repeat"))
   xbar = mean(x, 1)
   U = rand(Chisq(ν), size(x, 1))
   y = copy(x)
