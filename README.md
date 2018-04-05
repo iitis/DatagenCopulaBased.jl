@@ -748,5 +748,5 @@ julia> copulamix(10, Σ, d)
 # Citing this work
 
 This project was partially financed by the National Science Centre, Poland – project number 2014/15/B/ST6/05204.
-* while reffering to `gcop2tstudent()` - cite ...
+* while reffering to `gcop2tstudent()` - cite K. Domino: 'The use of fourth order cumulant tensors to detect outlier features modelled by a t-Student copula', arXiv:1804.00541 (2018).
 * while reffering to `gcop2arch()` - cite K. Domino, A. Glos: 'Hiding higher order cross-correlations of multivariate data using Archimedean copulas', arXiv:1803.07813 (2018).
