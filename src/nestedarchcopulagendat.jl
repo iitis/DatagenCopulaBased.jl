@@ -196,4 +196,5 @@ function testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula
   map(p -> testθ(p, copula), ϕ)
   θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
   length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
+  (copula != "clayton") | (maximum(ϕ) < θ+2.5*θ^2+1000*θ^5) || warn("θ << ϕ for clayton nested copula, marginals may not be uniform")
 end
