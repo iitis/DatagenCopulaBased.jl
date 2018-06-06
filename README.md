@@ -19,7 +19,7 @@ This module support following copula families:
 Within Julia, run
 
 ```julia
-julia> Pkg.clone("https://github.com/ZKSI/DatagenCopulaBased.jl")
+julia> Pkg.add("DatagenCopulaBased")
 ```
 
 to install the files Julia 0.6 is required.
