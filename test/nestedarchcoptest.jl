@@ -14,13 +14,13 @@ end
 
 @testset "nested archimedean copulas exceptions" begin
   nestedarchcopulagen(100000, [2, 2], [2., 2.], 0.5, "frank")
-  @test_throws AssertionError testnestedθϕ([2, 2], [2.1, 2.2], 0.5, "gumbel")
-  @test_throws AssertionError testnestedθϕ([2, 2], [2.1, 2.2], 3.5, "gumbel")
-  @test_throws AssertionError testnestedθϕ([2, 2], [0.8, 1.1], 0.5, "amh")
+  @test_throws DomainError testnestedθϕ([2, 2], [2.1, 2.2], 0.5, "gumbel")
+  @test_throws DomainError testnestedθϕ([2, 2], [2.1, 2.2], 3.5, "gumbel")
+  @test_throws DomainError testnestedθϕ([2, 2], [0.8, 1.1], 0.5, "amh")
   @test_throws AssertionError testnestedθϕ([2, 2], [0.8], 0.5, "amh")
   @test_throws AssertionError nestedarchcopulagen(100000, [2, 2], [2., 2.], 0.5, "fran")
-  @test_throws AssertionError nestedarchcopulagen(500000, [2.2, 3.6, 1.1], "gumbel")
-  @test_throws AssertionError nestedarchcopulagen(500000, [4.2, 3.6, 0.1], "gumbel")
+  @test_throws DomainError nestedarchcopulagen(500000, [2.2, 3.6, 1.1], "gumbel")
+  @test_throws DomainError nestedarchcopulagen(500000, [4.2, 3.6, 0.1], "gumbel")
 end
 
 @testset "nested gumbel copula" begin

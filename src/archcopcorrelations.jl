@@ -23,7 +23,7 @@ function τ2θ(τ::Float64, copula::String)
   elseif copula == "amh"
     return AMHτ2θ(τ)
   else
-  return 0.
+  throw(AssertionError("$(copula) not supported"))
   end
 end
 
@@ -40,7 +40,7 @@ function frankτ2θ(τ::Float64)
   elseif τ < 0.
     return fzero(f, -100., τ)
   end
-  0.
+  throw(DomainError("τ = 0 not supported"))
 end
 
 """
@@ -83,7 +83,7 @@ function ρ2θ(ρ::Union{Float64, Int}, copula::String)
   elseif copula == "amh"
     return AMHρ2θ(ρ)
   end
-  0.
+  throw(AssertionError("$(copula) not supported"))
 end
 
 ### Clayton and gumbel copulas
@@ -141,11 +141,11 @@ function AMHρ2θ(ρ::Float64)
 end
 
 function frankρ2θ(ρ::Float64)
-    f(θ) = 1+12*(Debye(θ, 2)- Debye(θ))/θ-ρ
-    if ρ > 0.00001
+  f(θ) = 1+12*(Debye(θ, 2)- Debye(θ))/θ-ρ
+  if ρ > 0.00001
     return fzero(f, ρ, 100.)
   elseif ρ < -0.00001
     return fzero(f, -100., ρ)
   end
-  0.
+  throw(DomainError("ρ = 0 not supported"))
 end

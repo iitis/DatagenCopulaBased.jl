@@ -12,12 +12,12 @@
 end
 
 @testset "exceptions" begin
-  @test_throws AssertionError testbivθ(-2., "clayton")
-  @test_throws AssertionError usebivρ(-.9, "amh", "Spearman")
+  @test_throws DomainError testbivθ(-2., "clayton")
+  @test_throws DomainError usebivρ(-.9, "amh", "Spearman")
   @test_throws AssertionError chaincopulagen(100000, [1.1, 1.6], "gumbel")
 end
 
-@testset "archimedean chain copula" begin
+@testset "chain of Archimedean copulas" begin
   srand(43)
   cops = ["clayton", "clayton", "clayton", "frank", "amh", "amh"]
   x = chaincopulagen(500000, [-0.9, 3., 2, 4., -0.3, 1.], cops)
@@ -54,7 +54,7 @@ end
   @test tail(x[:,3], x[:,4], "l", 0.0001) ≈ 0
 end
 
-@testset "frechet chain copula" begin
+@testset "chain of Frechet copulas" begin
   @test fncopulagen([0.2, 0.4], [0.1, 0.1], [0.2 0.4 0.6; 0.3 0.5 0.7]) == [0.6 0.4 0.2; 0.7 0.5 0.3]
   srand(43)
   x = chainfrechetcopulagen(500000, [0.9, 0.6, 0.2])

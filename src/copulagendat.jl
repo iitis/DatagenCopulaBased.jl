@@ -72,6 +72,7 @@ end
 
 ### Frechet familly
 
+#=
 """
   frechetρ2αβ(ρ::Vector{Float64}, a::Vector{Float64})
 
@@ -87,8 +88,9 @@ function frechetρ2αβ(ρ::Vector{Float64}, a::Vector{Float64})
   β = [(ρ[i] < 0)? -ρ[i] + a[i]: a[i] for i in 1:l]
   α, β
 end
-
+=#
 """
+
   function frechetcopulagen(t::Int, n::Int, α::Float64)
 
 Returns t realisation of n variate data generated from one parameter frechet multidimentional copula,

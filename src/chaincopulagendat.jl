@@ -94,11 +94,11 @@ amh -- Ali-Mikhail-Haq bivariate sub-copulas with parameters -1 ≥ θᵢ ≥ 1
 frank bivariate sub-copulas with parameters (θᵢ ≠ 0)
 """
 function testbivθ(θ::Union{Float64, Int}, copula::String)
-  !(0. in θ)|(copula == "amh") || throw(AssertionError("not supported for θ = 0"))
+  !(0. in θ)|(copula == "amh") || throw(DomainError("not supported for θ = 0"))
   if copula == "clayton"
-    θ >= -1 || throw(AssertionError("not supported for θ < -1"))
+    θ >= -1 || throw(DomainError("not supported for θ < -1"))
   elseif copula == "amh"
-    -1 <= θ <= 1|| throw(AssertionError("amh biv. copula supported only for -1 ≤ θ ≤ 1"))
+    -1 <= θ <= 1|| throw(DomainError("amh biv. copula supported only for -1 ≤ θ ≤ 1"))
   end
 end
 
@@ -111,13 +111,13 @@ For amh copula pearson correlation fulfilling -0.2816 > ρᵢ >= .5. while kenda
 
 function usebivρ(ρ::Float64, copula::String, cor::String)
   if copula == "amh"
-      -0.2816 < ρ <= 0.5 || throw(AssertionError("correlation coeficiant must fulfill -0.2816 < ρ <= 0.5"))
+      -0.2816 < ρ <= 0.5 || throw(DomainError("correlation coeficiant must fulfill -0.2816 < ρ <= 0.5"))
     if cor == "Kendall"
-      -0.18 < ρ < 1/3 || throw(AssertionError("correlation coeficiant must fulfill -0.2816 < ρ <= 1/3"))
+      -0.18 < ρ < 1/3 || throw(DomainError("correlation coeficiant must fulfill -0.2816 < ρ <= 1/3"))
     end
   else
-    -1 < ρ < 1 || throw(AssertionError("correlation coeficiant must fulfill -1 < ρ < 1"))
-    !(0. in ρ) || throw(AssertionError("not supported for ρ = 0"))
+    -1 < ρ < 1 || throw(DomainError("correlation coeficiant must fulfill -1 < ρ < 1"))
+    !(0. in ρ) || throw(DomainError("not supported for ρ = 0"))
   end
   (cor == "Kendall")? τ2θ(ρ, copula): ρ2θ(ρ, copula)
 end
@@ -151,9 +151,9 @@ julia> julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
 
 function chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
   length(α) == length(β) || throw(AssertionError("different lengths of parameters"))
-  minimum(α) >= 0 || throw(AssertionError("negative α parameter"))
-  minimum(β) >= 0 || throw(AssertionError("negative β parameter"))
-  maximum(α+β) <= 1 || throw(AssertionError("α[i] + β[i] > 0"))
+  minimum(α) >= 0 || throw(DomainError("negative α parameter"))
+  minimum(β) >= 0 || throw(DomainError("negative β parameter"))
+  maximum(α+β) <= 1 || throw(DomainError("α[i] + β[i] > 0"))
   fncopulagen(α, β, rand(t, length(α)+1))
 end
 

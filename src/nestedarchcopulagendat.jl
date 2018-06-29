@@ -144,7 +144,7 @@ function nestedarchcopulagen(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{F
                                                              copula::String = "gumbel")
   copula == "gumbel" ||
   throw(AssertionError("double nested cop. generator supported only for gumbel familly"))
-  θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
+  θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
   X = nestedarchcopulagen(t, n[1], Ψ[1], ϕ[1]./θ, copula)
   for i in 2:length(n)
     X = hcat(X, nestedarchcopulagen(t, n[i], Ψ[i], ϕ[i]./θ, copula))
@@ -176,7 +176,7 @@ function nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumb
   copula == "gumbel" ||
   throw(AssertionError("hierarchically nasted cop. generator supported only for gumbel familly"))
   testθ(θ[end], copula)
-  issorted(θ; rev=true) || throw(AssertionError("wrong heirarchy of parameters"))
+  issorted(θ; rev=true) || throw(DomainError("wrong heirarchy of parameters"))
   θ = vcat(θ, [1.])
   X = rand(t,1)
   for i in 1:length(θ)-1
@@ -194,7 +194,7 @@ Tests parameters, its hierarchy and size of parametes vector for nested archimed
 function testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String)
   testθ(θ, copula)
   map(p -> testθ(p, copula), ϕ)
-  θ <= minimum(ϕ) || throw(AssertionError("wrong heirarchy of parameters"))
+  θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
   length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
   (copula != "clayton") | (maximum(ϕ) < θ+2*θ^2+750*θ^5) || warn("θ << ϕ for clayton nested copula, marginals may not be uniform")
 end

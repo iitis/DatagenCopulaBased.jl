@@ -23,7 +23,7 @@ function moρ2τ(ρ::Float64)
   fzero(f, -0.999, 0.999)
 end
 
-
+#=
 # some Marshal-Olkin copulas helpers
 
 function getmoλ(λ::Vector{Float64}, ind::Vector{Int})
@@ -37,3 +37,4 @@ function setmoλ!(λ::Vector{Float64}, ind::Vector{Int}, a::Float64)
   s = collect(combinations(1:n))
   λ[[ind == a for a in s]] = a
 end
+=#

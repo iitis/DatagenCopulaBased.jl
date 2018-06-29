@@ -208,7 +208,7 @@ function testind(inds::Vector{Pair{String,Vector{Int64}}})
     inds[i][1] in ["gumbel", "clayton", "frank", "amh", "mo", "t-student", "frechet"] ||
     throw(AssertionError("$(inds[i][1]) copula family not supported"))
   end
-  unique(indar) == indar || throw(AssertionError("differnt subcopulas must heve different indices"))
+  unique(indar) == indar || throw(AssertionError("differnt subcopulas must have different indices"))
 end
 
 

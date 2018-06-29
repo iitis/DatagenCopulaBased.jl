@@ -13,19 +13,31 @@
     @test τ2θ(0.5, "gumbel") ≈ 2.
     @test τ2θ(1/3, "clayton") ≈ 1.
     @test τ2θ(1/4, "amh") ≈ 0.8384520912688538
+    @test_throws AssertionError τ2θ(1/3, "frak")
+    @test_throws DomainError τ2θ(0., "frank")
     @test frankτ2θ(0.6) ≈ 7.929642284264058
     @test AMHτ2θ(1/4) ≈ 0.8384520912688538
+    @test AMHτ2θ(0.) ≈ 0. atol=1.0e-6
+    @test AMHτ2θ(0.28) ≈ 0.9999
+    @test AMHτ2θ(-2/11) ≈ -0.9999
   end
   @testset "Spearman cor" begin
     @test dilog(0.5) ≈ 0.5822405264650125
     @test claytonρ2θ(1/3) ≈ 0.58754 atol=1.0e-5
     @test gumbelρ2θ(0.5) ≈ 1.5410704204332681
+    @test gumbelρ2θ(0.0001) == 1.
     @test ρ2θ(1/3, "frank") ≈ 2.116497 atol=1.0e-5
     @test ρ2θ(0.2, "amh") ≈ 0.5168580913147318
+    @test_throws AssertionError ρ2θ(1/3, "frak")
+    @test_throws DomainError ρ2θ(0., "frank")
     @test frankρ2θ(1/3) ≈ 2.116497 atol=1.0e-5
     @test AMHρ2θ(0.2) ≈ 0.5168580913147318
     @test claytonθ2ρ(3.) ≈ 0.78645 atol=1.0e-4
+    @test claytonθ2ρ(0.001) ≈ 0. atol=1.0e-2
     @test gumbelθ2ρ(3.) ≈ 0.8489 atol=1.0e-4
+    @test AMHρ2θ(0.) ≈ 0. atol=1.0e-4
+    @test AMHρ2θ(0.49) ≈ 1 atol=1.0e-4
+    @test AMHρ2θ(-0.273) ≈ -1 atol=1.0e-4
   end
   @testset "negative cor" begin
     @test ρ2θ(-0.2246, "amh") ≈ -0.8 atol=1.0e-3
@@ -46,10 +58,10 @@ end
 end
 
 @testset "archimedean copulas exceptions" begin
-  @test_throws AssertionError testθ(0.5, "gumbel")
-  @test_throws AssertionError useρ(0.6, "amh")
-  @test_throws AssertionError useτ(0.45, "amh")
-  @test_throws AssertionError archcopulagen(100000, 4, -0.6, "frank")
+  @test_throws DomainError testθ(0.5, "gumbel")
+  @test_throws DomainError useρ(0.6, "amh")
+  @test_throws DomainError useτ(0.45, "amh")
+  @test_throws DomainError archcopulagen(100000, 4, -0.6, "frank")
 end
 
 @testset "gumbel copula" begin

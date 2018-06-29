@@ -137,11 +137,11 @@ Tests the parameter θ value for archimedean copula, returns void
 
 function testθ(θ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
-    θ >= 1 || throw(AssertionError("generaton not supported for θ < 1"))
+    θ >= 1 || throw(DomainError("generaton not supported for θ < 1"))
   elseif copula == "amh"
-    1 > θ > 0 || throw(AssertionError("amh multiv. copula supported only for 0 < θ < 1"))
+    1 > θ > 0 || throw(DomainError("amh multiv. copula supported only for 0 < θ < 1"))
   else
-    θ > 0 || throw(AssertionError("generaton not supported for θ ≤ 0"))
+    θ > 0 || throw(DomainError("generaton not supported for θ ≤ 0"))
   end
 end
 
@@ -159,9 +159,9 @@ julia> useρ(0.75, "gumbel")
 """
 
 function useρ(ρ::Float64, copula::String)
-  0 < ρ < 1 || throw(AssertionError("correlation coeficiant must fulfill 0 < ρ < 1"))
+  0 < ρ < 1 || throw(DomainError("correlation coeficiant must fulfill 0 < ρ < 1"))
   if copula == "amh"
-    0 < ρ < 0.5 || throw(AssertionError("correlation coeficiant must fulfill 0 < ρ < 0.5"))
+    0 < ρ < 0.5 || throw(DomainError("correlation coeficiant must fulfill 0 < ρ < 0.5"))
   end
   ρ2θ(ρ, copula)
 end
@@ -180,9 +180,9 @@ julia> useτ(0.5, "clayton")
 """
 
 function useτ(τ::Float64, copula::String)
-  0 < τ < 1 || throw(AssertionError("correlation coeficiant must fulfill 0 < τ < 1"))
+  0 < τ < 1 || throw(DomainError("correlation coeficiant must fulfill 0 < τ < 1"))
   if copula == "amh"
-    0 < τ < 1/3 || throw(AssertionError("correlation coeficiant must fulfill 0 < τ < 1/3"))
+    0 < τ < 1/3 || throw(DomainError("correlation coeficiant must fulfill 0 < τ < 1/3"))
   end
   τ2θ(τ, copula)
 end
