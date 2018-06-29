@@ -6,7 +6,6 @@ module DatagenCopulaBased
   using StatsBase
   using QuadGK
   using Roots
-  using Iterators
 
 
   include("sampleunivdists.jl")

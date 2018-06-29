@@ -21,8 +21,8 @@ import DatagenCopulaBased: getcors_advanced
 
 include("tailtest.jl")
 include("archcopulatests.jl")
-include("chaincopulastests.jl")
-include("nestedarchcoptest.jl")
 include("univdatagentests.jl")
-include("subcopulastests.jl")
 include("copulatests.jl")
+include("nestedarchcoptest.jl")
+include("subcopulastests.jl")
+include("chaincopulastests.jl")

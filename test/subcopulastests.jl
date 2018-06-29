@@ -28,6 +28,14 @@
   @test c[1] == [[1, 4], [2, 3, 5]]
   @test c[2] ≈ [0.04729, 0.0195683] atol=1.0e-4
   @test c[3] ≈ -0.021774209774209772
+  x = frechet(0.6, rand(50000, 4))
+  Σ = cor(x)
+  @test Σ[1,2] ≈ 0.6 atol=1.0e-2
+  @test Σ[3,2] ≈ 0.6 atol=1.0e-2
+  @test tail(x[:,1], x[:,2], "r") ≈ 0.6 atol=1.0e-1
+  @test tail(x[:,1], x[:,2], "l") ≈ 0.6 atol=1.0e-1
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
 end
 
 @testset "t-student subcopula" begin
