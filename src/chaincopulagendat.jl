@@ -5,7 +5,7 @@
 ### * draw  `w = rand()`
 ### * return a pair u₁, u₂.
 
-### This method can be applied in practice for Clayton, Frank and Ali-Mikhail-Haq copula. If we use
+### This method is applied here for Clayton, Frank and Ali-Mikhail-Haq copula. If we use
 ### this method recursively, we can get `n`-variate data with uniform marginals on
 ### `[0,1]`, where each neighbour pair
 ### of marginals `uᵢ uⱼ` for `j = i+1` are draw form a bivariate subcopula with
@@ -41,8 +41,7 @@ end
                                               rev::Bool = false, cor::String = "")
 
 Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
-To generate data uses chain of Archimedean one parameter bivariate copula for each
-neighbour marginals (i'th and i+1'th).
+To generate data uses chain of bivariate Archimedean one parameter copulas.
 
 Following copula families are supported: clayton, frank and amh -- Ali-Mikhail-Haq.
 
@@ -129,7 +128,7 @@ end
 """
   chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
 
-Retenares data from nested hierarchical frechet copula with parameters
+Retenares data from a chain of bivariate two parameter frechet copuls with parameters
 vectors α and β, such that ∀ᵢ 0 α[i] + β[i] ≤1 α[i] > 0, and β[i] > 0 |α| = |β|
 
 ```jldoctest

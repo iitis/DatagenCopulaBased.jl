@@ -1,6 +1,6 @@
 # DatagenCopulaBased.jl
 
-[![Build Status](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl.svg?branch=master)](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl) 
+[![Build Status](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl.svg?branch=master)](https://travis-ci.org/ZKSI/DatagenCopulaBased.jl)
 [![Coverage Status](https://coveralls.io/repos/github/ZKSI/DatagenCopulaBased.jl/badge.svg?branch=master)](https://coveralls.io/github/ZKSI/DatagenCopulaBased.jl?branch=master)
 [![DOI](https://zenodo.org/badge/104478558.svg)](https://zenodo.org/badge/latestdoi/104478558)
 
@@ -45,7 +45,7 @@ The function returns `U`: `size(U) = (t,n)` - `t` realisations of `n`-variate ra
 ones on diagonals `Σᵢᵢ=1` and all elements `-1 ≤ Σᵢⱼ ≤ 1 `. Number of
 marginal variables is `n = size(Σ, 1) = size(Σ, 2)`.
 If the symmetric covariance matrix without ones on a diagonals is imputed, it will be converted into a
-correlation matrix automatically. 
+correlation matrix automatically.
 
 
 ```julia
@@ -97,7 +97,7 @@ julia> tstudentcopulagen(10)
 
 Archimedean one parameter bivariate copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by using the continuous strictly
 decreasing generator parametrised by `θ`, such that `φ(t): [0,1] →
-[0, ∞)` and `φ⁻¹(s)` is the pseudo-inverse. 
+[0, ∞)` and `φ⁻¹(s)` is the pseudo-inverse.
 
 We define similarly `n`-variate Archimedean copula `C(u₁,..., uₙ) = φ⁻¹(φ(u₁)+...+φ(uₙ))`. Here constrains for the`θ` parameter are more strict, see: M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174.
 
@@ -239,10 +239,10 @@ julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2
 
 ```
 
-### Chain of bivariate Archimedean sub-copulas
+### Chain of bivariate Archimedean copulas
 
 
-To generate `t` realisations of `length(θ)+1` variate data, using one parameter bivariate Archimedean sub-copulas from the same familly, with parameter `θᵢ` for each neighbour marginals (i'th and i+1'th)  run:
+To generate `t` realisations of `length(θ)+1` variate data, using a chain of one parameter bivariate Archimedean copulas parametrised by `θᵢ` for - i'th and i+1'th marginal:
 
 ```julia
 
@@ -250,16 +250,14 @@ julia> chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::V
 
 ```
 
-In other words `∀i∈[1, length(θ)]` data are generated form the following Archimedean copula `C_{θᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
+In other words `∀i∈[1, length(θ)]` data are generated form Archimedean copula `C_{θᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
 distributed on `[0,1]`, hence we got a multivariate copula, defined by
-subsequent bivariate sub-copulas. The relation between marginals `i` and `j`: `i ≠ j+1` are defined by a sequence of
+subsequent bivariate sub-copulas. The cross-corelation between marginals `i` and `j`: `i ≠ j+1` are introduced by a chain of
 bivariate copulas.
 
 Following families are supported: "clayton", "frank" and
-"amh" -  Ali-Mikhail-Haq. Conditions for `θᵢ` parameters are such as in corresponding
-bivariate copula case. Dislike the nested copula example, ordering of `θ` elements do not matter.
-Reversed copula and the use of correlations instead of copula parameter are also
-supported.
+"amh" -  Ali-Mikhail-Haq. Conditions for `θᵢ` parameters ranges such as in corresponding
+bivariate copula case.
 
 ```julia
 
@@ -371,10 +369,10 @@ julia> frechetcopulagen(10, 2, 0.3, 0.2)
 
  ```
 
-### Chain of bivariate Frechet sub-copulas
+### Chain of bivariate Frechet copulas
 
 
-To generate `t` realisations of `length(α)+1` multivariate data using a chain two parameter bivariate Frechet sub-copulas with parameter `αᵢ` and `βᵢ` for each neighbour (i'th and i+1'th) marginals run:
+To generate `t` realisations of `length(α)+1` multivariate data using a chain two parameter bivariate Frechet copulas with parameter `αᵢ` and `βᵢ` for each neighbour (i'th and i+1'th) marginals run:
 
 
 ```julia
@@ -382,10 +380,10 @@ To generate `t` realisations of `length(α)+1` multivariate data using a chain t
 julia> chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
 
 ```
-In other words `∀i∈[1, length(θ)]` data are generated from following Frechet sub-copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
+In other words `∀i∈[1, length(θ)]` data are generated from following Frechet copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
 distributed on `[0,1]`, hence we got a multivariate copula, defined by subsequent bivariate sub-copulas.
 The relation between marginals `i` and `j`: `i ≠ j+1` are defined by a sequence of
-bivariate copulas. 
+bivariate copulas.
 
 
 ```julia
@@ -435,15 +433,15 @@ julia> cormatgen(4)
  0.396865  1.0       0.887028  0.51934
  0.339354  0.887028  1.0       0.551519
  0.193335  0.51934   0.551519  1.0    
- 
+
  julia> srand(43);
- 
+
 julia> cormatgen_rand(4)
 4×4 Array{Float64,2}:
  1.0       0.963817  0.910257  0.575415
- 0.963817  1.0       0.97971   0.63646 
+ 0.963817  1.0       0.97971   0.63646
  0.910257  0.97971   1.0       0.746517
- 0.575415  0.63646   0.746517  1.0 
+ 0.575415  0.63646   0.746517  1.0
 ```
 
 ### Deterministic cases
@@ -487,7 +485,7 @@ julia> cormatgen_toeplitz(n::Int, ρ::Float64)
 julia> cormatgen_toeplitz(4, 0.5)
 4×4 Array{Float64,2}:
  1.0    0.5   0.25  0.125
- 0.5    1.0   0.5   0.25 
+ 0.5    1.0   0.5   0.25
  0.25   0.5   1.0   0.5  
  0.125  0.25  0.5   1.0  
 ```
@@ -503,7 +501,7 @@ where the parameter `ϵ` must satisfy `0 <= ϵ <= 1-α`
 
 ```julia
  julia> srand(43);
- 
+
 julia> cormatgen_constant_noised(4, 0.5)
 4×4 Array{Float64,2}:
  1.0       0.314724  0.590368  0.346992
@@ -519,8 +517,8 @@ julia> cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Float
 julia> cormatgen_two_constant_noised(4, 0.5, 0.2)
 4×4 Array{Float64,2}:
  1.0        0.314724  0.290368  0.0469922
- 0.314724   1.0       0.014256  0.212183 
- 0.290368   0.014256  1.0       0.238089 
+ 0.314724   1.0       0.014256  0.212183
+ 0.290368   0.014256  1.0       0.238089
  0.0469922  0.212183  0.238089  1.0   
 ```
 Finally to generate noised Toeplitz matrix run:
@@ -536,14 +534,14 @@ julia> srand(43);
 julia> cormatgen_two_constant_noised(4, 0.5, 0.2)
 4×4 Array{Float64,2}:
  1.0        0.314724  0.290368  0.0469922
- 0.314724   1.0       0.014256  0.212183 
- 0.290368   0.014256  1.0       0.238089 
- 0.0469922  0.212183  0.238089  1.0 
+ 0.314724   1.0       0.014256  0.212183
+ 0.290368   0.014256  1.0       0.238089
+ 0.0469922  0.212183  0.238089  1.0
 ```
 
-## Changes multivariate Gaussian distributed data using copulas
+## Changes the subset of marginals of multivariate Gaussian distributed data
 
-To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of t-Student sub-copula with 
+To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of t-Student sub-copula with
 a parameter `ν` run:
 
 ```julia
@@ -609,6 +607,40 @@ julia> gcop2arch(x, ["clayton" => [1,2]])
  -0.657297  -0.339814  -1.54419
 
 ```
+
+To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of Frechet maximal sub-copula:
+
+```julia
+julia> gcop2frechet(x::Matrix{Float64}, ind::Vector{Int})
+```
+all univariate marginal distributions are Gaussian and unaffected by a transformation.
+
+```julia
+
+julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
+
+julia> srand(42)
+
+julia> x = rand(MvNormal(Σ), 6)'
+6×3 Array{Float64,2}:
+ -0.556027  -0.662861   -0.384124
+ -0.299484   1.38993    -0.571326
+ -0.468606  -0.0990787  -2.3464
+  1.00331    1.43902     0.966819
+  0.518149   1.55065     0.989712
+ -0.886205   0.149748   -1.54419
+
+
+julia> gcop2frechet(x, [1,2])
+6×3 Array{Float64,2}:
+ -0.875777   -0.374723   -0.384124
+  0.0960334   0.905703   -0.571326
+ -0.599792   -0.0110945  -2.3464
+  0.813717    1.8513      0.966819
+  0.599255    1.56873     0.989712
+ -0.7223     -0.172507   -1.54419
+```
+
 ## Helpers
 
 
@@ -694,58 +726,6 @@ julia> quantile.(Levy(0, 1), u)
 
 ```
 
-## Copula mixture
-
-The following function would allow us to generate `t > 2` realisations of `n` variate data with
-marginals numerates by `i` from Gaussian copula with given correlation matrix
-`Σ` and change marginal subsets `j₁, j₂, ..., jₛ`: `∀ₖₗ jₖ ∩ jₗ = ∅` and `∀ₖ jₖ ⊆ (1,2,...,n)` by means of chosen non-Gaussian sub-copulas. The function returns matrix `U` with uniformly distributed columns (marginals), such that the overall correlation of marginals from `U`is similar to `Σ`, i.e. `||Σ|| ≈ ||cor(quantile.(Normal(0,1), U))||`. 
-
-``` julia
-
-julia> copulamix(t::Int, Σ::Matrix{Float}, inds::Vector{Pair{String,Vector{Int64}}}; λ::Vector{Float} = [6., 3., 1., 15.], ν::Int = 2, a::Vector{Float} = [0.1])
-
-```
-Here `inds` is a vector of pairs of the copula family and a subset of marginals, following families are supported:
-
-* Archimedean: nested (or bivariate) "gumbel", "frank", "clayton" or/and "amh" copula
-* "t-student"
-* "frechet" - mixture of bivariate frechet copulas,
-*  "mo" - "Marshal-Olkin" copula is supported only for `length(jₖ) = 2 or 3`.
-
-
-The function takes also following named parameters:
-
-* `λ` - vector of chosen parameters of "Marshal-Olkin" copula, in bivariate case
-`[λ₁ λ₂]` - by default = `[6., 3.]`, in tri-variate case `[λ₁ λ₂ λ₃, λ₁₂₃]` - by
-default = `[6., 3., 1., 15.]`, reminding parameters λᵢⱼ
-are calculated from data correlation;
- * `ν` - is a parameter of t-Student copula, the number of degrees of freedom,
-* `a` - is a difference of frechet bivariate copulas parameters, `a = α - β`, by default a = `[0.1, 0.1, ...]`.
-
-For exemplary use see:
-
-```julia
-
-julia> d = ["mo" => [1,2,3], "clayton" => [4,5,6]];
-
-julia> srand(43);
-
-julia> Σ = cormatgen(7);
-
-julia> copulamix(10, Σ, d)
-10×7 Array{Float64,2}:
- 0.813074   0.79831   0.725495    0.502207  0.901287   0.370366   0.563981
- 0.300251   0.607666  0.66557     0.916828  0.880327   0.188144   0.82885
- 0.714129   0.544253  0.608241    0.709312  0.798608   0.799607   0.572187
- 0.839649   0.663797  0.00979512  0.7924    0.9259     0.862745   0.0405383
- 0.54756    0.783914  0.585186    0.192458  0.387663   0.570068   0.799763
- 0.389949   0.452495  0.523046    0.802396  0.79415    0.362793   0.551088
- 0.228135   0.200149  0.268541    0.780435  0.596068   0.445581   0.514078
- 0.685846   0.299556  0.258419    0.381806  0.576986   0.376558   0.306041
- 0.642151   0.940707  0.951272    0.566305  0.720493   0.0103265  0.807028
- 0.0899659  0.224153  0.294587    0.076334  0.0420721  0.387212   0.520707
-
-```
 
 # Citing this work
 

@@ -1,6 +1,6 @@
 α = 0.025
 
-@testset "sub copulas helpers" begin
+@testset "helpers" begin
   Σ = [1 0.5 0.5 0.6; 0.5 1 0.5 0.6; 0.5 0.5 1. 0.6; 0.6 0.6 0.6 1.]
   srand(43)
   x = transpose(rand(MvNormal(Σ),500000))
@@ -13,16 +13,21 @@
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(y[:,3], Uniform(0,1))) > α
   @test corspearman(y) ≈ [1. 0. 0.; 0. 1. 0.; 0. 0. 1.] atol=1.0e-3
-  x = [0.1 0.2 0.3 0.4; 0.2 0.3 0.4 0.5; 0.2 0.2 0.4 0.4; 0.1 0.3 0.5 0.6]
-  srand(43)
-  x = randn(100, 4)
-  a,b,c = getcors(x,2)
-  @test c == [[1, 2]]
-  @test b ≈ -0.05690969096909691
-  @test a ≈ [0.0976898] atol=1.0e-6
-  @test getclust(cor(x), 2)[1] == [2, 3]
-  s= [1. 0.2 0.3; 0.2 1. 0.4; 0.3 0.4 1.]
+  s= [1. 0.4 0.3; 0.4 1. 0.2; 0.3 0.2 1.]
   @test meanΣ(s) == 0.3
+  @test mean_outer(s, [[1,2]]) == 0.25
+  p = parameters(s, [[1,2]])
+  @test p == ([0.4], 0.25)
+  @test are_parameters_good(p...) == true
+  @test Σ_theor([0.5], 0.3, [[1,2], [4]]) == [1.0  0.5  0.3; 0.5  1.0  0.3; 0.3  0.3  1.0]
+  srand(42)
+  @test frechet(0.5, [1. 0.2; 0.4 .6]) == [1.0  0.2; 0.6 0.6]
+  srand(42)
+  x = rand(1000, 5)
+  c = getcors_advanced(x)
+  @test c[1] == [[1, 4], [2, 3, 5]]
+  @test c[2] ≈ [0.04729, 0.0195683] atol=1.0e-4
+  @test c[3] ≈ -0.021774209774209772
 end
 
 @testset "t-student subcopula" begin
@@ -37,7 +42,7 @@ end
   @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
 end
 
-@testset "convert sub-copula" begin
+@testset "convert sub-copula to archimedean" begin
   srand(42)
   Σ = cormatgen(25)
   Σ1 =0.8*ones(25,25) + 0.2*eye(25)
@@ -61,7 +66,7 @@ end
   #@test vecnorm(c[4]) > 10
 end
 
-@testset "convert sub-copula" begin
+@testset "convert sub-copula to t-Student" begin
   srand(42)
   Σ = cormatgen(25)
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
@@ -75,11 +80,26 @@ end
   @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.015
   @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.015
   @test maximum(abs.(cor(y)-cor(x))) < 0.02
-  @test_throws AssertionError gcop2tstudent(y, [1,1,3,4], 10) 
+  @test_throws AssertionError gcop2tstudent(y, [1,1,3,4], 10)
 end
 
-
-
+@testset "convert sub-copula to Frechet" begin
+  srand(42)
+  Σ = cormatgen(25)
+  S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
+  mu = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
+  y = rand(MvNormal(Σ), 100000)'
+  y = y.*S'.+mu'
+  x = gcop2frechet(y, [1,2,3])
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(mu[3],S[3]))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(mu[4],S[4]))) > α
+  @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.15
+  @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.15
+  @test maximum(abs.(cor(y)-cor(x))) < 0.25
+  @test_throws AssertionError gcop2frechet(y, [1,1,3,4])
+end
+#=
 @testset "sub copulas based generator" begin
   srand(42)
   Σ = cormatgen(20)
@@ -129,3 +149,4 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
 end
+=#
