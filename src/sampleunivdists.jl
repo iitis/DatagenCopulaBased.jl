@@ -159,5 +159,5 @@ function nestedfrankgen(θ₁::Float64, θ₀::Float64, V0::Vector{Int})
   @sync @parallel for i = 1:length(V0)
     u[i] = sum([elInvlaF(θ₁, θ₀) for j in 1:V0[i]])
   end
-  Array(u)
+  Array{Int}(u)
 end

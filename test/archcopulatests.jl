@@ -24,6 +24,7 @@
   @testset "Spearman cor" begin
     @test dilog(0.5) ≈ 0.5822405264650125
     @test claytonρ2θ(1/3) ≈ 0.58754 atol=1.0e-5
+    @test claytonρ2θ(0.01) ≈ 0. atol=1.0e-1
     @test gumbelρ2θ(0.5) ≈ 1.5410704204332681
     @test gumbelρ2θ(0.0001) == 1.
     @test ρ2θ(1/3, "frank") ≈ 2.116497 atol=1.0e-5
@@ -50,7 +51,9 @@
 end
 @testset "archimedean copulas axiliary functions" begin
   @test getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton") ≈ [0.0320924, 0.137498, 0.354163, 0.821187] atol=1.0e-4
+  @test_throws AssertionError getV0(2., [0.2, 0.4, 0.6, 0.8], "clayto")
   @test phi([0.2 0.6; 0.4 0.8], 2., "clayton") ≈ [0.912871  0.790569; 0.845154  0.745356] atol=1.0e-4
+  @test_throws AssertionError phi([0.2 0.6; 0.4 0.8], 2., "clayto")
   c = copulagen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
   @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
   @test useτ(0.5, "clayton") == 2.

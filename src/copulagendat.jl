@@ -72,23 +72,7 @@ end
 
 ### Frechet familly
 
-#=
-"""
-  frechetρ2αβ(ρ::Vector{Float64}, a::Vector{Float64})
 
-Returns Vector{Float}, Vector{Float}, parameters of the frechet copula given a
-sequential correlation and parameter a = α- β or β - α
-"""
-function frechetρ2αβ(ρ::Vector{Float64}, a::Vector{Float64})
-  la = length(a)
-  l = length(ρ)
-  a = (l > la)? hcat(a, transpose(0.1*ones(l - la))): a
-  a = [minimum([a[i], 0.5-ρ[i]/2, 0.5+ρ[i]/2]) for i in 1:l]
-  α = [(ρ[i] >= 0)? ρ[i] + a[i]: a[i] for i in 1:l]
-  β = [(ρ[i] < 0)? -ρ[i] + a[i]: a[i] for i in 1:l]
-  α, β
-end
-=#
 """
 
   function frechetcopulagen(t::Int, n::Int, α::Float64)
@@ -101,13 +85,13 @@ julia> srand(43);
 
 julia> frechetcopulagen(10, 2, 0.5)
 10×2 Array{Float64,2}:
- 0.180975  0.180975
- 0.775377  0.0742681
- 0.888934  0.888934
- 0.924876  0.0950087
+ 0.180975  0.661781
+ 0.775377  0.775377
+ 0.888934  0.125437
+ 0.924876  0.924876
  0.408278  0.408278
  0.912603  0.740184
- 0.828727  0.828727
+ 0.828727  0.00463791
  0.400537  0.0288987
  0.429437  0.429437
  0.955881  0.851275
@@ -115,12 +99,14 @@ julia> frechetcopulagen(10, 2, 0.5)
 """
 
 function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
-  0 <= α <= 1 || throw(AssertionError("generaton not supported for α ∉ [0,1]"))
+  0 <= α <= 1 || throw(DomainError("generaton not supported for α ∉ [0,1]"))
   u = rand(t, n)
-  p = invperm(sortperm(u[:,1]))
-  l = floor(Int, t*α)
-  for i in 1:n
-    u[p[1:l],i] = u[p[1:l], 1]
+  for j in 1:t
+    if (α >= rand())
+      for i in 1:n
+        u[j,i] = u[j, 1]
+      end
+    end
   end
   u
 end
@@ -130,31 +116,58 @@ end
 
 Two parameters Frechet copula C = α C_{max} + β C_{min} + (1- α - β) C_{⟂}, supported
 only for n == 2
+
+```jldoctest
+julia> srand(43);
+
+julia> frechetcopulagen(10, 2, 0.4, 0.2)
+10×2 Array{Float64,2}:
+ 0.180975  0.661781
+ 0.775377  0.775377
+ 0.888934  0.125437
+ 0.924876  0.924876
+ 0.408278  0.591722
+ 0.912603  0.740184
+ 0.828727  0.171273
+ 0.400537  0.0288987
+ 0.429437  0.429437
+ 0.955881  0.851275
+```
 """
 
 
 function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
   n == 2 || throw(AssertionError("two parameters Frechet copula supported only for n = 2"))
-  chainfrechetcopulagen(t, [α], [β])
+  0 <= α+β <= 1 || throw(DomainError("α+β must be in range [0,1]"))
+  u = rand(t,2)
+  for j in 1:t
+    v = rand()
+    if (α >= v)
+      u[j,2] = u[j, 1]
+    elseif (α < v <= α+β)
+      u[j,2] = 1-u[j, 1]
+    end
+  end
+  u
 end
 
-### Marshal olkin familly
+### Marshall olkin familly
 
 """
-  marshalolkincopulagen(t::Int, λ::Vector{Float64})
+  marshallolkincopulagen(t::Int, λ::Vector{Float64})
 
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Marshal-Olkin
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Marshall-Olkin
 copula with parameter vector λ of non-negative elements λₛ.
 Number of marginals is n = ceil(Int, log(2, length(λ)-1)).
 Parameters are ordered as follow:
 λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]
-If reversed = true, returns data from reversed Marshal-Olkin copula.
+If reversed = true, returns data from reversed Marshall-Olkin copula.
 
 ```jldoctest
 
 julia> srand(43)
 
-julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
+julia> marshallolkincopulagen(10, [0.2, 1.2, 1.6])
 10×2 Array{Float64,2}:
  0.99636   0.994344
  0.167268  0.0619408
@@ -170,7 +183,7 @@ julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
 """
 
 
-function marshalolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::Bool = false)
+function marshallolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::Bool = false)
   minimum(λ) >= 0 || throw(AssertionError("all parameters must by >= 0 "))
   n = floor(Int, log(2, length(λ)+1))
   U = mocopula(rand(t,2^n-1), n, λ)
@@ -181,7 +194,7 @@ end
 """
   mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
 
-  Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Marshal-Olkin
+  Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Marshall-Olkin
   copula with parameter vector λ of non-negative elements λₛ, given [0,1]ᵗˣˡ ∋ u, where
   l = 2ⁿ-1
 

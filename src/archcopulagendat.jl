@@ -27,7 +27,7 @@ function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
   elseif copula == "gumbel"
     return levygen(θ, v)
   end
-  v
+  throw(AssertionError("$(copula) not supported"))
 end
 """
   phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
@@ -55,7 +55,7 @@ function phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
   elseif copula == "gumbel"
     return exp.(-u.^(1/θ))
   end
-  u
+  throw(AssertionError("$(copula) not supported"))
 end
 
 """

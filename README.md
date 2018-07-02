@@ -11,7 +11,7 @@ This module support following copula families:
 * Elliptical copulas (Gaussian, t-Student),
 * Archimedean copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq), including nested ones,
 * Frechet familly copulas (maximal, minimal, independent),
-* Marshal-Olkin copulas,
+* Marshall-Olkin copulas,
 * various copula mixtures, models with different sub-copulas for different subsets of marginals.
 
 ## Installation
@@ -283,19 +283,19 @@ julia> chaincopulagen(10, [4., 11.], ["frank", "frank"])
 To generate `t` realisations of `n`-variate data from Marshall-Olkin copula with parameter series `λ` with non-negative elements `λₛ`, run:
 
 ```julia
-julia> marshalolkincopulagen(t::Int, λ::Vector{Float64}; reverse::Bool = false)
+julia> marshallolkincopulagen(t::Int, λ::Vector{Float64}; reverse::Bool = false)
 ```
 
 Number of marginals is `n = ceil(Int, log(2, length(λ)-1))`.
 Parameters are ordered as follow: `λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]`
-If `reversed = true`, returns data from reversed Marshal-Olkin copula , i.e. generates data `[u₁, ..., uᵢ, ..., uₙ]` from given Marshall-Olkin copula and perform transformation `∀ᵢ uᵢ → 1-uᵢ`
+If `reversed = true`, returns data from reversed Marshall-Olkin copula , i.e. generates data `[u₁, ..., uᵢ, ..., uₙ]` from given Marshall-Olkin copula and perform transformation `∀ᵢ uᵢ → 1-uᵢ`
 
 
 ```julia
 
 julia> srand(43);
 
-julia> marshalolkincopulagen(10, [0.2, 1.2, 1.6])
+julia> marshallolkincopulagen(10, [0.2, 1.2, 1.6])
 10×2 Array{Float64,2}:
  0.875948   0.813807  
  0.902229   0.852105  
@@ -329,16 +329,16 @@ julia> srand(43);
 
 julia> frechetcopulagen(10, 2, 0.5)
 10×2 Array{Float64,2}:
- 0.180975  0.180975
- 0.775377  0.0742681
- 0.888934  0.888934
- 0.924876  0.0950087
- 0.408278  0.408278
- 0.912603  0.740184
- 0.828727  0.828727
+ 0.180975  0.661781  
+ 0.775377  0.775377  
+ 0.888934  0.125437  
+ 0.924876  0.924876  
+ 0.408278  0.408278  
+ 0.912603  0.740184  
+ 0.828727  0.00463791
  0.400537  0.0288987
- 0.429437  0.429437
- 0.955881  0.851275
+ 0.429437  0.429437  
+ 0.955881  0.851275  
 ```
 
 Two parameters Frechet copula, `C = α C_{max} + β C_{min} + (1- α - β) C_{⟂}`
@@ -354,18 +354,18 @@ Here where `0 ≤ α` , where `0 ≤ β` and `α + β ≤ 1`
 
 julia> srand(43);
 
-julia> frechetcopulagen(10, 2, 0.3, 0.2)
+julia> frechetcopulagen(10, 2, 0.4, 0.2)
 10×2 Array{Float64,2}:
- 0.661781    0.661781  
- 0.0742681   0.775377  
- 0.125437    0.874563  
- 0.0950087   0.924876  
- 0.130474    0.130474  
- 0.740184    0.912603  
- 0.00463791  0.00463791
- 0.0288987   0.400537  
- 0.521601    0.478399  
- 0.851275    0.955881
+ 0.180975  0.661781
+ 0.775377  0.775377
+ 0.888934  0.125437
+ 0.924876  0.924876
+ 0.408278  0.591722
+ 0.912603  0.740184
+ 0.828727  0.171273
+ 0.400537  0.0288987
+ 0.429437  0.429437
+ 0.955881  0.851275
 
  ```
 
@@ -389,7 +389,7 @@ bivariate copulas.
 ```julia
 julia> srand(43)
 
-julia> julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
+julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
 10×3 Array{Float64,2}:
  0.996764  0.996764  0.996764
  0.204033  0.795967  0.204033

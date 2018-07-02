@@ -2,7 +2,7 @@
 """
   τ2λ(τ::Vector{Float64}, λ::Vector{Float64})
 
-Suplement the vector of λ patrameters of Marshal-Olkin copula, given some of those
+Suplement the vector of λ patrameters of Marshall-Olkin copula, given some of those
 parameters and a vector fo Kendall's τ correlations. Wroks fo 2,3 variate MO copula
 """
 
@@ -24,7 +24,7 @@ function moρ2τ(ρ::Float64)
 end
 
 #=
-# some Marshal-Olkin copulas helpers
+# some Marshall-Olkin copulas helpers
 
 function getmoλ(λ::Vector{Float64}, ind::Vector{Int})
   n = floor(Int, log(2, length(λ)+1))

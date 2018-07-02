@@ -66,6 +66,13 @@ end
   @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.045
   @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.045
   @test maximum(abs.(cor(y)-cor(x))) < 0.11
+  x1 = gcop2arch(y, d; notnested = true)
+  @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
+  @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
+  @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
+  @test vecnorm(cor(y)-cor(x1))/vecnorm(cor(y)) < 0.045
+  @test vecnorm(cov(y)-cov(x1))/vecnorm(cov(y)) < 0.045
+  @test maximum(abs.(cor(y)-cor(x1))) < 0.11
 end
 
 @testset "convert sub-copula to t-Student" begin

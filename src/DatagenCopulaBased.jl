@@ -15,13 +15,13 @@ module DatagenCopulaBased
   include("chaincopulagendat.jl")
   include("subcopulasgendat.jl")
   include("copulagendat.jl")
-  include("marshalolkincopcor.jl")
+  include("marshallolkincopcor.jl")
 
   export archcopulagen, chaincopulagen, nestedarchcopulagen
   export cormatgen, cormatgen_constant, cormatgen_toeplitz, convertmarg!, gcop2arch
   export cormatgen_constant_noised, cormatgen_toeplitz_noised, cormatgen_rand
   export cormatgen_two_constant, cormatgen_two_constant_noised
   export tstudentcopulagen, gausscopulagen
-  export frechetcopulagen, marshalolkincopulagen, chainfrechetcopulagen
+  export frechetcopulagen, marshallolkincopulagen, chainfrechetcopulagen
   export gcop2tstudent, gcop2frechet
 end

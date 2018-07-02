@@ -14,6 +14,7 @@ end
 @testset "exceptions" begin
   @test_throws DomainError testbivθ(-2., "clayton")
   @test_throws DomainError usebivρ(-.9, "amh", "Spearman")
+  @test_throws DomainError usebivρ(-.25, "amh", "Kendall")
   @test_throws AssertionError chaincopulagen(100000, [1.1, 1.6], "gumbel")
 end
 

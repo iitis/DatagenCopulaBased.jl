@@ -61,7 +61,7 @@ end
   convertmarg!(xt, Normal)
   @test cor(xt) ≈ [1. rho; rho 1.] atol=1.0e-2
 end
-@testset "frechet copula" begin
+@testset "Frechet copula" begin
   srand(43)
   x = frechetcopulagen(500000, 3, 0.3);
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -88,15 +88,22 @@ end
   @test tail(x[:,1], x[:,2], "r") ≈ 0.8 atol=1.0e-1
 end
 
-@testset "Marhall-Olkin helpers" begin
+@testset "Frechet copula exceptions" begin
+  @test_throws AssertionError frechetcopulagen(1000, 3, 0.8, 0.1)
+  @test_throws DomainError frechetcopulagen(1000, 2, 0.8, 0.5)
+  @test_throws DomainError frechetcopulagen(1000, 3, -0.8)
+end
+
+@testset "Marshall-Olkin helpers" begin
   @test τ2λ([0.4], [4.2, 1.2]) ≈ [4.2, 1.2, 3.6]
+  @test τ2λ([0.5, 0.6, 0.5], [1., 2., 3., 4.]) ≈ [1, 2, 3, 0, 0.5, 0, 4]
   @test moρ2τ(0.6) ≈ 0.5 atol=1.0e-2
 end
-@testset "Marhall-Olkin copula" begin
+@testset "Marshall-Olkin copula" begin
   m = [0.252982 0.201189;  0.464758 0.409039; 0.585662 0.5357]
   @test mocopula([0.2 0.3 0.4; 0.3 0.4 0.6; 0.4 0.5 0.7], 2, [1., 1.5, 2.]) ≈ m atol=1.0e-4
   srand(43)
-  x = marshalolkincopulagen(100000, [1.1, 0.2, 0.6])
+  x = marshallolkincopulagen(100000, [1.1, 0.2, 0.6])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   a2 = 0.6/0.8
@@ -104,7 +111,7 @@ end
   @test corkendall(x)[1,2]≈ a1*a2/(a1+a2-a1*a2) atol=1.0e-3
   @test tail(x[:,1], x[:,2], "r") ≈ a1 atol=1.0e-1
   srand(42)
-  x = marshalolkincopulagen(100000, [1.1, 0.2, 2.1, 0.6, 0.5, 3.2, 7.1, 2.1])
+  x = marshallolkincopulagen(100000, [1.1, 0.2, 2.1, 0.6, 0.5, 3.2, 7.1, 2.1])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
