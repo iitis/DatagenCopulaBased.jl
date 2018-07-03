@@ -60,6 +60,14 @@ end
   @test tail(xt[:,1], xt[:,2], "r") ≈ λ atol=1.0e-1
   convertmarg!(xt, Normal)
   @test cor(xt) ≈ [1. rho; rho 1.] atol=1.0e-2
+  srand(43)
+  xtt = tstudentcopulagen(500000, [4. 2*rho; 2*rho 1.], ν);
+  @test pvalue(ExactOneSampleKSTest(xtt[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(xtt[:,2], Uniform(0,1))) > α
+  @test tail(xtt[:,1], xtt[:,2], "l") ≈ λ atol=1.0e-1
+  @test tail(xtt[:,1], xtt[:,2], "r") ≈ λ atol=1.0e-1
+  convertmarg!(xtt, Normal)
+  @test cov(xtt) ≈ [1. rho; rho 1.] atol=1.0e-2
 end
 @testset "Frechet copula" begin
   srand(43)

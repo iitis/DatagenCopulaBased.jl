@@ -1,22 +1,4 @@
-"""
-  g2tsubcopula!(z::Matrix{Float}, cormat::Matrix{Float}, subn::Array{Int})
-
-Changes data generated using gaussian copula to data generated using student
- subcopula at indices subn.
-"""
-
-function g2tsubcopula!(x::Matrix{Float64}, Σ::Matrix{Float64}, ind::Array{Int}, ν::Int = 10)
-  U = rand(Chisq(ν), size(x, 1))
-  for i in ind
-    z = quantile(Normal(0, Σ[i,i]), x[:,i])
-    x[:,i] = cdf.(TDist(ν), z.*sqrt.(ν./U))
-  end
-end
-
-
 VP = Vector{Pair{String,Vector{Int64}}}
-
-
 
 # our algorithm
 
@@ -56,18 +38,25 @@ julia> gcop2tstudent(x, [1,2], 6)
 ```
 """
 
-function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int)
+function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false)
   unique(ind) == ind || throw(AssertionError("indices must not repeat"))
-  xbar = mean(x, 1)
-  U = rand(Chisq(ν), size(x, 1))
   y = copy(x)
   Σ = cov(x)
-  for i in ind
-    z = (y[:,i].-xbar[i])./Σ[i,i].*sqrt.(ν./U)
-    z = cdf.(TDist(ν), z)
-    y[:,i] = quantile.(Normal(xbar[i],Σ[i,i]), z)
+  S = transpose(sqrt.(diag(Σ)))
+  μ = mean(x, 1)
+  y = (y.-μ)./S
+  if naive
+    z = tstudentcopulagen(size(x,1), cor(x[:,ind]), ν)
+    y[:,ind] = quantile.(Normal(0,1), z)
+  else
+    U = rand(Chisq(ν), size(x, 1))
+    for i in ind
+      z = y[:,i].*sqrt.(ν./U)
+      z = cdf.(TDist(ν), z)
+      y[:,i] = quantile.(Normal(0,1), z)
+    end
   end
-  y
+  y.*S.+μ
 end
 
 """
@@ -109,8 +98,8 @@ julia> gcop2arch(x, ["clayton" => [1,2]]; naive::Bool = false, notnested::Bool =
 function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested::Bool = false)
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
-  xbar = mean(x, 1)
-  x = (x.-xbar)./S
+  μ = mean(x, 1)
+  x = (x.-μ)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
   for p in inds
@@ -127,7 +116,7 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested:
       x[:,ind] = nestedcopulag(p[1], part, ϕ, θ, v)
     end
   end
-  quantile.(Normal(0,1), x).*S.+xbar
+  quantile.(Normal(0,1), x).*S.+μ
 end
 
 """
@@ -167,14 +156,14 @@ julia> gcop2frechet(x, [1,2]; naive = false)
 function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false)
   unique(inds) == inds || throw(AssertionError("indices must not repeat"))
   S = transpose(sqrt.(diag(cov(x))))
-  xbar = mean(x, 1)
-  x = (x.-xbar)./S
+  μ = mean(x, 1)
+  x = (x.-μ)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
-  v = naive? rand(size(xgauss, 1), length(inds)+1): norm2unifind(xgauss, inds, "frechet")
+  v = naive? rand(size(xgauss, 1), length(inds)): norm2unifind(xgauss, inds, "frechet")
   α = meanΣ(corspearman(xgauss)[inds, inds])
   x[:,inds] = frechet(α, v)
-  quantile.(Normal(0,1), x).*S.+xbar
+  quantile.(Normal(0,1), x).*S.+μ
 end
 
 """

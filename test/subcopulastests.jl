@@ -38,18 +38,6 @@
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
 end
 
-@testset "t-student subcopula" begin
-  srand(43)
-  x = gausscopulagen(3, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.])
-  g2tsubcopula!(x, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.], [1,2])
-  @test x ≈ [0.558652  0.719921  0.794493; 0.935573  0.922409  0.345177; 0.217512  0.174138  0.123049] atol=1.0e-5
-  srand(43)
-  y = gausscopulagen(500000, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.])
-  g2tsubcopula!(y, [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.], [1,2])
-  @test pvalue(ExactOneSampleKSTest(y[:,1], Uniform(0,1))) > α
-  @test pvalue(ExactOneSampleKSTest(y[:,2], Uniform(0,1))) > α
-end
-
 @testset "convert sub-copula to archimedean" begin
   srand(42)
   Σ = cormatgen(25)
@@ -73,6 +61,12 @@ end
   @test vecnorm(cor(y)-cor(x1))/vecnorm(cor(y)) < 0.045
   @test vecnorm(cov(y)-cov(x1))/vecnorm(cov(y)) < 0.045
   @test maximum(abs.(cor(y)-cor(x1))) < 0.11
+  x2 = gcop2arch(y, d; naive = true)
+  @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(0,S[1]))) > α
+  @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(0,S[3]))) > α
+  @test pvalue(ExactOneSampleKSTest(x2[:,4], Normal(0,S[4]))) > α
+  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.05
+  @test_throws AssertionError gcop2arch(y, ["clayton" => [1,1,3,4]])
 end
 
 @testset "convert sub-copula to t-Student" begin
@@ -90,6 +84,11 @@ end
   @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.015
   @test maximum(abs.(cor(y)-cor(x))) < 0.02
   @test_throws AssertionError gcop2tstudent(y, [1,1,3,4], 10)
+  x2 = gcop2tstudent(y, [1,2,3,4], 10; naive = true)
+  @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(mu[1],S[1]))) > α
+  @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(mu[3],S[3]))) > α
+  @test pvalue(ExactOneSampleKSTest(x2[:,4], Normal(mu[4],S[4]))) > α
+  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.005
 end
 
 @testset "convert sub-copula to Frechet" begin
@@ -101,10 +100,16 @@ end
   y = y.*S'.+mu'
   x = gcop2frechet(y, [1,2,3])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Normal(mu[2],S[2]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(mu[3],S[3]))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(mu[4],S[4]))) > α
   @test vecnorm(cor(y)-cor(x))/vecnorm(cor(y)) < 0.15
   @test vecnorm(cov(y)-cov(x))/vecnorm(cov(y)) < 0.15
   @test maximum(abs.(cor(y)-cor(x))) < 0.25
   @test_throws AssertionError gcop2frechet(y, [1,1,3,4])
+  srand(42)
+  x2 = gcop2frechet(y, [1,2,3,4]; naive = true)
+  @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(mu[1],S[1]))) > α
+  @test pvalue(ExactOneSampleKSTest(x2[:,2], Normal(mu[2],S[2]))) > α
+  @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(mu[3],S[3]))) > α
+  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.075
 end

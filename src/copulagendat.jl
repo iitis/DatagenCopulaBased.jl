@@ -64,7 +64,7 @@ function tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::I
   z = transpose(rand(MvNormal(Σ),t))
   U = rand(Chisq(ν), size(z, 1))
   for i in 1:size(Σ, 1)
-    x = z[:,i].*sqrt.(ν./U)./Σ[i,i]
+    x = z[:,i].*sqrt.(ν./U)./sqrt(Σ[i,i])
     z[:,i] = cdf.(TDist(ν), x)
   end
   z
