@@ -1,7 +1,4 @@
 α = 0.025
-#addprocs(10)
-#@everywhere using DatagenCopulaBased
-
 
 @testset "nested archimedean copulas helpers" begin
   srand(43)
@@ -10,6 +7,7 @@
   srand(43)
   n = nestedstep("clayton", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5)
   @test n ≈ [0.0504023 0.545041; 0.0736747 0.58235] atol=1.0e-5
+  @test_throws AssertionError nestedstep("clayto", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5)
 end
 
 @testset "nested archimedean copulas exceptions" begin

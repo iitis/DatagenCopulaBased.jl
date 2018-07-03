@@ -112,7 +112,7 @@ function nestedstep(copula::String, u::Matrix{Float64}, V0::Union{Vector{Float64
     u = -log.(u)./levygen(ϕ/θ, rand(length(V0)))
     return exp.(-u.^(θ/ϕ))
   end
-  u
+  throw(AssertionError("$(copula) not supported"))
 end
 
 """
