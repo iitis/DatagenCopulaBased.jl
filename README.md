@@ -641,6 +641,41 @@ julia> gcop2frechet(x, [1,2])
  -0.7223     -0.172507   -1.54419
 ```
 
+To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of bivariate Marshall-Olkin copula:
+
+```julia
+julia> gcop2marshallolkin(x::Matrix{Float64}, ind::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5)
+```
+all univariate marginal distributions are Gaussian and unaffected by a transformation.
+We require `length(ind) = 2` `λ1 ≧ 0` and `λ2 ≧ 0`. The parameter `λ12` is computed from expected
+correlation between both changed marginals.
+
+```julia
+
+julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
+
+julia> srand(42)
+
+julia> x = rand(MvNormal(Σ), 6)'
+6×3 Array{Float64,2}:
+ -0.556027  -0.662861   -0.384124
+ -0.299484   1.38993    -0.571326
+ -0.468606  -0.0990787  -2.3464
+  1.00331    1.43902     0.966819
+  0.518149   1.55065     0.989712
+ -0.886205   0.149748   -1.54419
+
+
+julia> gcop2marshallolkin(x, [1,2])
+6×3 Array{Float64,2}:
+ -0.790756   0.784371  -0.384124
+ -0.28088    0.338086  -0.571326
+ -0.90688   -0.509684  -2.3464  
+  0.738628   1.71026    0.966819
+  0.353654   1.19357    0.989712
+ -0.867606  -0.589929  -1.54419
+```
+
 ## Helpers
 
 

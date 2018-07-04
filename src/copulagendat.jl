@@ -151,7 +151,7 @@ function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int
   u
 end
 
-### Marshall olkin familly
+### Marshall - Olkin familly
 
 """
   marshallolkincopulagen(t::Int, λ::Vector{Float64})

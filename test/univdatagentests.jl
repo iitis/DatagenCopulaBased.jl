@@ -1,6 +1,7 @@
 
 @testset "logseries dist" begin
   @test logseriescdf(0.01)[1:3] ≈ [0.0, 0.994992, 0.999967] atol=1.0e-5
+  @test logseriescdf(0.000000000001)[1:5] ≈ [0., 1., 1., 1., 1.] atol=1.0e-2
   @test logseriesquantile(0.9, [0.25, 0.5, 0.75]) == [1, 2, 5]
   srand(43)
   v = logseriesquantile(0.4, rand(1000000))

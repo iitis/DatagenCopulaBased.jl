@@ -185,6 +185,57 @@ function frechet(α::Float64, u::Matrix{Float64})
 end
 
 """
+  gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
+
+Takes x ∈ Rᵗˣⁿ a matrix of t realisations of data from Gaussin n-variate distribution.
+Return a matrix of size x, where chosen subset of marginals (inds) has bivariate Marshal Olkin
+sub-copula parametrised by free parameters λ1 and λ2. All univariate marginals are unchanged.
+
+
+```jldoctest
+
+julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
+
+julia> srand(42)
+
+julia> x = rand(MvNormal(Σ), 6)'
+6×3 Array{Float64,2}:
+ -0.556027  -0.662861   -0.384124
+ -0.299484   1.38993    -0.571326
+ -0.468606  -0.0990787  -2.3464
+  1.00331    1.43902     0.966819
+  0.518149   1.55065     0.989712
+ -0.886205   0.149748   -1.54419
+
+julia> gcop2marshallolkin(x, [1,2], 1., 1.5; naive = false)
+6×3 Array{Float64,2}:
+ -0.790756   0.784371  -0.384124
+ -0.28088    0.338086  -0.571326
+ -0.90688   -0.509684  -2.3464
+  0.738628   1.71026    0.966819
+  0.353654   1.19357    0.989712
+ -0.867606  -0.589929  -1.54419
+```
+"""
+
+function gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
+  unique(inds) == inds || throw(AssertionError("indices must not repeat"))
+  length(inds) == 2 || throw(AssertionError("not supported for |inds| > 2"))
+  λ1 >= 0 || throw(DomainError("not supported for λ1 < 0"))
+  λ2 >= 0 || throw(DomainError("not supported for λ2 < 0"))
+  S = transpose(sqrt.(diag(cov(x))))
+  μ = mean(x, 1)
+  x = (x.-μ)./S
+  xgauss = copy(x)
+  x = cdf.(Normal(0,1), x)
+  v = naive? rand(size(xgauss, 1), 3): norm2unifind(xgauss, inds)
+  ρ = corspearman(xgauss)[inds[1], inds[2]]
+  x[:,inds] = mocopula(v, 2, τ2λ([moρ2τ(ρ)], [λ1, λ2]))
+  quantile.(Normal(0,1), x).*S.+μ
+end
+
+
+"""
   testind(inds::Vector{Pair{String,Vector{Int64}}})
 
 Tests if the sub copula name is supported and if their indices are disjoint.
