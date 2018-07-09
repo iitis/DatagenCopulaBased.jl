@@ -344,7 +344,7 @@ julia> frechetcopulagen(10, 2, 0.5)
 Two parameters Frechet copula, `C = α C_{max} + β C_{min} + (1- α - β) C_{⟂}`
 is supported only for `n == 2`:
 
-```
+```julia
 julia> frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
 ```
 
@@ -545,7 +545,7 @@ To change a chosen marginals subset `ind` of multivariate Gaussian distributed d
 a parameter `ν` run:
 
 ```julia
-julia> gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int)
+julia> gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false)
 ```
 all univariate marginal distributions are Gaussian and unaffected by a transformation.
 
@@ -611,7 +611,7 @@ julia> gcop2arch(x, ["clayton" => [1,2]])
 To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of Frechet maximal sub-copula:
 
 ```julia
-julia> gcop2frechet(x::Matrix{Float64}, ind::Vector{Int})
+julia> gcop2frechet(x::Matrix{Float64}, ind::Vector{Int}; naive::Bool = false)
 ```
 all univariate marginal distributions are Gaussian and unaffected by a transformation.
 
@@ -644,7 +644,7 @@ julia> gcop2frechet(x, [1,2])
 To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of bivariate Marshall-Olkin copula:
 
 ```julia
-julia> gcop2marshallolkin(x::Matrix{Float64}, ind::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5)
+julia> gcop2marshallolkin(x::Matrix{Float64}, ind::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
 ```
 all univariate marginal distributions are Gaussian and unaffected by a transformation.
 We require `length(ind) = 2` `λ1 ≧ 0` and `λ2 ≧ 0`. The parameter `λ12` is computed from expected
