@@ -75,7 +75,7 @@ end
 
 """
 
-  frechetcopulagen(t::Int, n::Int, α::::Union{Int, Float64})
+  frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
 
 Returns t realisation of n variate data generated from one parameter frechet multidimentional copula,
 a combination of maximal copla with  weight α and independent copula with  weight 1-α
