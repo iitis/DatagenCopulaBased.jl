@@ -27,7 +27,7 @@ function logseriesquantile(p::Float64, v::Vector{Float64})
 end
 
 """
-  levyel(θ::Union{Int, Float64, u::Vector{Float64})
+  levyel(θ::Union{Int, Float64})
 
 An element from Levy stable distribution with parameters α = 1/θ, β = 1,
 γ = (cos(pi/(2*θ)))^θ and δ = 0.
@@ -44,8 +44,8 @@ end
 
 
 """
-Return a Vectof(Floast} of  of pseudo cdf of Levy stable distribution with parameters
-α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0, given a vector of Floats - u
+Return a Vector{Float64} of  of pseudo cdf of Levy stable distribution with parameters
+α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0, given a vector of Float64 - u
 
 """
 
