@@ -765,5 +765,7 @@ julia> quantile.(Levy(0, 1), u)
 # Citing this work
 
 This project was partially financed by the National Science Centre, Poland – project number 2014/15/B/ST6/05204.
-* while reffering to `gcop2tstudent()` - cite K. Domino: 'The use of fourth order cumulant tensors to detect outlier features modelled by a t-Student copula', arXiv:1804.00541 (2018).
-* while reffering to `gcop2arch()` - cite K. Domino, A. Glos: 'Hiding higher order cross-correlations of multivariate data using Archimedean copulas', arXiv:1803.07813 (2018).
+
+* while reffering to `gcop2arch()`, `gcop2frechet()`, and `gcop2marshallolkin()` - cite K. Domino, A. Glos: 'Introducing higher order correlations to marginals' subset of multivariate data by means of Archimedean copulas', [arXiv:1803.07813] (https://arxiv.org/abs/1803.07813).
+
+* while reffering to `gcop2tstudent()` - cite K. Domino: ' The use of the Higher Order Singular Value Decomposition of the 4-cumulant's tensors in features selection and outlier detection', [arXiv:1804.00541] (https://arxiv.org/abs/1804.00541).
