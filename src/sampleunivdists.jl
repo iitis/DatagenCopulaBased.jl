@@ -3,7 +3,6 @@
 
 Returns a vector{Float} of the discrete cdf of logarithmic distribution
 """
-
 function logseriescdf(p::Float64)
   cdfs = [0.]
   for i in 1:100000000
@@ -20,7 +19,6 @@ end
 
 Returns a vector{Float} of the v[i] th quaintlie of logaritmic distribution with parameter p
 """
-
 function logseriesquantile(p::Float64, v::Vector{Float64})
   w = logseriescdf(p)
   pmap(i -> findlast(w .< i), v)
@@ -33,7 +31,6 @@ An element from Levy stable distribution with parameters α = 1/θ, β = 1,
 γ = (cos(pi/(2*θ)))^θ and δ = 0.
 Return Float, given parameter ϴ of dostribution
 """
-
 function levyel(θ::Union{Int, Float64})
   ϕ = pi*rand()-pi/2
   v = quantile.(Exponential(1.), rand())
@@ -42,13 +39,11 @@ function levyel(θ::Union{Int, Float64})
   γ*v*sin(1/θ*(pi/2+ϕ))*(cos(pi/(2*θ))*cos(ϕ))^(-θ)
 end
 
-
 """
 Return a Vector{Float64} of  of pseudo cdf of Levy stable distribution with parameters
 α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0, given a vector of Float64 - u
 
 """
-
 function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
   p = invperm(sortperm(u))
   v = [levyel(θ) for a in u]
@@ -62,9 +57,7 @@ Returns a Vector{Float} genrated from the expotencialy tilted levy stable pdf
 f(x; V0, α) = exp(-V0^α) g(x; α)/exp(-V0), where g(x; α) is a stable Levy pdf
 with parameters α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0.
 
-
 """
-
 function tiltedlevygen(V0::Vector{Float64}, α::Float64)
   t = length(V0)
   ret = zeros(t)
@@ -79,7 +72,6 @@ function tiltedlevygen(V0::Vector{Float64}, α::Float64)
   end
   ret.*V0.^α
 end
-
 
 """
   Ginv(y::Float64, α::Float64)
@@ -101,7 +93,6 @@ InvlaJ(n::Int, α::Float64) = 1-1/(n*beta(n, 1-α))
 Returns Int, a sample of inverce laplacea transform of generator of Joe nested copula,
 given a parameter α and a random numver v ∈ [0,1]
 """
-
 function sampleInvlaJ(α::Float64, v::Float64)
   if v <= α
     return 1
@@ -110,7 +101,7 @@ function sampleInvlaJ(α::Float64, v::Float64)
     if G > 2^62
       return 2^62
     else
-      return (InvlaJ(floor(Int, G), α) < v)? ceil(Int, G): floor(Int, G)
+      return (InvlaJ(floor(Int, G), α) < v) ? ceil(Int, G) : floor(Int, G)
     end
   end
 end
@@ -121,7 +112,6 @@ end
 Returns Int, a single sample of the inverse laplacea transform of the generator
 of nested Frank copula
 """
-
 function elInvlaF(θ₁::Float64, θ₀::Float64)
   c1 = 1-exp(-θ₁)
   α = θ₀/θ₁
@@ -148,9 +138,8 @@ end
   nestedfrankgen(θ₁::Float64, θ₀::Float64, V0::Vector{Int})
 
 Return vector of int, samples of inverse laplacea trensform of nested
-Frak copula given parametes and V0 - vector of samples if invlaplace of perents copula
+Frank copula given parametes and V0 - vector of samples if invlaplace of perents copula
 """
-
 function nestedfrankgen(θ₁::Float64, θ₀::Float64, V0::Vector{Int})
   if nprocs() == 1
     return map(k -> sum([elInvlaF(θ₁, θ₀) for j in 1:k]), V0)

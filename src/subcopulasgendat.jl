@@ -2,7 +2,6 @@ VP = Vector{Pair{String,Vector{Int64}}}
 
 # our algorithm
 
-
 """
   gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int)
 
@@ -15,7 +14,7 @@ VP = Vector{Pair{String,Vector{Int64}}}
 
 julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
-julia> srand(42)
+julia> Random.seed!(42)
 
 julia> x = rand(MvNormal(Σ), 6)'
 6×3 Array{Float64,2}:
@@ -37,7 +36,6 @@ julia> gcop2tstudent(x, [1,2], 6)
 
 ```
 """
-
 function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false)
   unique(ind) == ind || throw(AssertionError("indices must not repeat"))
   y = copy(x)
@@ -72,7 +70,7 @@ Clayton sub-copula
 
 julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
-julia> srand(42)
+julia> Random.seed!(42)
 
 julia> x = rand(MvNormal(Σ), 6)'
 6×3 Array{Float64,2}:
@@ -94,7 +92,6 @@ julia> gcop2arch(x, ["clayton" => [1,2]]; naive::Bool = false, notnested::Bool =
 
 ```
 """
-
 function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested::Bool = false)
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
@@ -104,7 +101,7 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested:
   x = cdf.(Normal(0,1), x)
   for p in inds
     ind = p[2]
-    v = naive? rand(size(xgauss, 1), length(ind)+1): norm2unifind(xgauss, ind)
+    v = naive ? rand(size(xgauss, 1), length(ind)+1) : norm2unifind(xgauss, ind)
     if notnested | (length(ind) == 2) | naive
       θ = ρ2θ(meanΣ(corspearman(xgauss)[ind, ind]), p[1])
       x[:,ind] = copulagen(p[1], v, θ)
@@ -131,7 +128,7 @@ sub-copula, all univariate marginals are unchanged.
 
 julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
-julia> srand(42)
+julia> Random.seed!(42)
 
 julia> x = rand(MvNormal(Σ), 6)'
 6×3 Array{Float64,2}:
@@ -160,7 +157,7 @@ function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false
   x = (x.-μ)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
-  v = naive? rand(size(xgauss, 1), length(inds)): norm2unifind(xgauss, inds, "frechet")
+  v = naive ? rand(size(xgauss, 1), length(inds)) : norm2unifind(xgauss, inds, "frechet")
   α = meanΣ(corspearman(xgauss)[inds, inds])
   x[:,inds] = frechet(α, v)
   quantile.(Normal(0,1), x).*S.+μ
@@ -172,7 +169,6 @@ end
 returns a matrix of size u with data generated using Frechet maximal copula with
 parameter α
 """
-
 function frechet(α::Float64, u::Matrix{Float64})
   for j in 1:size(u, 1)
     if (rand() < α)
@@ -196,7 +192,7 @@ sub-copula parametrised by free parameters λ1 and λ2. All univariate marginals
 
 julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
-julia> srand(42)
+julia> Random.seed!(42)
 
 julia> x = rand(MvNormal(Σ), 6)'
 6×3 Array{Float64,2}:
@@ -217,7 +213,6 @@ julia> gcop2marshallolkin(x, [1,2], 1., 1.5; naive = false)
  -0.867606  -0.589929  -1.54419
 ```
 """
-
 function gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
   unique(inds) == inds || throw(AssertionError("indices must not repeat"))
   length(inds) == 2 || throw(AssertionError("not supported for |inds| > 2"))
@@ -228,7 +223,7 @@ function gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 
   x = (x.-μ)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
-  v = naive? rand(size(xgauss, 1), 3): norm2unifind(xgauss, inds)
+  v = naive ? rand(size(xgauss, 1), 3) : norm2unifind(xgauss, inds)
   ρ = corspearman(xgauss)[inds[1], inds[2]]
   x[:,inds] = mocopula(v, 2, τ2λ([moρ2τ(ρ)], [λ1, λ2]))
   quantile.(Normal(0,1), x).*S.+μ
@@ -240,7 +235,6 @@ end
 
 Tests if the sub copula name is supported and if their indices are disjoint.
 """
-
 function testind(inds::Vector{Pair{String,Vector{Int64}}})
   indar = []
   for i in 1:length(inds)
@@ -257,16 +251,14 @@ end
 
 Return uniformly distributed data from x[:,i] given a copula familly.
 """
-
 function norm2unifind(x::Matrix{Float64}, i::Vector{Int}, cop::String = "")
-  x = (cop == "frechet")? x[:,i]: hcat(x[:,i], randn(size(x,1),1))
+  x = (cop == "frechet") ? x[:,i] : hcat(x[:,i], randn(size(x,1),1))
   Σ = cor(x)
   a, s = eig(Σ)
   w = x*s./transpose(sqrt.(a))
   w[:, end] = sign(cov(x[:, 1], w[:, end]))*w[:, end]
   cdf.(Normal(0,1), w)
 end
-
 
 """
   meanΣ(Σ::Matrix{Float64})
@@ -281,15 +273,13 @@ julia> meanΣ(s)
 0.3
 ```
 """
-
-meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[find(tril(Σ-eye(Σ)).!=0)]))
+meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[findall(tril(Σ-eye(Σ)).!=0)]))
 
 """
   mean_outer(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
 
 returns a mean correlation excluding internal one is subsets determined by part
 """
-
 function mean_outer(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
   Σ_copy = copy(Σ)-eye(Σ)
   for ind=part
@@ -303,7 +293,6 @@ end
 
 Returns parametrization by correlation for data `x` and partition `part` for nested copulas.
 
-
 """
 function parameters(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
   ϕ = [meanΣ(Σ[ind,ind]) for ind=part]
@@ -316,8 +305,6 @@ end
 
 tests sufficient nesting condition given parameters, returns bool
 """
-
-
 function are_parameters_good(ϕ::Vector{Float64}, θ::Float64)
   θ < minimum(filter(x->!isnan(x), ϕ))
 end
@@ -345,17 +332,16 @@ end
 
 clusters data on a basis of a correlation
 """
-
 function getcors_advanced(x::Matrix{Float64})
   Σ = corspearman(x)
   var_no = size(Σ, 1)
   partitions = collect(Combinatorics.SetPartitions(1:var_no))[2:end-1] #TODO popraw first is trivial, last is nested
   params = (p->parameters(Σ, p)).(partitions)
-  good_inds = find(x->are_parameters_good(x...), params)
+  good_inds = findall(x->are_parameters_good(x...), params)
   filtered_params = params[good_inds]
 
   filtr_parts = partitions[good_inds]
-  opt_val = [vecnorm(Σ_theor(param..., fp) - Σ) for (param, fp)=zip(filtered_params, filtr_parts)]
+  opt_val = [norm(Σ_theor(param..., fp) - Σ) for (param, fp)=zip(filtered_params, filtr_parts)]
   opt_index = findmin(opt_val)[2]
   ϕ, θ = filtered_params[opt_index]
   filter(x->length(x)>1,filtr_parts[opt_index]), filter(x->!isnan(x), ϕ), θ

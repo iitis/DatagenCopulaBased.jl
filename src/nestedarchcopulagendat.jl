@@ -23,7 +23,7 @@ Basically uses Alg. 5 McNeil, A.J., 2008. 'Sampling nested Archimedean copulas'.
 Journal of Statistical Computation and Simulation 78, 567–581.
 
 ```jldoctest
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton", 1)
 10×5 Array{Float64,2}:
@@ -59,7 +59,7 @@ Given [0,1]ᵗˣˡ ∋ r , returns t realisations of l-1 variate data from neste
 
 
 ```jldoctest
-julia> srand(43)
+julia> Random.seed!(43)
 
 julia> nestedcopulag("clayton", [2, 2], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
 2×4 Array{Float64,2}:
@@ -67,7 +67,6 @@ julia> nestedcopulag("clayton", [2, 2], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2
  0.712034  0.761276  0.190189  0.208867
  ```
 """
-
 function nestedcopulag(copula::String, n::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64,
                                                         r::Matrix{Float64})
   testnestedθϕ(map(length, n), ϕ, θ, copula)
@@ -93,21 +92,20 @@ julia> nestedstep("clayton", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5)
  0.322614  0.806915
 ```
 """
-
 function nestedstep(copula::String, u::Matrix{Float64}, V0::Union{Vector{Float64}, Vector{Int}},
                                                         ϕ::Float64, θ::Float64)
   if copula == "amh"
     w = [quantile(NegativeBinomial(v, (1-ϕ)/(1-θ)), rand()) for v in V0]
     u = -log.(u)./(V0 + w)
-    X = ((exp.(u)-ϕ)*(1-θ)+θ*(1-ϕ))/(1-ϕ)
+    X = ((exp.(u) .-ϕ) .*(1-θ) .+θ*(1-ϕ)) ./(1-ϕ)
     return X.^(-V0)
   elseif copula == "frank"
     u = -log.(u)./nestedfrankgen(ϕ, θ, V0)
-    X = (1-(1-exp.(-u)*(1-exp(-ϕ))).^(θ/ϕ))./(1-exp(-θ))
+    X = (1 .-(1 .-exp.(-u)*(1-exp(-ϕ))).^(θ/ϕ))./(1-exp(-θ))
     return X.^V0
   elseif copula == "clayton"
     u = -log.(u)./tiltedlevygen(V0, ϕ/θ)
-    return exp.(V0.-V0.*(1.+u).^(θ/ϕ))
+    return exp.(V0.-V0.*(1 .+u).^(θ/ϕ))
   elseif copula == "gumbel"
     u = -log.(u)./levygen(ϕ/θ, rand(length(V0)))
     return exp.(-u.^(θ/ϕ))
@@ -125,7 +123,7 @@ C_θ(C_ϕ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_ϕₖ(C_Ψ�
  where lᵢ = length(n[i])
 
   ```jldoctest
-  julia> srand(43)
+  julia> Random.seed!(43)
 
   julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2, "gumbel")
   5×6 Array{Float64,2}:
@@ -137,8 +135,6 @@ C_θ(C_ϕ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_ϕₖ(C_Ψ�
 
   ```
 """
-
-
 function nestedarchcopulagen(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}},
                                                              ϕ::Vector{Float64}, θ::Float64,
                                                              copula::String = "gumbel")
@@ -152,7 +148,6 @@ function nestedarchcopulagen(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{F
   phi(-log.(X)./levygen(θ, rand(t)), θ, copula)
 end
 
-
 """
   nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
 
@@ -160,7 +155,7 @@ Returns t realisations of length(θ)+1 variate data from hierarchically nested G
 C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)
 
 ```jldoctest
-julia> srand(43)
+julia> Random.seed!(43)
 
 julia> x = nestedarchcopulagen(5, [4., 3., 2.], "gumbel")
 5×4 Array{Float64,2}:
@@ -171,7 +166,6 @@ julia> x = nestedarchcopulagen(5, [4., 3., 2.], "gumbel")
  0.684486  0.614142  0.690664  0.401897
 ```
 """
-
 function nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
   copula == "gumbel" ||
   throw(AssertionError("hierarchically nasted cop. generator supported only for gumbel familly"))
@@ -190,7 +184,6 @@ end
 
 Tests parameters, its hierarchy and size of parametes vector for nested archimedean copulas.
 """
-
 function testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String)
   testθ(θ, copula)
   map(p -> testθ(p, copula), ϕ)

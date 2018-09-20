@@ -1,10 +1,10 @@
 α = 0.025
 
 @testset "nested archimedean copulas helpers" begin
-  srand(43)
+  Random.seed!(43)
   u = nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
   @test u ≈ [0.153282 0.182421 0.636606 0.679396; 0.381051 0.430175 0.254842 0.279192] atol=1.0e-5
-  srand(43)
+  Random.seed!(43)
   n = nestedstep("clayton", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5)
   @test n ≈ [0.0504023 0.545041; 0.0736747 0.58235] atol=1.0e-5
   @test_throws AssertionError nestedstep("clayto", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5)
@@ -23,7 +23,7 @@ end
 
 @testset "nested gumbel copula" begin
   @testset "single nested" begin
-    srand(44)
+    Random.seed!(44)
     x = nestedarchcopulagen(500000, [2,2], [4.2, 6.1], 2.1, "gumbel", 1)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -40,7 +40,7 @@ end
     @test tail(x[:,1], x[:,3], "l", 0.00001) ≈ 0
   end
   @testset "double nested" begin
-    srand(43)
+    Random.seed!(43)
     x = nestedarchcopulagen(200000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2, "gumbel")
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -54,7 +54,7 @@ end
     @test tail(x[:,1], x[:,3], "l", 0.00001) ≈ 0
   end
   @testset "hierarchical" begin
-    srand(42)
+    Random.seed!(42)
     x = nestedarchcopulagen(500000, [4.2, 3.6, 1.1], "gumbel")
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -68,7 +68,7 @@ end
 end
 
 @testset "nested Ali-Mikhail-Haq copula" begin
-  srand(43)
+  Random.seed!(43)
   x = nestedarchcopulagen(200000, [3, 2], [0.8, 0.7], 0.5, "amh", 2)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -90,7 +90,7 @@ end
 end
 
 @testset "nested Frank copula" begin
-  srand(44)
+  Random.seed!(44)
   x = nestedarchcopulagen(250000, [3, 2],  [8., 10.], 2., "frank", 2)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -113,7 +113,7 @@ end
 end
 
 @testset "nested Clayton copula" begin
-  srand(42)
+  Random.seed!(42)
   x = nestedarchcopulagen(100000, [2, 3],  [3., 4.], 1.5, "clayton", 2)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α

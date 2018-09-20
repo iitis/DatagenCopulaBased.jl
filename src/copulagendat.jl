@@ -9,7 +9,7 @@ matrix is imputed, it will be converted into a correlation matrix automatically.
 
 ```jldoctest
 
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> gausscopulagen(10)
 10×2 Array{Float64,2}:
@@ -25,7 +25,6 @@ julia> gausscopulagen(10)
  0.190283  0.594451
 ```
 """
-
 function gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
   z = transpose(rand(MvNormal(Σ),t))
   for i in 1:size(Σ, 1)
@@ -43,7 +42,7 @@ If the symmetric covariance matrix is imputed, it will be converted into a
 correlation matrix automatically.
 
 ```jldoctest
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> tstudentcopulagen(10)
 10×2 Array{Float64,2}:
@@ -59,7 +58,6 @@ julia> tstudentcopulagen(10)
  0.113788  0.633349
  ```
 """
-
 function tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
   z = transpose(rand(MvNormal(Σ),t))
   U = rand(Chisq(ν), size(z, 1))
@@ -67,21 +65,19 @@ function tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::I
     x = z[:,i].*sqrt.(ν./U)./sqrt(Σ[i,i])
     z[:,i] = cdf.(TDist(ν), x)
   end
-  z
+  Array(z)
 end
 
 ### Frechet familly
 
-
 """
-
   frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
 
 Returns t realisation of n variate data generated from one parameter frechet multidimentional copula,
 a combination of maximal copla with  weight α and independent copula with  weight 1-α
 
 ```jldoctest
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> frechetcopulagen(10, 2, 0.5)
 10×2 Array{Float64,2}:
@@ -97,7 +93,6 @@ julia> frechetcopulagen(10, 2, 0.5)
  0.955881  0.851275
 ```
 """
-
 function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
   0 <= α <= 1 || throw(DomainError("generaton not supported for α ∉ [0,1]"))
   u = rand(t, n)
@@ -118,7 +113,7 @@ Two parameters Frechet copula C = α C_{max} + β C_{min} + (1- α - β) C_{⟂}
 only for n == 2
 
 ```jldoctest
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> frechetcopulagen(10, 2, 0.4, 0.2)
 10×2 Array{Float64,2}:
@@ -134,8 +129,6 @@ julia> frechetcopulagen(10, 2, 0.4, 0.2)
  0.955881  0.851275
 ```
 """
-
-
 function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
   n == 2 || throw(AssertionError("two parameters Frechet copula supported only for n = 2"))
   0 <= α+β <= 1 || throw(DomainError("α+β must be in range [0,1]"))
@@ -165,7 +158,7 @@ If reversed = true, returns data from reversed Marshall-Olkin copula.
 
 ```jldoctest
 
-julia> srand(43)
+julia> Random.seed!(43)
 
 julia> marshallolkincopulagen(10, [0.2, 1.2, 1.6])
 10×2 Array{Float64,2}:
@@ -181,15 +174,12 @@ julia> marshallolkincopulagen(10, [0.2, 1.2, 1.6])
  0.782477  0.686799
  ```
 """
-
-
 function marshallolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::Bool = false)
   minimum(λ) >= 0 || throw(AssertionError("all parameters must by >= 0 "))
   n = floor(Int, log(2, length(λ)+1))
   U = mocopula(rand(t,2^n-1), n, λ)
-  reverse? 1-U: U
+  reverse ? 1 .-U : U
 end
-
 
 """
   mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
@@ -208,14 +198,13 @@ end
 
 ```
 """
-
 function mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
   s = collect(combinations(1:n))
   t,l = size(u)
   U = zeros(t, n)
     for j in 1:t
       for i in 1:n
-        inds = find([i in s[k] for k in 1:l])
+        inds = findall([i in s[k] for k in 1:l])
         x = minimum([-log(u[j,k])./(λ[k]) for k in inds])
         Λ = sum(λ[inds])
         U[j,i] = exp.(-Λ*x)
@@ -234,7 +223,7 @@ d with parameters p[i].
 If `testunif = true` each marginal is tested for uniformity.
 
 ```jldoctest
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> x = rand(10,2);
 
@@ -268,7 +257,7 @@ end
 
   # generates covariance matrix
 
-  """
+"""
     cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
 
 Returns symmetric correlation matrix Σ of size n x n, with reference correlation 0 < ρ < 1.
@@ -277,7 +266,7 @@ as indices differences rise, i.e. σᵢⱼ ≳ σᵢₖ as |i-j| < |i-k|.
 If altersing = true, some σ are positive and some negative, else ∀ᵢⱼ σᵢⱼ ≥ 0.
 
 ```jldoctest
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> julia> cormatgen(2)
 2×2 Array{Float64,2}:
@@ -285,26 +274,25 @@ julia> julia> cormatgen(2)
  0.660768  1.0
 ```
 """
-
-
 function cormatgen(n::Int = 20)
   a = rand(n,n)
   b = a*a'
   c = b./maximum(b)
-  c - diagm(diag(c))+eye(c)
+  c .- Matrix(Diagonal(c)) .+ Matrix(1.0I, size(c)...)
+
 end
 
 function cormatgen_rand(n::Int = 20)
   a = rand(n,n)
   b = a*a'
-  diagb = diagm(1./sqrt.(diag(b)))
+  diagb = diagm(1 ./sqrt.(diag(b)))
   b = diagb*b*diagb
   (b+b')/2
 end
 
 function cormatgen_constant(n::Int, α::Float64)
   @assert 0 <= α <= 1 "α should satisfy 0 <= α <= 1"
-  α*ones(n, n)+(1-α)*eye(n)
+  α .*ones(n, n) .+(1-α) .*Matrix(1.0I, n,n)
 end
 
 function random_unit_vector(dim::Int)
@@ -312,19 +300,19 @@ function random_unit_vector(dim::Int)
   result /= norm(result)
 end
 
-function cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1.-α)/2.)
+function cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1 .-α)/2.)
   @assert 0 <= ϵ <= 1-α "ϵ must satisfy 0 <= ϵ <= 1-α"
   result = cormatgen_constant(n, α)
   u = hcat([random_unit_vector(n) for i=1:n]...)
-  result += ϵ*(u'*u)
-  result - ϵ*eye(result)
+  result += ϵ .*(u'*u)
+  result - ϵ .*Matrix(1.0I, size(result)...)
 end
 
 function cormatgen_two_constant(n::Int, α::Float64, β::Float64)
   @assert α > β "First argument must be greater"
   result = fill(β, (n,n))
   result[1:div(n,2),1:div(n,2)] = fill(α, (div(n,2),div(n,2)))
-  result += eye(result) - diagm(diag(result))
+  result += Matrix(1.0I, size(result)...) - Matrix(Diagonal(result))
   result
 end
 
@@ -332,8 +320,8 @@ function cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Flo
   @assert ϵ <= 1-α
   result = cormatgen_two_constant(n, α, β)
   u = hcat([random_unit_vector(n) for i=1:n]...)
-  result += ϵ*(u'*u)
-  result - ϵ*eye(result)
+  result += ϵ .*(u'*u)
+  result - ϵ .*Matrix(1.0I, size(result)...)
 end
 
 function cormatgen_toeplitz(n::Int, ρ::Float64)
@@ -346,6 +334,6 @@ function cormatgen_toeplitz_noised(n::Int, ρ::Float64; ϵ=(1-ρ)/(1+ρ)/2)
 
   result = cormatgen_toeplitz(n, ρ)
   u = hcat([random_unit_vector(n) for i=1:n]...)
-  result += ϵ*(u'*u)
-  result - ϵ*eye(result)
+  result += ϵ .*(u'*u)
+  result - ϵ .*Matrix(1.0I, size(result)...)
 end

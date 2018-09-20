@@ -1,4 +1,4 @@
-julia 0.6
+julia 0.7
 HypothesisTests
 Distributions
 QuadGK
@@ -6,3 +6,8 @@ Roots
 Combinatorics
 StatsBase
 Cubature
+SpecialFunctions
+SharedArrays
+LinearAlgebra
+Distributed
+

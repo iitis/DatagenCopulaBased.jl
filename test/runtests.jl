@@ -1,8 +1,13 @@
-using Base.Test
+using Test
 using DatagenCopulaBased
 using Distributions
 using HypothesisTests
 using StatsBase
+using Random
+using Distributed
+using LinearAlgebra
+using SharedArrays
+using Combinatorics
 
 
 import DatagenCopulaBased: rand2cop, fncopulagen

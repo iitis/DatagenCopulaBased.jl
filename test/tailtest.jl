@@ -4,7 +4,6 @@
 
 Returns empirical left and right tail dependency of bivariate data
 """
-
 function tail(v1::Vector{T}, v2::Vector{T}, tail::String, α::T = 0.002) where T <: AbstractFloat
   if tail == "l"
     return sum((v1 .< α) .* (v2 .< α))./(length(v1)*α)
@@ -13,7 +12,6 @@ function tail(v1::Vector{T}, v2::Vector{T}, tail::String, α::T = 0.002) where T
   end
   0.
 end
-
 
 @testset "tail dependencies test" begin
   v1 = vcat(zeros(5), 0.5*ones(5), zeros(5), 0.5*ones(70), ones(5), 0.5*ones(5), ones(5));

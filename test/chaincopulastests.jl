@@ -1,13 +1,13 @@
 α = 0.025
 
 @testset "helpers" begin
-  srand(43)
+  Random.seed!(43)
   @test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "clayton"), Uniform(0,1))) > α
-  srand(43)
+  Random.seed!(43)
   @test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "frank"), Uniform(0,1))) > α
-  srand(43)
+  Random.seed!(42)
   @test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "amh"), Uniform(0,1))) > α
-  srand(43)
+  Random.seed!(43)
   @test rand2cop([0.815308, 0.894269], 0.5, "clayton") ≈ [0.292041, 0.836167] atol=1.0e-5
 end
 
@@ -19,7 +19,7 @@ end
 end
 
 @testset "chain of Archimedean copulas" begin
-  srand(43)
+  Random.seed!(43)
   cops = ["clayton", "clayton", "clayton", "frank", "amh", "amh"]
   x = chaincopulagen(500000, [-0.9, 3., 2, 4., -0.3, 1.], cops)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -38,17 +38,17 @@ end
   @test corkendall(x)[2,3] ≈ 3/(2+3) atol=1.0e-3
 end
 @testset "correlations" begin
-  srand(43)
+  Random.seed!(43)
   x = chaincopulagen(500000, [0.6, -0.2], "clayton"; cor = "Spearman")
   @test corspearman(x[:,1], x[:,2]) ≈ 0.6 atol=1.0e-2
   @test corspearman(x[:,2], x[:,3]) ≈ -0.2 atol=1.0e-2
-  srand(43)
+  Random.seed!(43)
   x = chaincopulagen(500000, [0.6, -0.2], "clayton"; cor = "Kendall")
   @test corkendall(x[:,1], x[:,2]) ≈ 0.6 atol=1.0e-3
   @test corkendall(x[:,2], x[:,3]) ≈ -0.2 atol=1.0e-3
 end
 @testset "rev copula" begin
-  srand(43)
+  Random.seed!(43)
   x = chaincopulagen(500000, [-0.9, 3., 2.], "clayton"; rev = true)
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test tail(x[:,3], x[:,4], "r") ≈ 1/(2^(1/2)) atol=1.0e-1
@@ -57,7 +57,7 @@ end
 
 @testset "chain of Frechet copulas" begin
   @test fncopulagen([0.2, 0.4], [0.1, 0.1], [0.2 0.4 0.6; 0.3 0.5 0.7]) == [0.6 0.4 0.2; 0.7 0.5 0.3]
-  srand(43)
+  Random.seed!(43)
   x = chainfrechetcopulagen(500000, [0.9, 0.6, 0.2])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -66,7 +66,7 @@ end
   @test tail(x[:,1], x[:,2], "r") ≈ 0.9 atol=1.0e-1
   @test tail(x[:,1], x[:,2], "l") ≈ 0.9 atol=1.0e-1
   @test tail(x[:,1], x[:,4], "r") ≈ 0.2 atol=1.0e-1
-  srand(43)
+  Random.seed!(43)
   x = chainfrechetcopulagen(500000, [0.8, 0.5], [0.2, 0.3]);
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α

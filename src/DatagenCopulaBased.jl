@@ -6,6 +6,11 @@ module DatagenCopulaBased
   using StatsBase
   using QuadGK
   using Roots
+  using SpecialFunctions
+  using Random
+  using LinearAlgebra
+  using Distributed
+  using SharedArrays
 
 
   include("sampleunivdists.jl")

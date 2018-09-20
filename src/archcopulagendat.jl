@@ -16,12 +16,11 @@ julia> getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton")
  1.64237
 ```
 """
-
 function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
   if copula == "clayton"
     return quantile.(Gamma(1/θ, 1), v)
   elseif copula == "amh"
-    return 1+quantile.(Geometric(1-θ), v)
+    return 1 .+quantile.(Geometric(1-θ), v)
   elseif copula == "frank"
     return logseriesquantile(1-exp(-θ), v)
   elseif copula == "gumbel"
@@ -29,6 +28,7 @@ function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
   end
   throw(AssertionError("$(copula) not supported"))
 end
+
 """
   phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
 
@@ -44,14 +44,13 @@ julia> julia> phi([0.2 0.6; 0.4 0.8], 2., "clayton")
  0.745356  0.620174
 ```
 """
-
 function phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
   if copula == "clayton"
-    return (1 + u).^(-1/θ)
+    return (1 .+ u).^(-1/θ)
   elseif copula == "amh"
-    return (1-θ)./(exp.(u)-θ)
+    return (1-θ) ./(exp.(u) .-θ)
   elseif copula == "frank"
-    return -log.(1+exp.(-u)*(exp(-θ)-1))/θ
+    return -log.(1 .+exp.(-u) .*(exp(-θ)-1)) ./θ
   elseif copula == "gumbel"
     return exp.(-u.^(1/θ))
   end
@@ -73,7 +72,6 @@ random vectors.
 ```
 
 """
-
 function copulagen(copula::String, r::Matrix{T}, θ::Union{Float64, Int}) where T <:AbstractFloat
   u = -log.(r[:,1:end-1])./getV0(θ, r[:,end], copula)
   phi(u, θ, copula)
@@ -93,7 +91,7 @@ If rev == true, reverse the copula output i.e. u → 1-u (we call it reversed co
 It cor == pearson, kendall, uses correlation coeficient as a parameter
 
 ```jldoctest
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> archcopulagen(10, 2, 1, "clayton")
 10×2 Array{Float64,2}:
@@ -110,7 +108,6 @@ julia> archcopulagen(10, 2, 1, "clayton")
 
  ```
 """
-
 function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
                                                               rev::Bool = false,
                                                               cor::String = "")
@@ -126,7 +123,7 @@ function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
     testθ(θ, copula)
   end
   u = copulagen(copula, rand(t,n+1), θ)
-  rev? 1-u: u
+  rev ? 1 .-u : u
 end
 
 """
@@ -134,7 +131,6 @@ end
 
 Tests the parameter θ value for archimedean copula, returns void
 """
-
 function testθ(θ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
     θ >= 1 || throw(DomainError("generaton not supported for θ < 1"))
@@ -143,6 +139,7 @@ function testθ(θ::Union{Float64, Int}, copula::String)
   else
     θ > 0 || throw(DomainError("generaton not supported for θ ≤ 0"))
   end
+  Nothing
 end
 
 """
@@ -157,7 +154,6 @@ julia> useρ(0.75, "gumbel")
 ```
 
 """
-
 function useρ(ρ::Float64, copula::String)
   0 < ρ < 1 || throw(DomainError("correlation coeficiant must fulfill 0 < ρ < 1"))
   if copula == "amh"
@@ -178,7 +174,6 @@ julia> useτ(0.5, "clayton")
 2.0
 ```
 """
-
 function useτ(τ::Float64, copula::String)
   0 < τ < 1 || throw(DomainError("correlation coeficiant must fulfill 0 < τ < 1"))
   if copula == "amh"

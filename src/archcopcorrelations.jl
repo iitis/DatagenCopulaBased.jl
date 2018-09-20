@@ -3,7 +3,6 @@
 
 Returns float64, Debye function Dₖ(x) value
 """
-
 Debye(x, k::Int=1) = k/x^k*(quadgk(i -> i^k/(exp(i)-1), 0, x)[1])
 
 # kendall's τ to copulas parameters
@@ -32,7 +31,6 @@ end
 
 Returns a Frank copula θ parameter, givem Kendall's τ
 """
-
 function frankτ2θ(τ::Float64)
   f(θ) = 1+4*(Debye(θ)-1)/θ - τ
   if τ > 0.
@@ -48,8 +46,6 @@ end
 
 Returns Ali-Mikhail-Haq copula θ parameter, givem Kendall's τ
 """
-
-
 function AMHτ2θ(τ::Float64)
   f(θ) = (1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2))-τ
   if -0.01 < τ < 0.01

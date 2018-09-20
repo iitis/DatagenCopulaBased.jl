@@ -4,7 +4,8 @@
   addprocs(2)
   eval(Expr(:toplevel, :(@everywhere using DatagenCopulaBased)))
   eval(Expr(:toplevel, :(@everywhere import DatagenCopulaBased: nestedfrankgen)))
-  eval(Expr(:toplevel, :(@everywhere srand(44))))
+  eval(Expr(:toplevel, :(@everywhere using Random)))
+  eval(Expr(:toplevel, :(@everywhere Random.seed!(44))))
   @test nestedfrankgen(5., 3., [1, 1, 2]) == [9, 54, 63]
   x = nestedarchcopulagen(250000, [3, 2],  [8., 10.], 2., "frank", 2)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
