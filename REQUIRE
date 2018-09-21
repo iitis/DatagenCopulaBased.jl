@@ -7,6 +7,3 @@ Combinatorics
 StatsBase
 Cubature
 SpecialFunctions
-SharedArrays
-LinearAlgebra
-Distributed

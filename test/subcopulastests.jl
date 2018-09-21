@@ -41,7 +41,7 @@ end
 @testset "convert sub-copula to archimedean" begin
   Random.seed!(43)
   Σ = cormatgen(25)
-  Σ1 =0.8*ones(25,25) + 0.2*eye(25)
+  Σ1 =0.8*ones(25,25) + 0.2*Matrix(1.0I, 25, 25)
   Σ = 0.3*Σ + 0.7*Σ1
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   y = rand(MvNormal(Σ), 100000)'

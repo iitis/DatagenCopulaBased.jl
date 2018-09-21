@@ -25,12 +25,12 @@ function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
   if copula == "clayton"
     return (u1.^(-θ).*(w.^(-θ/(1+θ)) .-1) .+1).^(-1/θ)
   elseif copula == "frank"
-    return -1/θ*log.(1+(w*(1-exp(-θ)))./(w.*(exp.(-θ*u1)-1)-exp.(-θ*u1)))
+    return -1/θ*log.(1 .+(w*(1-exp(-θ)))./(w.*(exp.(-θ*u1) .-1) .-exp.(-θ*u1)))
   elseif copula == "amh"
     a = 1 .-u1
-    b = 1-θ .*(1+2 .*a .*w)+2*θ^2*a.^2 .*w
-    c = 1-θ .*(2-4*w+4 .*a .*w)+θ.^2 .*(1-4 .*a .*w+4 .*a.^2 .*w)
-    return 2*w .*(a .*θ-1).^2 ./(b+sqrt.(c))
+    b = 1 .-θ .*(1 .+2 .*a .*w)+2*θ^2*a.^2 .*w
+    c = 1 .-θ .*(2 .-4*w .+4 .*a .*w)+θ.^2 .*(1 .-4 .*a .*w+4 .*a.^2 .*w)
+    return 2*w .*(a .*θ .-1).^2 ./(b+sqrt.(c))
   end
 end
 
@@ -145,7 +145,7 @@ julia> julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
  0.804096  0.851275  0.955881
 ```
 """
-function chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
+function chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zero(α))
   length(α) == length(β) || throw(AssertionError("different lengths of parameters"))
   minimum(α) >= 0 || throw(DomainError("negative α parameter"))
   minimum(β) >= 0 || throw(DomainError("negative β parameter"))
@@ -175,7 +175,7 @@ function fncopulagen(α::Vector{Float64}, β::Vector{Float64}, u::Matrix{Float64
   for j in 1:size(u, 2)-1
     u[p[1:lx[j]],j+1] = u[p[1:lx[j]], j]
     r = p[lx[j]+1:li[j]]
-    u[r,j+1] = 1-u[r,j]
+    u[r,j+1] = 1 .-u[r,j]
   end
   u
 end

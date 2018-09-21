@@ -41,7 +41,7 @@ function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Boo
   y = copy(x)
   Σ = cov(x)
   S = transpose(sqrt.(diag(Σ)))
-  μ = mean(x, 1)
+  μ = mean(x, dims = 1)
   y = (y.-μ)./S
   if naive
     z = tstudentcopulagen(size(x,1), cor(x[:,ind]), ν)
@@ -95,7 +95,7 @@ julia> gcop2arch(x, ["clayton" => [1,2]]; naive::Bool = false, notnested::Bool =
 function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested::Bool = false)
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
-  μ = mean(x, 1)
+  μ = mean(x, dims=1)
   x = (x.-μ)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
@@ -153,7 +153,7 @@ julia> gcop2frechet(x, [1,2]; naive = false)
 function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false)
   unique(inds) == inds || throw(AssertionError("indices must not repeat"))
   S = transpose(sqrt.(diag(cov(x))))
-  μ = mean(x, 1)
+  μ = mean(x, dims = 1)
   x = (x.-μ)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
@@ -219,7 +219,7 @@ function gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 
   λ1 >= 0 || throw(DomainError("not supported for λ1 < 0"))
   λ2 >= 0 || throw(DomainError("not supported for λ2 < 0"))
   S = transpose(sqrt.(diag(cov(x))))
-  μ = mean(x, 1)
+  μ = mean(x, dims=1)
   x = (x.-μ)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
@@ -253,8 +253,7 @@ Return uniformly distributed data from x[:,i] given a copula familly.
 """
 function norm2unifind(x::Matrix{Float64}, i::Vector{Int}, cop::String = "")
   x = (cop == "frechet") ? x[:,i] : hcat(x[:,i], randn(size(x,1),1))
-  Σ = cor(x)
-  a, s = eig(Σ)
+  a, s = eigen(cor(x))
   w = x*s./transpose(sqrt.(a))
   w[:, end] = sign(cov(x[:, 1], w[:, end]))*w[:, end]
   cdf.(Normal(0,1), w)
@@ -273,7 +272,7 @@ julia> meanΣ(s)
 0.3
 ```
 """
-meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[findall(tril(Σ-eye(Σ)).!=0)]))
+meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[findall(tril(Σ-Matrix(I, size(Σ))).!=0)]))
 
 """
   mean_outer(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
@@ -281,7 +280,7 @@ meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[findall(tril(Σ-eye(Σ)).!=0)]))
 returns a mean correlation excluding internal one is subsets determined by part
 """
 function mean_outer(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
-  Σ_copy = copy(Σ)-eye(Σ)
+  Σ_copy = copy(Σ)-Matrix(I, size(Σ))
   for ind=part
     Σ_copy[ind,ind] = zeros(length(ind),length(ind))
   end

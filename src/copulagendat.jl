@@ -285,7 +285,7 @@ end
 function cormatgen_rand(n::Int = 20)
   a = rand(n,n)
   b = a*a'
-  diagb = diagm(1 ./sqrt.(diag(b)))
+  diagb = Matrix(Diagonal(1 ./sqrt.(LinearAlgebra.diag(b))))
   b = diagb*b*diagb
   (b+b')/2
 end

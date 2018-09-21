@@ -8,6 +8,7 @@ using Distributed
 using LinearAlgebra
 using SharedArrays
 using Combinatorics
+using SpecialFunctions
 
 
 import DatagenCopulaBased: rand2cop, fncopulagen
