@@ -11,18 +11,17 @@ This module support following copula families:
 * Elliptical copulas (Gaussian, t-Student),
 * Archimedean copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq), including nested ones,
 * Frechet familly copulas (maximal, minimal, independent),
-* Marshall-Olkin copulas,
-* various copula mixtures, models with different sub-copulas for different subsets of marginals.
+* Marshall-Olkin copulas.
 
 ## Installation
 
 Within Julia, run
 
 ```julia
-julia> Pkg.add("DatagenCopulaBased")
+pkg> add DatagenCopulaBased
 ```
 
-to install the files Julia 0.6 is required.
+to install the files Julia 0.7 is required.
 
 ## Elliptical copulas
 
@@ -50,7 +49,9 @@ correlation matrix automatically.
 
 ```julia
 
-julia> srand(43);
+julia> using Random
+
+julia> Random.seed!(43);
 
 julia> gausscopulagen(10)
 10×2 Array{Float64,2}:
@@ -60,9 +61,9 @@ julia> gausscopulagen(10)
  0.227634  0.183116
  0.227575  0.957376
  0.271558  0.364803
- 0.445691  0.52792
- 0.585362  0.23135
- 0.498593  0.48266
+ 0.445691  0.52792 
+ 0.585362  0.23135 
+ 0.498593  0.48266 
  0.190283  0.594451
  ```
 
@@ -76,21 +77,20 @@ The function returns `U`: `size(U) = (t,n)` - `t` realisations of `n`-variate ra
 
 
 ```julia
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> tstudentcopulagen(10)
 10×2 Array{Float64,2}:
- 0.658199  0.937148
- 0.718244  0.92602
+ 0.658199  0.937148 
+ 0.718244  0.92602  
  0.809521  0.0980325
- 0.263068  0.222589
- 0.187187  0.971109
- 0.245373  0.346428
- 0.452336  0.524498
- 0.57113   0.272525
- 0.498443  0.48082
- 0.113788  0.633349
-
+ 0.263068  0.222589 
+ 0.187187  0.971109 
+ 0.245373  0.346428 
+ 0.452336  0.524498 
+ 0.57113   0.272525 
+ 0.498443  0.48082  
+ 0.113788  0.633349 
 ```
 
 ## Archimedean copulas
@@ -118,21 +118,20 @@ julia> archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String; re
 The function returns `U`: `size(U) = (t,n)` - `t` realisations of `n`-variate random variable, each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]` and a cross-correlation is modelled by corresponding Archimedean copula.
 
 ```julia
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> archcopulagen(10, 2, 1, "clayton")
 10×2 Array{Float64,2}:
- 0.770331  0.932834
+ 0.770331  0.932834 
  0.472847  0.0806845
- 0.970749  0.653029
+ 0.970749  0.653029 
  0.622159  0.0518025
- 0.402461  0.228549
- 0.946375  0.842883
- 0.809076  0.129038
- 0.747983  0.433829
- 0.374341  0.437269
- 0.973066  0.910103
-
+ 0.402461  0.228549 
+ 0.946375  0.842883 
+ 0.809076  0.129038 
+ 0.747983  0.433829 
+ 0.374341  0.437269 
+ 0.973066  0.910103 
 ```
 
  * If `cor = Kendall`, uses Kendall's τ correlation coefficients `θ`.
@@ -170,21 +169,20 @@ supported. Nesting condition requires `0 < θ ≤ minimum(ϕ)`.
 
 ```julia
 
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton", 1)
 10×5 Array{Float64,2}:
- 0.414567  0.683167   0.9953    0.607738  0.793386
- 0.533001  0.190563   0.17076   0.273119  0.78807
- 0.572782  0.161307   0.418821  0.110356  0.661781
- 0.623807  0.140974   0.295422  0.454368  0.477065
- 0.386276  0.266261   0.559423  0.449874  0.294137
- 0.219757  0.122586   0.371318  0.298965  0.507315
- 0.322658  0.0627113  0.738565  0.919912  0.19471
- 0.131938  0.0672061  0.364721  0.220329  0.662842
- 0.773414  0.812113   0.639333  0.527118  0.545043
- 0.958656  0.871822   0.958339  0.801866  0.862751
-
+ 0.333487  0.584206   0.970471  0.352363  0.793386
+ 0.249313  0.0802689  0.298697  0.46432   0.78807 
+ 0.765832  0.272857   0.461754  0.125465  0.661781
+ 0.897061  0.346811   0.745457  0.899775  0.477065
+ 0.387096  0.268233   0.533175  0.42922   0.294137
+ 0.42065   0.247676   0.641627  0.538728  0.507315
+ 0.598049  0.138186   0.659411  0.876095  0.19471 
+ 0.125968  0.0643853  0.824152  0.601356  0.662842
+ 0.57524   0.625373   0.688956  0.57825   0.545043
+ 0.96839   0.899199   0.827176  0.544107  0.862751
 ```
 
 #### If `copula == "gumbel"` further nesting is supported.
@@ -204,16 +202,15 @@ Nesting condition `1 ≤ θ_{i+1} ≤ θᵢ`
 
 ```julia
 
-julia> srand(43)
+julia> Random.seed!(43);
 
 julia> x = nestedarchcopulagen(5, [4., 3., 2.], "gumbel")
-
 5×4 Array{Float64,2}:
- 0.483466  0.621572  0.241025  0.312664
- 0.827237  0.696634  0.768802  0.730543
- 0.401159  0.462126  0.412573  0.72571
- 0.970726  0.964746  0.940314  0.934625
- 0.684486  0.614142  0.690664  0.401897
+ 0.832902  0.915821   0.852532  0.903184 
+ 0.266333  0.293338   0.307899  0.0346497
+ 0.152431  0.0432532  0.319465  0.42015  
+ 0.812182  0.685689   0.721783  0.554992 
+ 0.252867  0.521345   0.406719  0.511759 
 ```
 
 To generate `t` realisations of `∑ᵢ ∑ⱼ nᵢⱼ` variate data from double nested gumbel copula:
@@ -227,7 +224,7 @@ julia> nestedarchcopulagen::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float
 ```
 
 ```julia
-julia> srand(43)
+julia> Random.seed!(43);
 
 julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2, "gumbel")
 5×6 Array{Float64,2}:
