@@ -13,9 +13,6 @@ addons:
       - hdf5-tools
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  #- julia -e 'using Pkg; Pkg.add("Distributed")'
-  #- julia -e 'using Pkg; Pkg.add("SharedArrays")'
-  #- julia -e 'using Pkg; Pkg.add("LinearAlgebra")'
   - julia -e 'using Pkg; Pkg.clone(pwd())'
   - julia -e 'using Pkg; Pkg.build("DatagenCopulaBased"); Pkg.test("DatagenCopulaBased"; coverage=true)'
 after_success:
