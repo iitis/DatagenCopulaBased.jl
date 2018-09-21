@@ -2,7 +2,7 @@ module DatagenCopulaBased
   using Distributions
   using Combinatorics
   using HypothesisTests
-  using Cubature
+  using HCubature
   using StatsBase
   using QuadGK
   using Roots

@@ -84,7 +84,7 @@ end
 
 ### Clayton and gumbel copulas
 
-function Ccl(x::Vector{Float64}, θ::Union{Int, Float64})
+function Ccl(x, θ::Union{Int, Float64})
   if θ > 0
     return (x[1]^(-θ)+x[2]^(-θ)-1)^(-1/θ)
   else
@@ -92,7 +92,7 @@ function Ccl(x::Vector{Float64}, θ::Union{Int, Float64})
   end
 end
 
-Cg(x::Vector{Float64}, θ::Union{Int, Float64}) = exp(-((-log(x[1]))^θ+(-log(x[2]))^θ)^(1/θ))
+Cg(x, θ::Union{Int, Float64}) = exp(-((-log(x[1]))^θ+(-log(x[2]))^θ)^(1/θ))
 
 dilog(x) = quadgk(t -> log(t)/(1-t), 1, x)[1]
 
