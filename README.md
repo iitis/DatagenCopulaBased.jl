@@ -258,20 +258,20 @@ bivariate copula case.
 
 ```julia
 
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> chaincopulagen(10, [4., 11.], ["frank", "frank"])
 10×3 Array{Float64,2}:
- 0.180975  0.386303   0.879254
- 0.775377  0.247895   0.144803
- 0.888934  0.426854   0.772457
- 0.924876  0.395564   0.223155
- 0.408278  0.139002   0.142997
- 0.912603  0.901252   0.949828
+ 0.180975  0.386303   0.879254 
+ 0.775377  0.247895   0.144803 
+ 0.888934  0.426854   0.772457 
+ 0.924876  0.395564   0.223155 
+ 0.408278  0.139002   0.142997 
+ 0.912603  0.901252   0.949828 
  0.828727  0.0295759  0.0897796
- 0.400537  0.0337673  0.27872
- 0.429437  0.462771   0.425435
- 0.955881  0.953623   0.969038
+ 0.400537  0.0337673  0.27872  
+ 0.429437  0.462771   0.425435 
+ 0.955881  0.953623   0.969038 
 ```
 
 
@@ -290,21 +290,20 @@ If `reversed = true`, returns data from reversed Marshall-Olkin copula , i.e. ge
 
 ```julia
 
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> marshallolkincopulagen(10, [0.2, 1.2, 1.6])
 10×2 Array{Float64,2}:
- 0.875948   0.813807  
- 0.902229   0.852105  
- 0.386377   0.22781   
- 0.666248   0.381651  
- 0.10115    0.0283248
- 0.0666898  0.00202552
- 0.99636    0.994344  
- 0.0926391  0.95373   
- 0.50927    0.5957    
- 0.782477   0.682792  
-
+ 0.99636   0.994344 
+ 0.167268  0.0619408
+ 0.977418  0.965093 
+ 0.495167  0.0247053
+ 0.410336  0.250159 
+ 0.778989  0.678064 
+ 0.50927   0.350059 
+ 0.925875  0.887095 
+ 0.353646  0.219006 
+ 0.782477  0.686799 
 ```
 
 To generate data from the Marshall-Olkin copula we use algorithm presented P. Embrechts, F. Lindskog, A McNeil 'Modelling Dependence with Copulas and Applications to Risk Management', 2001
@@ -322,7 +321,7 @@ julia> frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
 
 ```julia
 
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> frechetcopulagen(10, 2, 0.5)
 10×2 Array{Float64,2}:
@@ -333,7 +332,7 @@ julia> frechetcopulagen(10, 2, 0.5)
  0.408278  0.408278  
  0.912603  0.740184  
  0.828727  0.00463791
- 0.400537  0.0288987
+ 0.400537  0.0288987 
  0.429437  0.429437  
  0.955881  0.851275  
 ```
@@ -349,21 +348,20 @@ Here where `0 ≤ α` , where `0 ≤ β` and `α + β ≤ 1`
 
 ``` julia
 
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> frechetcopulagen(10, 2, 0.4, 0.2)
 10×2 Array{Float64,2}:
- 0.180975  0.661781
- 0.775377  0.775377
- 0.888934  0.125437
- 0.924876  0.924876
- 0.408278  0.591722
- 0.912603  0.740184
- 0.828727  0.171273
+ 0.180975  0.661781 
+ 0.775377  0.775377 
+ 0.888934  0.125437 
+ 0.924876  0.924876 
+ 0.408278  0.591722 
+ 0.912603  0.740184 
+ 0.828727  0.171273 
  0.400537  0.0288987
- 0.429437  0.429437
- 0.955881  0.851275
-
+ 0.429437  0.429437 
+ 0.955881  0.851275 
  ```
 
 ### Chain of bivariate Frechet copulas
@@ -388,16 +386,16 @@ julia> srand(43)
 
 julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
 10×3 Array{Float64,2}:
- 0.996764  0.996764  0.996764
- 0.204033  0.795967  0.204033
+ 0.996764  0.996764  0.996764 
+ 0.204033  0.795967  0.204033 
  0.979901  0.979901  0.0200985
- 0.120669  0.879331  0.120669
- 0.453027  0.453027  0.453027
- 0.800909  0.199091  0.800909
- 0.54892   0.54892   0.54892
+ 0.120669  0.879331  0.120669 
+ 0.453027  0.453027  0.453027 
+ 0.800909  0.199091  0.800909 
+ 0.54892   0.54892   0.54892  
  0.933832  0.933832  0.0661679
- 0.396943  0.396943  0.396943
- 0.804096  0.851275  0.955881
+ 0.396943  0.396943  0.396943 
+ 0.804096  0.851275  0.955881 
 ```
 
 
@@ -422,23 +420,21 @@ julia> cormatgen_rand(n::Int)
 for different methods we have different outputs:
 
 ```julia
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> cormatgen(4)
 4×4 Array{Float64,2}:
  1.0       0.396865  0.339354  0.193335
- 0.396865  1.0       0.887028  0.51934
+ 0.396865  1.0       0.887028  0.51934 
  0.339354  0.887028  1.0       0.551519
- 0.193335  0.51934   0.551519  1.0    
-
- julia> srand(43);
+ 0.193335  0.51934   0.551519  1.0     
 
 julia> cormatgen_rand(4)
 4×4 Array{Float64,2}:
- 1.0       0.963817  0.910257  0.575415
- 0.963817  1.0       0.97971   0.63646
- 0.910257  0.97971   1.0       0.746517
- 0.575415  0.63646   0.746517  1.0
+ 1.0       0.659183  0.916879  0.486979
+ 0.659183  1.0       0.676167  0.808264
+ 0.916879  0.676167  1.0       0.731206
+ 0.486979  0.808264  0.731206  1.0  
 ```
 
 ### Deterministic cases
@@ -497,25 +493,26 @@ julia> cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1.-α)/2.)
 where the parameter `ϵ` must satisfy `0 <= ϵ <= 1-α`
 
 ```julia
- julia> srand(43);
+julia> Random.seed!(43);
 
 julia> cormatgen_constant_noised(4, 0.5)
 4×4 Array{Float64,2}:
  1.0       0.314724  0.590368  0.346992
  0.314724  1.0       0.314256  0.512183
  0.590368  0.314256  1.0       0.538089
- 0.346992  0.512183  0.538089  1.0  
+ 0.346992  0.512183  0.538089  1.0   
 ```
+
 Analogically generate noised two constants matrix run
 
 ```julia
-julia> cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Float64= (1-α)/2)
+julia> Random.seed!(43);
 
 julia> cormatgen_two_constant_noised(4, 0.5, 0.2)
 4×4 Array{Float64,2}:
  1.0        0.314724  0.290368  0.0469922
- 0.314724   1.0       0.014256  0.212183
- 0.290368   0.014256  1.0       0.238089
+ 0.314724   1.0       0.014256  0.212183 
+ 0.290368   0.014256  1.0       0.238089 
  0.0469922  0.212183  0.238089  1.0   
 ```
 Finally to generate noised Toeplitz matrix run:
@@ -526,14 +523,14 @@ julia> cormatgen_toeplitz_noised(n::Int, ρ::Float64; ϵ=(1-ρ)/(1+ρ)/2)
 where the parameter `ϵ must satisfy 0 <= ϵ <= (1-ρ)/(1+ρ)`
 
 ```julia
-julia> srand(43);
+julia> Random.seed!(43);
 
-julia> cormatgen_two_constant_noised(4, 0.5, 0.2)
+julia> cormatgen_toeplitz_noised(4, 0.5)
 4×4 Array{Float64,2}:
- 1.0        0.314724  0.290368  0.0469922
- 0.314724   1.0       0.014256  0.212183
- 0.290368   0.014256  1.0       0.238089
- 0.0469922  0.212183  0.238089  1.0
+ 1.0        0.376483  0.310246  0.0229948
+ 0.376483   1.0       0.376171  0.258122 
+ 0.310246   0.376171  1.0       0.525393 
+ 0.0229948  0.258122  0.525393  1.0  
 ```
 
 ## Changes the subset of marginals of multivariate Gaussian distributed data
@@ -550,26 +547,25 @@ all univariate marginal distributions are Gaussian and unaffected by a transform
 
 julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
-julia> srand(42)
+julia> Random.seed!(42);
 
-julia> x = rand(MvNormal(Σ), 6)'
+julia> x = Array(rand(MvNormal(Σ), 6)')
 6×3 Array{Float64,2}:
  -0.556027  -0.662861   -0.384124
  -0.299484   1.38993    -0.571326
- -0.468606  -0.0990787  -2.3464
+ -0.468606  -0.0990787  -2.3464  
   1.00331    1.43902     0.966819
   0.518149   1.55065     0.989712
- -0.886205   0.149748   -1.54419
+ -0.886205   0.149748   -1.54419 
 
 julia> gcop2tstudent(x, [1,2], 6)
 6×3 Array{Float64,2}:
- -0.514449  -0.49147    -0.384124
- -0.377933   1.66254    -0.571326
- -0.430426  -0.0165044  -2.3464
-  0.928668   1.50472     0.966819
-  0.223439   1.12372     0.989712
- -0.710786   0.239012   -1.54419
-
+ -0.519458  -0.498377   -0.384124
+ -0.37937    1.66806    -0.571326
+ -0.432902  -0.0178933  -2.3464  
+  1.01216    1.50814     0.966819
+  0.226484   1.12436     0.989712
+ -0.727203   0.238701   -1.54419 
 ```
 To change a chosen marginals subset `inds[i][2]` of multivariate Gaussian distributed data `x` by means of Archimedean sub-copula of family `inds[i][1]` run:
 
@@ -578,14 +574,13 @@ julia> gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}}; n
 ```
 many disjoint subsets numbered by `i` with different Archimedean sub-copulas are possible. As before all univariate marginal distributions are Gaussian and unaffected by a transformation. Named parameter `naive` indicates a use of a naive algorithm of data substitution. Named parameter `notnested` means the use of one parameter Archimedean copula instead of a nested one.
 
-
 ```julia
 
 julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
-julia> srand(42)
+julia> Random.seed!(42)
 
-julia> x = rand(MvNormal(Σ), 6)'
+julia> x = Array(rand(MvNormal(Σ), 6)')
 6×3 Array{Float64,2}:
  -0.556027  -0.662861   -0.384124
  -0.299484   1.38993    -0.571326
@@ -616,9 +611,9 @@ all univariate marginal distributions are Gaussian and unaffected by a transform
 
 julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
-julia> srand(42)
+julia> Random.seed!(42)
 
-julia> x = rand(MvNormal(Σ), 6)'
+julia> x = Array(rand(MvNormal(Σ), 6)')
 6×3 Array{Float64,2}:
  -0.556027  -0.662861   -0.384124
  -0.299484   1.38993    -0.571326
@@ -626,7 +621,6 @@ julia> x = rand(MvNormal(Σ), 6)'
   1.00331    1.43902     0.966819
   0.518149   1.55065     0.989712
  -0.886205   0.149748   -1.54419
-
 
 julia> gcop2frechet(x, [1,2])
 6×3 Array{Float64,2}:
@@ -651,17 +645,16 @@ correlation between both changed marginals.
 
 julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
-julia> srand(42)
+julia> Random.seed!(42);
 
-julia> x = rand(MvNormal(Σ), 6)'
+julia> x = Array(rand(MvNormal(Σ), 6)')
 6×3 Array{Float64,2}:
  -0.556027  -0.662861   -0.384124
  -0.299484   1.38993    -0.571326
- -0.468606  -0.0990787  -2.3464
+ -0.468606  -0.0990787  -2.3464  
   1.00331    1.43902     0.966819
   0.518149   1.55065     0.989712
- -0.886205   0.149748   -1.54419
-
+ -0.886205   0.149748   -1.54419 
 
 julia> gcop2marshallolkin(x, [1,2])
 6×3 Array{Float64,2}:
@@ -670,7 +663,7 @@ julia> gcop2marshallolkin(x, [1,2])
  -0.90688   -0.509684  -2.3464  
   0.738628   1.71026    0.966819
   0.353654   1.19357    0.989712
- -0.867606  -0.589929  -1.54419
+ -0.867606  -0.589929  -1.54419 
 ```
 
 ## Helpers
@@ -689,7 +682,7 @@ If `testunif = true` each marginal is tested for uniformity.
 ```julia
 julia> using Distributions
 
-julia> srand(43);
+julia> Random.seed!(43);
 
 julia> U = gausscopulagen(10);
 
@@ -716,48 +709,49 @@ To convert `i` th marginal to univariate distribution `d` with parameters array
 
 julia> using Distributions
 
-julia> quantile(d(p...), U[:,i])
-
+julia> quantile.(d(p...), U[:,i])
 ```
 
 ```julia
-julia> quantile(Levy(0, 1), u[:,2])
+julia> Random.seed!(43);
+
+julia> U = gausscopulagen(10);
+
+julia> quantile.(Levy(0, 1), U[:,2])
 10-element Array{Float64,1}:
-  18.3279
- 112.728
-   0.499265
-   0.564286
- 350.068
-   1.2176
-   2.51008
-   0.698059
-   2.02902
-   3.52799
+  18.327904335047272 
+ 112.72788160148863  
+   0.4992650891811052
+   0.5642861403809334
+ 350.0676959136128   
+   1.2175971128674394
+   2.510078079677982 
+   0.6980591543550244
+   2.0290242635860944
+   3.527994542141473 
 ```
 To convert all marginals to the same `d` with the same parameters `p` run
 
 ```
 julia> using Distributions
 
-julia> quantile(d(p...), U)
+julia> quantile.(d(p...), U)
 ```
 
 ```julia
-julia> quantile.(Levy(0, 1), u)
+julia> julia> quantile.(Levy(0, 1), U)
 10×2 Array{Float64,2}:
- 3.42919    18.3279
- 7.14305   112.728
+ 3.42919    18.3279  
+ 7.14305   112.728   
  9.6359      0.499265
  0.687009    0.564286
- 0.686835  350.068
- 0.827224    1.2176
- 1.71944     2.51008
+ 0.686835  350.068   
+ 0.827224    1.2176  
+ 1.71944     2.51008 
  3.3597      0.698059
- 2.18374     2.02902
- 0.582946    3.52799
-
+ 2.18374     2.02902 
+ 0.582946    3.52799 
 ```
-
 
 # Citing this work
 
