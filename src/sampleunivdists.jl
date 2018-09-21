@@ -78,7 +78,7 @@ end
 
 Returns Float64, helper for the joe/frank nested copula generator
 """
-Ginv(y::Float64, α::Float64) = ((1-y)*gamma(1-α))^(-1/α)
+Ginv(y::Float64, α::Float64) = ((1-y)*SpecialFunctions.gamma(1-α))^(-1/α)
 
 """
   InvlaJ(n::Int, α::Float64)
