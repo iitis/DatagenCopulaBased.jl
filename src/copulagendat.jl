@@ -31,7 +31,7 @@ function gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
     d = Normal(0, sqrt.(Σ[i,i]))
     z[:,i] = cdf.(d, z[:,i])
   end
-  z
+  Array(z)
 end
 
 """
