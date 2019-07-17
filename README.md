@@ -759,4 +759,4 @@ This project was partially financed by the National Science Centre, Poland – p
 
 * while reffering to `gcop2arch()`, `gcop2frechet()`, and `gcop2marshallolkin()` - cite K. Domino, A. Glos: 'Introducing higher order correlations to marginals' subset of multivariate data by means of Archimedean copulas', [arXiv:1803.07813] (https://arxiv.org/abs/1803.07813).
 
-* while reffering to `gcop2tstudent()` - cite K. Domino: ' The use of the Higher Order Singular Value Decomposition of the 4-cumulant's tensors in features selection and outlier detection', [arXiv:1804.00541] (https://arxiv.org/abs/1804.00541).
+* while reffering to `gcop2tstudent()` - cite K. Domino: 'Multivariate cumulants in features selection and outlier detection for financial data analysis', [arXiv:1804.00541] (https://arxiv.org/abs/1804.00541).
