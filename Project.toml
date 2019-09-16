@@ -27,4 +27,4 @@ Cubature = "667455a9-e2ce-5579-9412-b964f529a492"
 PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 
 [targets]
-test = ["Test", "PyCall", "Cubature", "Distributions"]
+test = ["Test", "PyCall", "Cubature"]
