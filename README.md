@@ -21,7 +21,7 @@ Within Julia, run
 pkg> add DatagenCopulaBased
 ```
 
-to install the files Julia 0.7 or higher is required.
+to install the files Julia 1.0 or higher is required.
 
 ## Elliptical copulas
 
