@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/iitis/DatagenCopulaBased.jl.svg?branch=master)](https://travis-ci.org/iitis/DatagenCopulaBased.jl)
 [![Coverage Status](https://coveralls.io/repos/github/iitis/DatagenCopulaBased.jl/badge.svg?branch=master)](https://coveralls.io/github/iitis/DatagenCopulaBased.jl?branch=master)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1423246.svg)](https://doi.org/10.5281/zenodo.1423246)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3446200.svg)](https://doi.org/10.5281/zenodo.3446200)
 
 Copula based data generator. Returns data in a form of a matrix `U`: `size(U) = (t,n)` - being `t` realisations of `n`-variate random variable. Be default each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]`. Interdependence between
 marginals is modelled by appropriate n-variate copula function, see e.g.: U. Cherubini, E. Luciano, W. Vecchiato, 'Copula Methods in Finance', Wiley 2004.
