@@ -85,7 +85,7 @@ Ginv(y::Float64, α::Float64) = ((1-y)*SpecialFunctions.gamma(1-α))^(-1/α)
 
 Returns Float64, n-th element of the inverse laplacea transform of generator of Joe nested copula
 """
-InvlaJ(n::Int, α::Float64) = 1-1/(n*beta(n, 1-α))
+InvlaJ(n::Int, α::Float64) = 1-1/(n*beta(1.0*n, 1-α))
 
 """
   sampleInvlaJ(α::Float64, v::Float64)

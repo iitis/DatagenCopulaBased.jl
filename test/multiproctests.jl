@@ -1,3 +1,4 @@
+@everywhere using HypothesisTests
 α = 0.025
 
 @testset "multiprocessing tests" begin
