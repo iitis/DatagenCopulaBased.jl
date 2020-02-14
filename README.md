@@ -88,7 +88,7 @@ julia> tstudentcopulagen(10)
  0.113788  0.633349 
 ```
 
-## Archimedean copulas
+## The Archimedean copulas
 
 The bivariate Archimedean copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by means of the continuous strictly
 decreasing generator parametrised by `θ`. The generator fulfills `φ(t): [0,1] →
@@ -135,15 +135,15 @@ julia> archcopulagen(10, 2, 1, "clayton")
 
 The reversed copula is introduced by the following transformation  `∀ᵢ uᵢ → 1-uᵢ`.
 For modelling justification see: K. Domino, T. Błachowicz, M. Ciupak, 'The use of copula functions for predictive analysis of correlations between extreme storm tides',
-Physica A: Statistical Mechanics and its Applications 413, 489-497, 2014; and K. Domino, T. Błachowicz, 'The use of copula functions for modeling the risk of
-investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistical Mechanics and its Applications 413, 77-85, 2014.
+Physica A: Statistical Mechanics and its Applications 413, 489-497, (2014); and K. Domino, T. Błachowicz, 'The use of copula functions for modeling the risk of
+investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistical Mechanics and its Applications 413, 77-85, (2014).
 
 
-### Nested Archimedean copulas
+### The Nested Archimedean copulas
 
-To generate `t` realisations of `∑ᵢ nᵢ + m` variate data from nested
-Archimedean copulas,  McNeil, A.J., 2008. 'Sampling nested Archimedean
-copulas'. Journal of Statistical Computation and Simulation 78, 567–581, run:
+To sample `t` realisations of `∑ᵢ nᵢ + m` variate data from nested
+Archimedean copulas, by the algorithm form  McNeil, A.J., 'Sampling nested Archimedean
+copulas', Journal of Statistical Computation and Simulation 78, 567–581 (2008), run:
 
 ```julia
 
@@ -151,11 +151,9 @@ julia> nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Floa
 
 ```
 
-Here `n` is a vector of number of variates of child copulas, `ϕ` are their
-parameters, `θ` is a parameter of parents copula. Here last `m` variates are
-generated using parents copula only.
-Only such nesting that child and parents copulas are from the same family is
-supported. Nesting condition requires `0 < θ ≤ minimum(ϕ)`.
+The parameter `n` is the vector of the number of variables of the children copulas, the parameter `ϕ` is the vector of
+parameters of the children copulas, and `θ` is the parameter of the parent copula. The parameter `m` is the number of variables modelled only by the parent copula.
+Only the nesting within the same family is supported. The sufficient nesting condition requires `0 < θ ≤ minimum(ϕ)`.
 
 
 ```julia
@@ -176,12 +174,11 @@ julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton", 1)
  0.96839   0.899199   0.827176  0.544107  0.862751
 ```
 
-#### If `copula == "gumbel"` further nesting is supported.
+#### If `copula == "gumbel"` the multiple nesting is supported.
 
 
-To generate `t` realisations of `length(θ)+1` variate data from hierarchically
-nested Gumbel copula:
-`C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)` run:
+To sample `t` realisations of the `length(θ)+1` variate data from the chain
+nested Gumbel copula: `C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)` run:
 
 ```julia
 
@@ -189,7 +186,7 @@ julia>   nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumb
 
 ```
 
-Nesting condition `1 ≤ θ_{i+1} ≤ θᵢ`
+The nesting sufficient condition requires `1 ≤ θ_{i+1} ≤ θᵢ`
 
 ```julia
 
@@ -204,7 +201,7 @@ julia> x = nestedarchcopulagen(5, [4., 3., 2.], "gumbel")
  0.252867  0.521345   0.406719  0.511759 
 ```
 
-To generate `t` realisations of `∑ᵢ ∑ⱼ nᵢⱼ` variate data from double nested gumbel copula:
+To generate `t` realisations of the `∑ᵢ ∑ⱼ nᵢⱼ` variate data from the double nested gumbel copula:
 `C_θ(C_ϕ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_ϕₖ(C_Ψₖ₁(u,...), ..., C_Ψₖ,ₗₖ(u,...)))`
  where `lᵢ = length(n[i])` run:
 
@@ -227,25 +224,18 @@ julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2
 
 ```
 
-### Chain of bivariate Archimedean copulas
+### The chain of bivariate Archimedean copulas
 
 
-To generate `t` realisations of `length(θ)+1` variate data, using a chain of one parameter bivariate Archimedean copulas parametrised by `θᵢ` for - i'th and i+1'th marginal:
+To generate `t` realisations of the `length(θ)+1` variate data, using the chain of the bivariate Archimedean copulas parametrised by the vectof of parameter `θ` run:
 
 ```julia
 
 julia> chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::Vector{String}; rev::Bool = false, cor::String = "")
 
 ```
-
-In other words `∀i∈[1, length(θ)]` data are generated form Archimedean copula `C_{θᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
-distributed on `[0,1]`, hence we got a multivariate copula, defined by
-subsequent bivariate sub-copulas. The cross-corelation between marginals `i` and `j`: `i ≠ j+1` are introduced by a chain of
-bivariate copulas.
-
-Following families are supported: "clayton", "frank" and
-"amh" -  Ali-Mikhail-Haq. Conditions for `θᵢ` parameters ranges such as in corresponding
-bivariate copula case.
+The `i`th element of `θ` i.e. `θᵢ` determinsed the cross-correlation between the `i`th and the `i+1`th marginal.
+Following families are supported: "clayton", "frank" and the "amh" -  Ali-Mikhail-Haq. 
 
 ```julia
 
@@ -266,7 +256,7 @@ julia> chaincopulagen(10, [4., 11.], ["frank", "frank"])
 ```
 
 
-## Marshall-Olkin copula
+## The Marshall-Olkin copula
 
 To generate `t` realisations of `n`-variate data from Marshall-Olkin copula with parameter series `λ` with non-negative elements `λₛ`, run:
 
