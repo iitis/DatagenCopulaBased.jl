@@ -6,7 +6,7 @@
 
 Copula based data generator. Returns data in the form of the `t x n` matrix `U` where`t` numerates the number of realisations, while `n` numerates the number of marginals. Be default each marginal (`U[:,i]`) is uniformly distributed on the segment `[0,1]`. 
 
-Interdependence between marginals is modelled by the appropriate `n`-variate copula function, see e.g.: Nelsen, Roger B. An introduction to copulas. Springer Science \& Business Media, 2007.
+Interdependence between marginals is modelled by the appropriate `n`-variate copula function, see e.g.: R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007).
 
 This module support the following copula families:
 * Elliptical copulas (Gaussian, t-Student),
@@ -35,17 +35,12 @@ and the elliptical
 copula is: `C(u₁, ..., uₙ) = F(F₁⁻¹(u₁), ..., Fₙ⁻¹(uₙ))`.
 
 
-### Gaussian copula
+### The Gaussian copula
 
 ```julia
 julia> gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
 ```
-
-The function returns `U`: `size(U) = (t,n)` - `t` realisations of `n`-variate random variable, each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]` and a cross-correlation is modelled by a Gaussian copula, parametrised by the symmetric positively defined correlation matrix `Σ` with
-ones on diagonals `Σᵢᵢ=1` and all elements `-1 ≤ Σᵢⱼ ≤ 1 `. Number of
-marginal variables is `n = size(Σ, 1) = size(Σ, 2)`.
-If the symmetric covariance matrix without ones on a diagonals is imputed, it will be converted into a
-correlation matrix automatically.
+Returns `t` realisations of `n`-variate random vector, with uniformly distributed marginals on `[0,1]`. The cross-correlation is modelled by the Gaussian copula, parametrised by the symmetric positively defined `n x n` correlation or covariance matrix `Σ`. The number of marginals is given by the size of `Σ`.
 
 
 ```julia
@@ -68,14 +63,13 @@ julia> gausscopulagen(10)
  0.190283  0.594451
  ```
 
-### t-Student copula
+### The t-Student copula
 
 ```julia
 julia> tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
 ```
 
-The function returns `U`: `size(U) = (t,n)` - `t` realisations of `n`-variate random variable, each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]` and a cross-correlation is modelled by a t-Student copula parametrised by the symmetric matrix `Σ` (with ones on diagonals as in a Gaussian case) and by a numver `ν ∈ N`.
-
+Returns `t` realisations of `n`-variate random vector, with uniformly distributed marginals on `[0,1]`. The cross-correlation is modelled by the t-Student copula, parametrised by the symmetric positively defined `n x n` correlation or covariance matrix `Σ` and the integer parameter `ν` interpreted as the number of degrees of freedom. The number of marginals is given by the size of `Σ`.
 
 ```julia
 julia> Random.seed!(43);
@@ -96,27 +90,27 @@ julia> tstudentcopulagen(10)
 
 ## Archimedean copulas
 
-Archimedean one parameter bivariate copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by using the continuous strictly
-decreasing generator parametrised by `θ`, such that `φ(t): [0,1] →
-[0, ∞)` and `φ⁻¹(s)` is the pseudo-inverse.
+The bivariate Archimedean copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by means of the continuous strictly
+decreasing generator parametrised by `θ`. The generator fulfills `φ(t): [0,1] →
+[0, ∞)`.
 
-We define similarly `n`-variate Archimedean copula `C(u₁,..., uₙ) = φ⁻¹(φ(u₁)+...+φ(uₙ))`. Here constrains for the`θ` parameter are more strict, see: M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174.
+The `n`-variate Archimedean copula canbe defined analogically: `C(u₁,..., uₙ) = φ⁻¹(φ(u₁)+...+φ(uₙ))`. Here the constrains for the`θ` parameter are more strict, see: M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174.
 
  * Clayton copula - keyword = "clayton": `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ [-1, 0) ∪ (0, ∞)` for `n = 2`,
  * Frank copula - keyword = "frank": `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (-∞, 0) ∪ (0, ∞)` for `n = 2`,
  * Gumbel copula - keyword = "gumbel": `θ ∈ [1, ∞)`,
  * Ali-Mikhail-Haq copula - keyword = "amh": `θ ∈ (0, 1)` for `n > 2` and  `θ ∈ [-1, 1]` for `n = 2`.
 
-For`2`-dimensional copula generate algorithms see P. Kumar, `Probability Distributions and Estimation
-of Ali-Mikhail-Haq Copula`, Applied Mathematical Sciences, Vol. 4, 2010, no. 14, 657 - 666, and R. Nelsen 'An Introduction to Copulas', Springer Science & Business Media, 1999 - 216.
+For sampling algorithms see as well P. Kumar, 'Probability Distributions and Estimation
+of Ali-Mikhail-Haq Copula', Applied Mathematical Sciences, Vol. 4, 2010, no. 14, 657 - 666; and R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007).
 
 
-To generate `t` realisations of `n`-variate data from Archimedean copula with parameter θ run
+To sample `t` realisations of `n`-variate data from the Archimedean copula with parameter θ run
 
 ```julia
 julia> archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String; rev::Bool = false, cor::String = "")
 ```
-The function returns `U`: `size(U) = (t,n)` - `t` realisations of `n`-variate random variable, each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]` and a cross-correlation is modelled by corresponding Archimedean copula.
+Returns `t` realisations of `n`-variate random vector, with uniformly distributed marginals on `[0,1]`. The cross-correlation  is modelled by the corresponding Archimedean copula.
 
 ```julia
 julia> Random.seed!(43);
@@ -135,17 +129,13 @@ julia> archcopulagen(10, 2, 1, "clayton")
  0.973066  0.910103 
 ```
 
- * If `cor = Kendall`, uses Kendall's τ correlation coefficients `θ`.
- * If `cor = Spearman`, uses Spearman ρ correlation coefficient instead of `θ`.
+ * If `cor = Kendall`, uses the Kendall's τ correlation coefficient to compute the parameter `θ`.
+ * If `cor = Spearman`, uses the Spearman ρ correlation coefficient to compute the parameter `θ`.
  * If `reversed = true` returns data from reversed copula.
 
-To generate data from reversed copula:
-
- * Generated data from corresponding copula `[u₁, ..., uᵢ, ..., uₙ]`,
- * Perform  transformation  `∀ᵢ uᵢ → 1-uᵢ`.
-
+The reversed copula is introduced by the following transformation  `∀ᵢ uᵢ → 1-uᵢ`.
 For modelling justification see: K. Domino, T. Błachowicz, M. Ciupak, 'The use of copula functions for predictive analysis of correlations between extreme storm tides',
-Physica A: Statistical Mechanics and its Applications 413, 489-497, 2014, and K. Domino, T. Błachowicz, 'The use of copula functions for modeling the risk of
+Physica A: Statistical Mechanics and its Applications 413, 489-497, 2014; and K. Domino, T. Błachowicz, 'The use of copula functions for modeling the risk of
 investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistical Mechanics and its Applications 413, 77-85, 2014.
 
 
