@@ -4,13 +4,14 @@
 [![Coverage Status](https://coveralls.io/repos/github/iitis/DatagenCopulaBased.jl/badge.svg?branch=master)](https://coveralls.io/github/iitis/DatagenCopulaBased.jl?branch=master)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3446200.svg)](https://doi.org/10.5281/zenodo.3446200)
 
-Copula based data generator. Returns data in a form of a matrix `U`: `size(U) = (t,n)` - being `t` realisations of `n`-variate random variable. Be default each marginal, i.e. `U[:,i]`, is uniformly distributed on `[0,1]`. Interdependence between
-marginals is modelled by appropriate n-variate copula function, see e.g.: U. Cherubini, E. Luciano, W. Vecchiato, 'Copula Methods in Finance', Wiley 2004.
+Copula based data generator. Returns data in the form of the `t x n` matrix `U` where`t` numerates the number of realisations, while `n` numerates the number of marginals. Be default each marginal (`U[:,i]`) is uniformly distributed on the segment `[0,1]`. 
 
-This module support following copula families:
+Interdependence between marginals is modelled by the appropriate `n`-variate copula function, see e.g.: Nelsen, Roger B. An introduction to copulas. Springer Science \& Business Media, 2007.
+
+This module support the following copula families:
 * Elliptical copulas (Gaussian, t-Student),
-* Archimedean copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq), including nested ones,
-* Frechet familly copulas (maximal, minimal, independent),
+* Archimedean (nested) copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq), 
+* Frechet copulas (maximal, minimal, independent),
 * Marshall-Olkin copulas.
 
 ## Installation
