@@ -6,7 +6,7 @@
 
 Copula based data generator. Returns data in the form of the `t x n` matrix `U` where`t` numerates the number of realisations, while `n` numerates the number of marginals. Be default each marginal (`U[:,i]`) is uniformly distributed on the segment `[0,1]`. 
 
-Interdependence between marginals is modelled by the appropriate `n`-variate copula function, see e.g.: R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007).
+Interdependence between marginals is modelled by the appropriate `n`-variate copula function, see e.g.: R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007). See also Domino, K., 'Selected Methods for non-Gaussian Data Analysis', Gliwice, IITiS PAN, 2019, [arXiv:1811.10486] (https://arxiv.org/abs/1811.10486).
 
 This module support the following copula families:
 * Elliptical copulas (Gaussian, t-Student),
