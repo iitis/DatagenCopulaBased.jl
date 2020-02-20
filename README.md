@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/iitis/DatagenCopulaBased.jl.svg?branch=master)](https://travis-ci.org/iitis/DatagenCopulaBased.jl)
 [![Coverage Status](https://coveralls.io/repos/github/iitis/DatagenCopulaBased.jl/badge.svg?branch=master)](https://coveralls.io/github/iitis/DatagenCopulaBased.jl?branch=master)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3446200.svg)](https://doi.org/10.5281/zenodo.3446200)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3676933.svg)](https://doi.org/10.5281/zenodo.3676933)
 
 Copula based data generator. Returns data in the form of the `t x n` matrix `U` where`t` numerates the number of realisations, while `n` numerates the number of marginals. Be default each marginal (`U[:,i]`) is uniformly distributed on the segment `[0,1]`. 
 
