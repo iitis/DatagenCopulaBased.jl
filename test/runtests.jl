@@ -10,7 +10,7 @@ using SharedArrays
 using Combinatorics
 using SpecialFunctions
 
-
+import DatagenCopulaBased: simulate_copula
 import DatagenCopulaBased: rand2cop, fncopulagen
 import DatagenCopulaBased: logseriescdf, logseriesquantile, levyel, levygen, tiltedlevygen
 import DatagenCopulaBased: Ginv, InvlaJ, sampleInvlaJ, elInvlaF, nestedfrankgen
