@@ -45,8 +45,8 @@ end
   x = gausscopulagen(500000, [1. 0.5; 0.5 1.])
   Random.seed!(43)
   x1 = simulate_copula(500000, gausscopulagen, [1. 0.5; 0.5 1.])
-  println("values of ")
-  println(norm(x-x1))
+  # compare old and new dispatching
+  @test norm(x-x1) == 0.
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test tail(x[:,1], x[:,2], "l", 0.00001) ≈ 0
@@ -60,8 +60,8 @@ end
   xt = tstudentcopulagen(500000, [1. rho; rho 1.], ν);
   Random.seed!(43)
   xt1 = simulate_copula(500000, tstudentcopulagen, [1. rho; rho 1.], ν);
-  println("values t-student")
-  println(norm(xt-xt1))
+  # compare old and new dispatching
+  @test norm(xt-xt1) == 0.
   @test pvalue(ExactOneSampleKSTest(xt[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(xt[:,2], Uniform(0,1))) > α
   @test tail(xt[:,1], xt[:,2], "l") ≈ λ atol=1.0e-1
