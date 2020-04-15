@@ -14,13 +14,20 @@ module DatagenCopulaBased
 
 
   include("sampleunivdists.jl")
-  include("archcopcorrelations.jl")
+
+  include("copulagendat.jl")
+
+  include("eliptic_fr_mo_copulas.jl")
   include("archcopulagendat.jl")
   include("nestedarchcopulagendat.jl")
   include("chaincopulagendat.jl")
-  include("subcopulasgendat.jl")
-  include("copulagendat.jl")
+
+  include("corgen.jl")
   include("marshallolkincopcor.jl")
+  include("archcopcorrelations.jl")
+
+  include("subcopulasgendat.jl")
+
 
   export archcopulagen, chaincopulagen, nestedarchcopulagen
   export cormatgen, cormatgen_constant, cormatgen_toeplitz, convertmarg!, gcop2arch
