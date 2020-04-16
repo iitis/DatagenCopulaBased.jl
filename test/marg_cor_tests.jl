@@ -15,6 +15,9 @@ end
 
 @testset "generate corelation matrix" begin
   Random.seed!(43)
+  @test random_unit_vector(2) ≈ [0.2414027539276207, 0.9704250153392381]
+
+  Random.seed!(43)
   @test cormatgen(2) ≈ [1.0 0.660768; 0.660768 1.0] atol=1.0e-5
 
   @test cormatgen_constant(3, 0.3) == [1 0.3 0.3; 0.3 1 0.3; 0.3 0.3 1]

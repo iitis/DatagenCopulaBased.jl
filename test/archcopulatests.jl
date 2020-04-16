@@ -78,6 +78,7 @@ end
   x1 = gumbel(500000, 3, 2.)
   Random.seed!(43)
   x2 = archcopulagen(500000, 3, 2., "gumbel")
+  @test_throws AssertionError archcopulagen(500000, 3, 2., "gumbol")
   @test norm(x - x1) ≈ 0
   @test norm(x - x2) ≈ 0
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
