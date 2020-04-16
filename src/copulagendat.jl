@@ -16,7 +16,9 @@
 """
 
 function simulate_copula(t::Int, copula::Function, args...; cor = "")
+    println(cor)
     if ("$(copula)" in ["clayton", "gumbel", "amh", "frank"])
+        println(cor)
         return copula(t, args...; cor = cor)
     else
         return copula(t, args...)
