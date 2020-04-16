@@ -299,7 +299,8 @@ Tests the parameter θ value for archimedean copula, returns void
 """
 function testθ(θ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
-    θ >= 1 || throw(DomainError("generaton not supported for θ < 1"))
+    println(θ)
+    θ >= 1 || throw(DomainError("gumbel copula not supported for θ < 1"))
   elseif copula == "amh"
     1 > θ > 0 || throw(DomainError("amh multiv. copula supported only for 0 < θ < 1"))
   else
