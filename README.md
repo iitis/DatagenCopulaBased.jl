@@ -4,13 +4,13 @@
 [![Coverage Status](https://coveralls.io/repos/github/iitis/DatagenCopulaBased.jl/badge.svg?branch=master)](https://coveralls.io/github/iitis/DatagenCopulaBased.jl?branch=master)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3676933.svg)](https://doi.org/10.5281/zenodo.3676933)
 
-Copula based data generator. Returns data in the form of the `t x n` matrix `U` where`t` numerates the number of realisations, while `n` numerates the number of marginals. Be default each marginal (`U[:,i]`) is uniformly distributed on the segment `[0,1]`. 
+Copula based data generator. Returns data in the form of the `t x n` matrix `U` where`t` numerates the number of realisations, while `n` numerates the number of marginals. Be default each marginal (`U[:,i]`) is uniformly distributed on the segment `[0,1]`.
 
 Interdependence between marginals is modelled by the appropriate `n`-variate copula function, see e.g.: R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007). See also Domino, K., 'Selected Methods for non-Gaussian Data Analysis', Gliwice, IITiS PAN, 2019, [arXiv:1811.10486] (https://arxiv.org/abs/1811.10486).
 
 This module support the following copula families:
 * Elliptical copulas (Gaussian, t-Student),
-* Archimedean (nested) copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq), 
+* Archimedean (nested) copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq),
 * Frechet copulas (maximal, minimal, independent),
 * Marshall-Olkin copulas.
 
@@ -57,9 +57,9 @@ julia> gausscopulagen(10)
  0.227634  0.183116
  0.227575  0.957376
  0.271558  0.364803
- 0.445691  0.52792 
- 0.585362  0.23135 
- 0.498593  0.48266 
+ 0.445691  0.52792
+ 0.585362  0.23135
+ 0.498593  0.48266
  0.190283  0.594451
  ```
 
@@ -76,16 +76,16 @@ julia> Random.seed!(43);
 
 julia> tstudentcopulagen(10)
 10×2 Array{Float64,2}:
- 0.658199  0.937148 
+ 0.658199  0.937148
  0.718244  0.92602  
  0.809521  0.0980325
- 0.263068  0.222589 
- 0.187187  0.971109 
- 0.245373  0.346428 
- 0.452336  0.524498 
- 0.57113   0.272525 
+ 0.263068  0.222589
+ 0.187187  0.971109
+ 0.245373  0.346428
+ 0.452336  0.524498
+ 0.57113   0.272525
  0.498443  0.48082  
- 0.113788  0.633349 
+ 0.113788  0.633349
 ```
 
 ## The Archimedean copulas
@@ -117,16 +117,16 @@ julia> Random.seed!(43);
 
 julia> archcopulagen(10, 2, 1, "clayton")
 10×2 Array{Float64,2}:
- 0.770331  0.932834 
+ 0.770331  0.932834
  0.472847  0.0806845
- 0.970749  0.653029 
+ 0.970749  0.653029
  0.622159  0.0518025
- 0.402461  0.228549 
- 0.946375  0.842883 
- 0.809076  0.129038 
- 0.747983  0.433829 
- 0.374341  0.437269 
- 0.973066  0.910103 
+ 0.402461  0.228549
+ 0.946375  0.842883
+ 0.809076  0.129038
+ 0.747983  0.433829
+ 0.374341  0.437269
+ 0.973066  0.910103
 ```
 
  * If `cor = Kendall`, uses the Kendall's τ correlation coefficient to compute the parameter `θ`.
@@ -163,12 +163,12 @@ julia> Random.seed!(43);
 julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton", 1)
 10×5 Array{Float64,2}:
  0.333487  0.584206   0.970471  0.352363  0.793386
- 0.249313  0.0802689  0.298697  0.46432   0.78807 
+ 0.249313  0.0802689  0.298697  0.46432   0.78807
  0.765832  0.272857   0.461754  0.125465  0.661781
  0.897061  0.346811   0.745457  0.899775  0.477065
  0.387096  0.268233   0.533175  0.42922   0.294137
  0.42065   0.247676   0.641627  0.538728  0.507315
- 0.598049  0.138186   0.659411  0.876095  0.19471 
+ 0.598049  0.138186   0.659411  0.876095  0.19471
  0.125968  0.0643853  0.824152  0.601356  0.662842
  0.57524   0.625373   0.688956  0.57825   0.545043
  0.96839   0.899199   0.827176  0.544107  0.862751
@@ -194,11 +194,11 @@ julia> Random.seed!(43);
 
 julia> x = nestedarchcopulagen(5, [4., 3., 2.], "gumbel")
 5×4 Array{Float64,2}:
- 0.832902  0.915821   0.852532  0.903184 
+ 0.832902  0.915821   0.852532  0.903184
  0.266333  0.293338   0.307899  0.0346497
  0.152431  0.0432532  0.319465  0.42015  
- 0.812182  0.685689   0.721783  0.554992 
- 0.252867  0.521345   0.406719  0.511759 
+ 0.812182  0.685689   0.721783  0.554992
+ 0.252867  0.521345   0.406719  0.511759
 ```
 
 To generate `t` realisations of the `∑ᵢ ∑ⱼ nᵢⱼ` variate data from the double nested gumbel copula:
@@ -235,7 +235,7 @@ julia> chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::V
 
 ```
 The `i`th element of `θ` i.e. `θᵢ` determinsed the cross-correlation between the `i`th and the `i+1`th marginal.
-Following families are supported: "clayton", "frank" and the "amh" -  Ali-Mikhail-Haq. 
+Following families are supported: "clayton", "frank" and the "amh" -  Ali-Mikhail-Haq.
 
 ```julia
 
@@ -243,16 +243,16 @@ julia> Random.seed!(43);
 
 julia> chaincopulagen(10, [4., 11.], ["frank", "frank"])
 10×3 Array{Float64,2}:
- 0.180975  0.386303   0.879254 
- 0.775377  0.247895   0.144803 
- 0.888934  0.426854   0.772457 
- 0.924876  0.395564   0.223155 
- 0.408278  0.139002   0.142997 
- 0.912603  0.901252   0.949828 
+ 0.180975  0.386303   0.879254
+ 0.775377  0.247895   0.144803
+ 0.888934  0.426854   0.772457
+ 0.924876  0.395564   0.223155
+ 0.408278  0.139002   0.142997
+ 0.912603  0.901252   0.949828
  0.828727  0.0295759  0.0897796
  0.400537  0.0337673  0.27872  
- 0.429437  0.462771   0.425435 
- 0.955881  0.953623   0.969038 
+ 0.429437  0.462771   0.425435
+ 0.955881  0.953623   0.969038
 ```
 
 
@@ -261,12 +261,11 @@ julia> chaincopulagen(10, [4., 11.], ["frank", "frank"])
 To generate `t` realisations of `n`-variate data from Marshall-Olkin copula with parameter series `λ` with non-negative elements `λₛ`, run:
 
 ```julia
-julia> marshallolkincopulagen(t::Int, λ::Vector{Float64}; reverse::Bool = false)
+julia> marshallolkincopulagen(t::Int, λ::Vector{Float64})
 ```
 
 Number of marginals is `n = ceil(Int, log(2, length(λ)-1))`.
 Parameters are ordered as follow: `λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]`
-If `reversed = true`, returns data from reversed Marshall-Olkin copula , i.e. generates data `[u₁, ..., uᵢ, ..., uₙ]` from given Marshall-Olkin copula and perform transformation `∀ᵢ uᵢ → 1-uᵢ`
 
 
 ```julia
@@ -275,16 +274,16 @@ julia> Random.seed!(43);
 
 julia> marshallolkincopulagen(10, [0.2, 1.2, 1.6])
 10×2 Array{Float64,2}:
- 0.99636   0.994344 
+ 0.99636   0.994344
  0.167268  0.0619408
- 0.977418  0.965093 
+ 0.977418  0.965093
  0.495167  0.0247053
- 0.410336  0.250159 
- 0.778989  0.678064 
- 0.50927   0.350059 
- 0.925875  0.887095 
- 0.353646  0.219006 
- 0.782477  0.686799 
+ 0.410336  0.250159
+ 0.778989  0.678064
+ 0.50927   0.350059
+ 0.925875  0.887095
+ 0.353646  0.219006
+ 0.782477  0.686799
 ```
 
 To generate data from the Marshall-Olkin copula we use algorithm presented P. Embrechts, F. Lindskog, A McNeil 'Modelling Dependence with Copulas and Applications to Risk Management', 2001
@@ -313,7 +312,7 @@ julia> frechetcopulagen(10, 2, 0.5)
  0.408278  0.408278  
  0.912603  0.740184  
  0.828727  0.00463791
- 0.400537  0.0288987 
+ 0.400537  0.0288987
  0.429437  0.429437  
  0.955881  0.851275  
 ```
@@ -333,16 +332,16 @@ julia> Random.seed!(43);
 
 julia> frechetcopulagen(10, 2, 0.4, 0.2)
 10×2 Array{Float64,2}:
- 0.180975  0.661781 
- 0.775377  0.775377 
- 0.888934  0.125437 
- 0.924876  0.924876 
- 0.408278  0.591722 
- 0.912603  0.740184 
- 0.828727  0.171273 
+ 0.180975  0.661781
+ 0.775377  0.775377
+ 0.888934  0.125437
+ 0.924876  0.924876
+ 0.408278  0.591722
+ 0.912603  0.740184
+ 0.828727  0.171273
  0.400537  0.0288987
- 0.429437  0.429437 
- 0.955881  0.851275 
+ 0.429437  0.429437
+ 0.955881  0.851275
  ```
 
 ### Chain of bivariate Frechet copulas
@@ -367,16 +366,16 @@ julia> srand(43)
 
 julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
 10×3 Array{Float64,2}:
- 0.996764  0.996764  0.996764 
- 0.204033  0.795967  0.204033 
+ 0.996764  0.996764  0.996764
+ 0.204033  0.795967  0.204033
  0.979901  0.979901  0.0200985
- 0.120669  0.879331  0.120669 
- 0.453027  0.453027  0.453027 
- 0.800909  0.199091  0.800909 
+ 0.120669  0.879331  0.120669
+ 0.453027  0.453027  0.453027
+ 0.800909  0.199091  0.800909
  0.54892   0.54892   0.54892  
  0.933832  0.933832  0.0661679
- 0.396943  0.396943  0.396943 
- 0.804096  0.851275  0.955881 
+ 0.396943  0.396943  0.396943
+ 0.804096  0.851275  0.955881
 ```
 
 
@@ -406,7 +405,7 @@ julia> Random.seed!(43);
 julia> cormatgen(4)
 4×4 Array{Float64,2}:
  1.0       0.396865  0.339354  0.193335
- 0.396865  1.0       0.887028  0.51934 
+ 0.396865  1.0       0.887028  0.51934
  0.339354  0.887028  1.0       0.551519
  0.193335  0.51934   0.551519  1.0     
 
@@ -492,8 +491,8 @@ julia> Random.seed!(43);
 julia> cormatgen_two_constant_noised(4, 0.5, 0.2)
 4×4 Array{Float64,2}:
  1.0        0.314724  0.290368  0.0469922
- 0.314724   1.0       0.014256  0.212183 
- 0.290368   0.014256  1.0       0.238089 
+ 0.314724   1.0       0.014256  0.212183
+ 0.290368   0.014256  1.0       0.238089
  0.0469922  0.212183  0.238089  1.0   
 ```
 Finally to generate noised Toeplitz matrix run:
@@ -509,8 +508,8 @@ julia> Random.seed!(43);
 julia> cormatgen_toeplitz_noised(4, 0.5)
 4×4 Array{Float64,2}:
  1.0        0.376483  0.310246  0.0229948
- 0.376483   1.0       0.376171  0.258122 
- 0.310246   0.376171  1.0       0.525393 
+ 0.376483   1.0       0.376171  0.258122
+ 0.310246   0.376171  1.0       0.525393
  0.0229948  0.258122  0.525393  1.0  
 ```
 
@@ -537,7 +536,7 @@ julia> x = Array(rand(MvNormal(Σ), 6)')
  -0.468606  -0.0990787  -2.3464  
   1.00331    1.43902     0.966819
   0.518149   1.55065     0.989712
- -0.886205   0.149748   -1.54419 
+ -0.886205   0.149748   -1.54419
 
 julia> gcop2tstudent(x, [1,2], 6)
 6×3 Array{Float64,2}:
@@ -546,7 +545,7 @@ julia> gcop2tstudent(x, [1,2], 6)
  -0.432902  -0.0178933  -2.3464  
   1.01216    1.50814     0.966819
   0.226484   1.12436     0.989712
- -0.727203   0.238701   -1.54419 
+ -0.727203   0.238701   -1.54419
 ```
 To change a chosen marginals subset `inds[i][2]` of multivariate Gaussian distributed data `x` by means of Archimedean sub-copula of family `inds[i][1]` run:
 
@@ -635,7 +634,7 @@ julia> x = Array(rand(MvNormal(Σ), 6)')
  -0.468606  -0.0990787  -2.3464  
   1.00331    1.43902     0.966819
   0.518149   1.55065     0.989712
- -0.886205   0.149748   -1.54419 
+ -0.886205   0.149748   -1.54419
 
 julia> gcop2marshallolkin(x, [1,2])
 6×3 Array{Float64,2}:
@@ -644,7 +643,7 @@ julia> gcop2marshallolkin(x, [1,2])
  -0.90688   -0.509684  -2.3464  
   0.738628   1.71026    0.966819
   0.353654   1.19357    0.989712
- -0.867606  -0.589929  -1.54419 
+ -0.867606  -0.589929  -1.54419
 ```
 
 ## Helpers
@@ -700,16 +699,16 @@ julia> U = gausscopulagen(10);
 
 julia> quantile.(Levy(0, 1), U[:,2])
 10-element Array{Float64,1}:
-  18.327904335047272 
+  18.327904335047272
  112.72788160148863  
    0.4992650891811052
    0.5642861403809334
  350.0676959136128   
    1.2175971128674394
-   2.510078079677982 
+   2.510078079677982
    0.6980591543550244
    2.0290242635860944
-   3.527994542141473 
+   3.527994542141473
 ```
 To convert all marginals to the same `d` with the same parameters `p` run
 
@@ -728,10 +727,10 @@ julia> julia> quantile.(Levy(0, 1), U)
  0.687009    0.564286
  0.686835  350.068   
  0.827224    1.2176  
- 1.71944     2.51008 
+ 1.71944     2.51008
  3.3597      0.698059
- 2.18374     2.02902 
- 0.582946    3.52799 
+ 2.18374     2.02902
+ 0.582946    3.52799
 ```
 
 # Citing this work

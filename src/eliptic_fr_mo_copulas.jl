@@ -3,7 +3,7 @@
 ## Elliptical copulas
 
 """
-    gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
+    gaussian_cop(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
 
 Returns: t x n matrix of t realisations of multivariate data generated
 using gaussian copula with Σ - correlation matrix. If the symmetric covariance
@@ -13,7 +13,7 @@ matrix is imputed, it will be converted into a correlation matrix automatically.
 
 julia> Random.seed!(43);
 
-julia> gausscopulagen(10)
+julia> gaussian_cop(10)
 10×2 Array{Float64,2}:
  0.589188  0.815308
  0.708285  0.924962
@@ -27,7 +27,7 @@ julia> gausscopulagen(10)
  0.190283  0.594451
 ```
 """
-function gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
+function gaussian_cop(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
   z = transpose(rand(MvNormal(Σ),t))
   for i in 1:size(Σ, 1)
     d = Normal(0, sqrt.(Σ[i,i]))
@@ -37,7 +37,7 @@ function gausscopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
 end
 
 """
-  tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
+  tstudent_cop(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
 
 Generates data using t-student Copula given Σ - correlation matrix, ν - degrees of freedom.
 If the symmetric covariance matrix is imputed, it will be converted into a
@@ -46,7 +46,7 @@ correlation matrix automatically.
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> tstudentcopulagen(10)
+julia> tstudent_cop(10)
 10×2 Array{Float64,2}:
  0.658199  0.937148
  0.718244  0.92602
@@ -60,7 +60,7 @@ julia> tstudentcopulagen(10)
  0.113788  0.633349
  ```
 """
-function tstudentcopulagen(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
+function tstudent_cop(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
   z = transpose(rand(MvNormal(Σ),t))
   U = rand(Chisq(ν), size(z, 1))
   for i in 1:size(Σ, 1)
@@ -73,7 +73,7 @@ end
 ### Frechet familly
 
 """
-  frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
+  frechet(t::Int, n::Int, α::Union{Int, Float64})
 
 Returns t realisation of n variate data generated from one parameter frechet multidimentional copula,
 a combination of maximal copla with  weight α and independent copula with  weight 1-α
@@ -81,7 +81,7 @@ a combination of maximal copla with  weight α and independent copula with  weig
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> frechetcopulagen(10, 2, 0.5)
+julia> frechet(10, 2, 0.5)
 10×2 Array{Float64,2}:
  0.180975  0.661781
  0.775377  0.775377
@@ -95,7 +95,7 @@ julia> frechetcopulagen(10, 2, 0.5)
  0.955881  0.851275
 ```
 """
-function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
+function frechet(t::Int, n::Int, α::Union{Int, Float64})
   0 <= α <= 1 || throw(DomainError("generaton not supported for α ∉ [0,1]"))
   u = rand(t, n)
   for j in 1:t
@@ -109,7 +109,7 @@ function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
 end
 
 """
-  frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
+  frechet(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
 
 Two parameters Frechet copula C = α C_{max} + β C_{min} + (1- α - β) C_{⟂}, supported
 only for n == 2
@@ -117,7 +117,7 @@ only for n == 2
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> frechetcopulagen(10, 2, 0.4, 0.2)
+julia> frechet(10, 2, 0.4, 0.2)
 10×2 Array{Float64,2}:
  0.180975  0.661781
  0.775377  0.775377
@@ -131,7 +131,9 @@ julia> frechetcopulagen(10, 2, 0.4, 0.2)
  0.955881  0.851275
 ```
 """
-function frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
+function frechet(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
+  0 <= α <= 1 || throw(DomainError("generaton not supported for α ∉ [0,1]"))
+  0 <= β <= 1 || throw(DomainError("generaton not supported for β ∉ [0,1]"))
   n == 2 || throw(AssertionError("two parameters Frechet copula supported only for n = 2"))
   0 <= α+β <= 1 || throw(DomainError("α+β must be in range [0,1]"))
   u = rand(t,2)
@@ -149,20 +151,19 @@ end
 ### Marshall - Olkin familly
 
 """
-  marshallolkincopulagen(t::Int, λ::Vector{Float64})
+  marshallolkin(t::Int, λ::Vector{Float64})
 
 Returns: t x n Matrix{Float}, t realisations of n-variate data generated from Marshall-Olkin
 copula with parameter vector λ of non-negative elements λₛ.
 Number of marginals is n = ceil(Int, log(2, length(λ)-1)).
 Parameters are ordered as follow:
 λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]
-If reversed = true, returns data from reversed Marshall-Olkin copula.
 
 ```jldoctest
 
 julia> Random.seed!(43)
 
-julia> marshallolkincopulagen(10, [0.2, 1.2, 1.6])
+julia> marshallolkin(10, [0.2, 1.2, 1.6])
 10×2 Array{Float64,2}:
  0.99636   0.994344
  0.167268  0.0619408
@@ -176,11 +177,10 @@ julia> marshallolkincopulagen(10, [0.2, 1.2, 1.6])
  0.782477  0.686799
  ```
 """
-function marshallolkincopulagen(t::Int, λ::Vector{Float64} = rand(7); reverse::Bool = false)
+function marshallolkin(t::Int, λ::Vector{Float64} = rand(7))
   minimum(λ) >= 0 || throw(AssertionError("all parameters must by >= 0 "))
   n = floor(Int, log(2, length(λ)+1))
-  U = mocopula(rand(t,2^n-1), n, λ)
-  reverse ? 1 .-U : U
+  mocopula(rand(t,2^n-1), n, λ)
 end
 
 """

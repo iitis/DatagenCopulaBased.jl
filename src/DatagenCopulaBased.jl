@@ -28,12 +28,16 @@ module DatagenCopulaBased
 
   include("subcopulasgendat.jl")
 
+  export gaussian_cop, tstudent_cop, frechet, marshallolkin, gumbel, clayton, amh, frank
+  export rev_gumbel, rev_clayton, rev_amh
 
   export archcopulagen, chaincopulagen, nestedarchcopulagen
   export cormatgen, cormatgen_constant, cormatgen_toeplitz, convertmarg!, gcop2arch
   export cormatgen_constant_noised, cormatgen_toeplitz_noised, cormatgen_rand
   export cormatgen_two_constant, cormatgen_two_constant_noised
-  export tstudentcopulagen, gausscopulagen
-  export frechetcopulagen, marshallolkincopulagen, chainfrechetcopulagen
+  export chainfrechetcopulagen
   export gcop2tstudent, gcop2frechet, gcop2marshallolkin
+
+  # obsolete implemntations
+  export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshallolkincopulagen
 end
