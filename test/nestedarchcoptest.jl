@@ -23,8 +23,14 @@ end
 
 @testset "nested gumbel copula" begin
   @testset "single nested" begin
+    Random.seed!(43)
+    @test nested_gumbel(1, [2,2], [2., 3.], 1.1, 1) ≈ [0.841862  0.935749  0.83778  0.856959  0.502151] atol=1.0e-5
+
     Random.seed!(44)
-    x = nestedarchcopulagen(500000, [2,2], [4.2, 6.1], 2.1, "gumbel", 1)
+    x1 = nestedarchcopulagen(500000, [2,2], [4.2, 6.1], 2.1, "gumbel", 1)
+    Random.seed!(44)
+    x = nested_gumbel(500000, [2,2], [4.2, 6.1], 2.1, 1)
+    @test norm(x1 -x) ≈ 0.
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -41,7 +47,14 @@ end
   end
   @testset "double nested" begin
     Random.seed!(43)
-    x = nestedarchcopulagen(200000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2, "gumbel")
+    @test nested_gumbel(1, [[2,2], [2,1]], [[5., 6.],[6., 5,]], [2., 3.], 1.1) ≈ [0.374277  0.499042  0.783516  0.795128  0.691252  0.696811  0.162381] atol=1.0e-5
+
+    Random.seed!(43)
+    x1 = nestedarchcopulagen(200000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2, "gumbel")
+
+    Random.seed!(43)
+    x = nested_gumbel(200000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2)
+    @test norm(x - x1) ≈ 0.
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -54,8 +67,13 @@ end
     @test tail(x[:,1], x[:,3], "l", 0.00001) ≈ 0
   end
   @testset "hierarchical" begin
+    Random.seed!(43)
+    @test nested_gumbel(1, [2., 1.8, 1.7]) ≈ [0.454559  0.737742  0.782404  0.870944] atol=1.0e-5
     Random.seed!(42)
-    x = nestedarchcopulagen(500000, [4.2, 3.6, 1.1], "gumbel")
+    x1 = nestedarchcopulagen(500000, [4.2, 3.6, 1.1], "gumbel")
+    Random.seed!(42)
+    x = nested_gumbel(500000, [4.2, 3.6, 1.1])
+    @test norm(x - x1) ≈ 0.
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -69,7 +87,13 @@ end
 
 @testset "nested Ali-Mikhail-Haq copula" begin
   Random.seed!(43)
-  x = nestedarchcopulagen(200000, [3, 2], [0.8, 0.7], 0.5, "amh", 2)
+  @test nested_amh(1, [2,2], [.8, .9], 0.5, 1) ≈ [0.587322  0.910074  0.931225  0.953353  0.665769] atol=1.0e-5
+  Random.seed!(43)
+  x = nested_amh(200000, [3, 2], [0.8, 0.7], 0.5, 2)
+  Random.seed!(43)
+  x1 = nestedarchcopulagen(200000, [3, 2], [0.8, 0.7], 0.5, "amh", 2)
+  @test norm(x1 -x) ≈ 0.
+
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -90,8 +114,14 @@ end
 end
 
 @testset "nested Frank copula" begin
+  Random.seed!(43)
+  @test nested_frank(1, [2,2], [2., 3.], 1.1, 1) ≈ [0.599183  0.908848  0.950577  0.966366  0.692735] atol=1.0e-5
+
   Random.seed!(44)
-  x = nestedarchcopulagen(250000, [3, 2],  [8., 10.], 2., "frank", 2)
+  x1 = nestedarchcopulagen(250000, [3, 2],  [8., 10.], 2., "frank", 2)
+  Random.seed!(44)
+  x = nested_frank(250000, [3, 2],  [8., 10.], 2., 2)
+  @test norm(x1 -x) ≈ 0.
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -113,8 +143,13 @@ end
 end
 
 @testset "nested Clayton copula" begin
+  Random.seed!(43)
+  @test nested_clayton(1, [2,2], [2., 3.], 1.1, 1) ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
   Random.seed!(42)
-  x = nestedarchcopulagen(100000, [2, 3],  [3., 4.], 1.5, "clayton", 2)
+  x1 = nestedarchcopulagen(100000, [2, 3],  [3., 4.], 1.5, "clayton", 2)
+  Random.seed!(42)
+  x = nested_clayton(100000, [2, 3],  [3., 4.], 1.5, 2)
+  @test norm(x1 -x) ≈ 0.
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α

@@ -37,6 +37,7 @@ module DatagenCopulaBased
   export cormatgen_two_constant, cormatgen_two_constant_noised
   export chainfrechetcopulagen
   export gcop2tstudent, gcop2frechet, gcop2marshallolkin
+  export nested_gumbel, nested_clayton, nested_frank, nested_amh
 
   # obsolete implemntations
   export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshallolkincopulagen

@@ -23,15 +23,15 @@ import DatagenCopulaBased: mocopula, arch_gen
 import DatagenCopulaBased: nestedcopulag, testnestedθϕ, nestedstep
 import DatagenCopulaBased: meanΣ, frechet, mean_outer, parameters, are_parameters_good, Σ_theor
 import DatagenCopulaBased: getcors_advanced
-
+import DatagenCopulaBased: random_unit_vector
 
 include("tailtest.jl")
 include("univdatagentests.jl")
-
+include("marg_cor_tests.jl")
 include("eliptic_fr_mo_test.jl")
 include("archcopulatests.jl")
 
 include("nestedarchcoptest.jl")
-include("subcopulastests.jl")
 include("chaincopulastests.jl")
+include("subcopulastests.jl")
 include("multiproctests.jl")
