@@ -26,13 +26,12 @@ import DatagenCopulaBased: getcors_advanced
 
 
 include("tailtest.jl")
-include("univdatagentests.jl")
-include("marg_cor_tests.jl")
+#include("univdatagentests.jl")
 
-include("eliptic_fr_mo_test.jl")
+#include("eliptic_fr_mo_test.jl")
 include("archcopulatests.jl")
 
-include("nestedarchcoptest.jl")
-include("subcopulastests.jl")
-include("chaincopulastests.jl")
-include("multiproctests.jl")
+#include("nestedarchcoptest.jl")
+#include("subcopulastests.jl")
+#include("chaincopulastests.jl")
+#include("multiproctests.jl")

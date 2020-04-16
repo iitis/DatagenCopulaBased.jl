@@ -299,7 +299,7 @@ Tests the parameter θ value for archimedean copula, returns void
 """
 function testθ(θ::Union{Float64, Int}, copula::String)
   if copula == "gumbel"
-    println(θ)
+    println("gumbel, teta = ", θ)
     θ >= 1 || throw(DomainError("gumbel copula not supported for θ < 1"))
   elseif copula == "amh"
     1 > θ > 0 || throw(DomainError("amh multiv. copula supported only for 0 < θ < 1"))
@@ -376,11 +376,13 @@ ERROR: AssertionError: Pearson correlation not supported
 """
 
 function getθ4arch(ρ::Union{Float64, Int}, copula::String, cor::String)
+  println("cor = ", cor)
   if cor == "Spearman"
     θ = useρ(ρ , copula)
   elseif cor == "Kendall"
     θ = useτ(ρ , copula)
   elseif cor == ""
+    println("$(cor), test")
     testθ(ρ, copula)
     θ = ρ
   else
