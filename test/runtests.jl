@@ -25,13 +25,19 @@ import DatagenCopulaBased: meanΣ, frechet, mean_outer, parameters, are_paramete
 import DatagenCopulaBased: getcors_advanced
 import DatagenCopulaBased: random_unit_vector
 
+# axiliary tests
 include("tailtest.jl")
 include("univdatagentests.jl")
 include("marg_cor_tests.jl")
+
+#tests particular copulas generators
 include("eliptic_fr_mo_test.jl")
 include("archcopulatests.jl")
-
 include("nestedarchcoptest.jl")
 include("chaincopulastests.jl")
-include("subcopulastests.jl")
+
+# test transforming of data by introducing higher order corss-correlations
+include("higher_order_cors_tests.jl")
+
+# multiprocessing tests for nested Frank copula
 include("multiproctests.jl")

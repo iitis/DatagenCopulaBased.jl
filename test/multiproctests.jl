@@ -1,14 +1,14 @@
 @everywhere using HypothesisTests
 α = 0.025
 
-@testset "multiprocessing tests" begin
+@testset "multiprocessing tests for nested Frank copula" begin
   addprocs(2)
   eval(Expr(:toplevel, :(@everywhere using DatagenCopulaBased)))
   eval(Expr(:toplevel, :(@everywhere import DatagenCopulaBased: nestedfrankgen)))
   eval(Expr(:toplevel, :(@everywhere using Random)))
   eval(Expr(:toplevel, :(@everywhere Random.seed!(44))))
   @test nestedfrankgen(5., 3., [1, 1, 2]) == [9, 54, 63]
-  x = nestedarchcopulagen(250000, [3, 2],  [8., 10.], 2., "frank", 2)
+  x = simulate_copula(250000, nested_frank, [3, 2],  [8., 10.], 2., 2)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α

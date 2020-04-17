@@ -15,18 +15,22 @@ module DatagenCopulaBased
 
   include("sampleunivdists.jl")
 
+  # dispatching of the generator
   include("copulagendat.jl")
 
+  # axiliary function for correlqations
+  include("corgen.jl")
+  include("marshallolkincopcor.jl")
+  include("archcopcorrelations.jl")
+
+  # particular copulas famillies
   include("eliptic_fr_mo_copulas.jl")
   include("archcopulagendat.jl")
   include("nestedarchcopulagendat.jl")
   include("chaincopulagendat.jl")
 
-  include("corgen.jl")
-  include("marshallolkincopcor.jl")
-  include("archcopcorrelations.jl")
-
-  include("subcopulasgendat.jl")
+  # change Gaussian data by adding higher order cross-correlations
+  include("add_higher_order_cors.jl")
 
   export gaussian_cop, tstudent_cop, frechet, marshallolkin, gumbel, clayton, amh, frank
   export rev_gumbel, rev_clayton, rev_amh
