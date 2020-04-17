@@ -6,17 +6,24 @@
     supports following copulas:
         elliptical
         - gaussian_cop,
-                args = Σ::Matrix{Float} (the correlation matrix, the covariance one will be normalised)
+                args: Σ::Matrix{Float} (the correlation matrix, the covariance one will be normalised)
         - tstudent_cop,
-                args = Σ::Matrix{Float}, ν::Int
+                args: Σ::Matrix{Float}, ν::Int
 
         - frechet,
-            args = n::Int, α::Union{Int, Float} (number of marginals, parameter of maximal copula α ∈ [0,1])
+            args: n::Int, α::Union{Int, Float} (number of marginals, parameter of maximal copula α ∈ [0,1])
              or
-            args = n::Int, α::Union{Int, Float}, β::Union{Int, Float}, supported only for n = 2 and α, β, α+β ∈ [0,1]
+            args: n::Int, α::Union{Int, Float}, β::Union{Int, Float}, supported only for n = 2 and α, β, α+β ∈ [0,1]
+
+        - chain_frechet, simulates a chain of bivariate frechet copulas
+            args: α::Vector{Float64}, β::Vector{Float64} = zero(α) - vectors of
+            parameters of subsequent bivariate copulas. Each element must fulfill
+            conditions of the frechet copula. n.o. marginals = length(α)+1.
+            We require length(α) = length(β).
+
 
         - marshalolkin,
-            args = λ::Vector{Float64} λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]
+            args: λ::Vector{Float64} λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]
               n.o. margs = ceil(Int, log(2, length(λ)-1)), params:
 
         - archimedean: gumbel, clayton, amh (Ali-Mikhail-Haq), frank.
@@ -34,8 +41,18 @@
                     - Ψ::Vector{Vector{Float64}}, ϕ::Vector{Float64}, θ::Float64 (params of ground childeren, children and parent copulas)
         - hierarchical nested (only Gumbel)
             - nested_gumbel
-            args: θ::Vector{Float64} - vector of parameters from ground grounf child to parent
+                args: θ::Vector{Float64} - vector of parameters from ground ground child to parent
                                     all copuals are bivariate n = length(θ)+1
+
+        - chain_archimedeans  simulate the chain of bivariate archimedean copula,
+
+            args: - θ::Union{Vector{Float64}, Vector{Int}} - parameters of subsequent bivariate copulas
+                  - copula::Union{Vector{String}, String}, indicates a bivariate copulas
+                        or their sequence, supported are supports: clayton, frank and amh famillies
+                 - keyword cor, if cor = ["Spearman", "Kendall"] uses these correlations in place of parameters
+                        of subsequent buvariate copulas
+        - rev_chain_archimedeans reversed version of the chain_archimedeans
+
 """
 
 function simulate_copula(t::Int, copula::Function, args...; cor = "")
@@ -114,3 +131,19 @@ function nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumb
     copula == "gumbel" || throw(AssertionError("generator supported only for gumbel familly"))
     simulate_copula(t, nested_gumbel, θ)
 end
+
+
+function chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zero(α))
+    simulate_copula(t, chain_frechet, α, β)
+end
+
+VFI = Union{Vector{Float64}, Vector{Int}}
+
+function chaincopulagen(t::Int, θ::VFI, copula::Union{Vector{String}, String};
+                                        rev::Bool = false, cor::String = "")
+    if rev == false
+      return simulate_copula(t, chain_archimedeans, θ, copula, cor = cor)
+    else
+      return simulate_copula(t, rev_chain_archimedeans, θ, copula, cor = cor)
+    end
+ end

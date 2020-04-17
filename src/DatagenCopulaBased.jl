@@ -42,6 +42,7 @@ module DatagenCopulaBased
   export chainfrechetcopulagen
   export gcop2tstudent, gcop2frechet, gcop2marshallolkin
   export nested_gumbel, nested_clayton, nested_frank, nested_amh
+  export chain_frechet, chain_archimedeans, rev_chain_archimedeans
 
   # obsolete implemntations
   export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshallolkincopulagen
