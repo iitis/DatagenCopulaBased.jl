@@ -44,7 +44,7 @@ function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Boo
   μ = mean(x, dims = 1)
   y = (y.-μ)./S
   if naive
-    z = tstudentcopulagen(size(x,1), cor(x[:,ind]), ν)
+    z = tstudent_cop(size(x,1), cor(x[:,ind]), ν)
     y[:,ind] = quantile.(Normal(0,1), z)
   else
     U = rand(Chisq(ν), size(x, 1))

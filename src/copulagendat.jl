@@ -4,15 +4,38 @@
     returns t samples of the given copula function with args...
 
     supports following copulas:
-        - gaussian_cop, args = Σ::Matrix{Float} (the correlation matrix, the covariance one will be normalised)
-        - tstudent_cop,  args = Σ::Matrix{Float}, ν::Int
-        - frechet, args = n::Int, α::Union{Int, Float} (number of marginals, parameter of maximal copula α ∈ [0,1])
-        - frechet, args = n::Int, α::Union{Int, Float}, β::Union{Int, Float}, supported only for n = 2 and α, β, α+β ∈ [0,1]
-        - marshalolkin, args = λ::Vector{Float64}
-              n.o. margs = ceil(Int, log(2, length(λ)-1)), params: λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]
-        - gumbel, clayton, amh (Ali-Mikhail-Haq), frank.  params: n::Int - n.o. margs, θ::Float - copula parameter, cor::String, keyword.
+        elliptical
+        - gaussian_cop,
+                args = Σ::Matrix{Float} (the correlation matrix, the covariance one will be normalised)
+        - tstudent_cop,
+                args = Σ::Matrix{Float}, ν::Int
+
+        - frechet,
+            args = n::Int, α::Union{Int, Float} (number of marginals, parameter of maximal copula α ∈ [0,1])
+             or
+            args = n::Int, α::Union{Int, Float}, β::Union{Int, Float}, supported only for n = 2 and α, β, α+β ∈ [0,1]
+
+        - marshalolkin,
+            args = λ::Vector{Float64} λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]
+              n.o. margs = ceil(Int, log(2, length(λ)-1)), params:
+
+        - archimedean: gumbel, clayton, amh (Ali-Mikhail-Haq), frank.
+            args: n::Int - n.o. margs, θ::Float - copula parameter, cor::String, keyword.
               if cor = ["Spearman", "Kendall"] uses these correlations in place of θ
-        -rev_gumbel, rev_clayton, rev_amh - the same but the output is reversed: u →  1 .- u
+        - rev_gumbel, rev_clayton, rev_amh - the same but the output is reversed: u →  1 .- u
+
+        - nested archimedean
+            - nested_gumbel nested_clayton, nested_amh, nested_frank
+              args:  - n::Vector{Int}, ϕ::Vector{Float64} (sizes and params of children copulas)
+                     - θ::Float64, m::Int = 0 (param and additional size of parent copula)
+        - double nested (only Gumbel)
+            - nested_gumbel
+             args:  - n::Vector{Vector{Int}} (sizes of ground children copulas)
+                    - Ψ::Vector{Vector{Float64}}, ϕ::Vector{Float64}, θ::Float64 (params of ground childeren, children and parent copulas)
+        - hierarchical nested (only Gumbel)
+            - nested_gumbel
+            args: θ::Vector{Float64} - vector of parameters from ground grounf child to parent
+                                    all copuals are bivariate n = length(θ)+1
 """
 
 function simulate_copula(t::Int, copula::Function, args...; cor = "")
@@ -61,4 +84,33 @@ function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
     else
         throw(AssertionError("$(copula) copula is not supported"))
     end
+end
+
+
+function nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String, m::Int = 0)
+    if copula == "gumbel"
+        simulate_copula(t, nested_gumbel, n, ϕ, θ, m)
+    elseif copula == "clayton"
+        simulate_copula(t, nested_clayton, n, ϕ, θ, m)
+    elseif copula == "amh"
+        simulate_copula(t, nested_amh, n, ϕ, θ, m)
+    elseif copula == "frank"
+        simulate_copula(t, nested_frank, n, ϕ, θ, m)
+    else
+        throw(AssertionError("$(copula) copula is not supported"))
+    end
+end
+
+
+function nestedarchcopulagen(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}},
+                                                             ϕ::Vector{Float64}, θ::Float64,
+                                                             copula::String = "gumbel")
+  copula == "gumbel" || throw(AssertionError("generator supported only for gumbel familly"))
+  simulate_copula(t, nested_gumbel, n, Ψ, ϕ, θ)
+end
+
+
+function nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
+    copula == "gumbel" || throw(AssertionError("generator supported only for gumbel familly"))
+    simulate_copula(t, nested_gumbel, θ)
 end

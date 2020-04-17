@@ -230,20 +230,10 @@ function testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula
 end
 
 
-function nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String, m::Int = 0)
-  n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
-  nestedarchcopulagen(t, sum(n)+m, n1, ϕ, θ, copula)
-end
+#=
 
 
-function nestedarchcopulagen(t::Int, n::Int, n1::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64,
-                                                     copula::String)
-  copula in ["clayton", "amh", "frank", "gumbel"] || throw(AssertionError("$(copula) copula is not supported"))
-  nestedcopulag(copula, n1, ϕ, θ, rand(t, n+1))
-end
-
-
-function nestedarchcopulagen(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}},
+function nestedarchcopulagen1(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}},
                                                              ϕ::Vector{Float64}, θ::Float64,
                                                              copula::String = "gumbel")
   copula == "gumbel" ||
@@ -257,7 +247,7 @@ function nestedarchcopulagen(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{F
 end
 
 
-function nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
+function nestedarchcopulagen1(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
   copula == "gumbel" ||
   throw(AssertionError("hierarchically nasted cop. generator supported only for gumbel familly"))
   testθ(θ[end], "gumbel")
@@ -269,3 +259,18 @@ function nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumb
   end
   X
 end
+
+
+function nestedarchcopulagen1(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String, m::Int = 0)
+  n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+  nestedarchcopulagen(t, sum(n)+m, n1, ϕ, θ, copula)
+end
+
+
+function nestedarchcopulagen1(t::Int, n::Int, n1::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64,
+                                                     copula::String)
+  copula in ["clayton", "amh", "frank", "gumbel"] || throw(AssertionError("$(copula) copula is not supported"))
+  nestedcopulag(copula, n1, ϕ, θ, rand(t, n+1))
+end
+
+=#

@@ -73,6 +73,12 @@ end
 
 @testset "gumbel copula" begin
   Random.seed!(43)
+  @test gumbel(1, 2, 2.) ≈ [0.800115  0.917567] atol=1.0e-5
+
+  Random.seed!(43)
+  @test rev_gumbel(1, 2, 2.) ≈ [0.199885  0.0824326] atol=1.0e-5
+
+  Random.seed!(43)
   x = simulate_copula(500000, gumbel, 3, 2.)
   Random.seed!(43)
   x1 = gumbel(500000, 3, 2.)
@@ -105,6 +111,11 @@ end
   @test corspearman(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
 end
 @testset "clayton copula" begin
+  Random.seed!(43)
+  @test clayton(1, 2, 2.) ≈ [0.652812  0.912719] atol=1.0e-5
+  @test clayton(1, 2, -0.5) ≈ [0.924876  0.185707] atol=1.0e-5
+  Random.seed!(43)
+  @test rev_clayton(1, 2, 2.) ≈ [0.347188  0.087281] atol=1.0e-5
   Random.seed!(43)
   x2 = clayton(500000, 3, 1.)
   Random.seed!(43)
@@ -140,6 +151,9 @@ end
 end
 @testset "frank copula" begin
   Random.seed!(43)
+  @test frank(1, 2, 2.) ≈ [0.565546  0.897293] atol=1.0e-5
+  @test frank(1, 2, -2.) ≈ [0.924876  0.242893] atol=1.0e-5
+  Random.seed!(43)
   x = simulate_copula(500000, frank, 3, 0.8)
   Random.seed!(43)
   x1 = frank(500000, 3, 0.8)
@@ -162,6 +176,11 @@ end
   @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
 end
 @testset "Ali-Mikhail-Haq copula" begin
+  Random.seed!(43)
+  @test amh(1, 2, 0.5) ≈ [0.483939  0.883911] atol=1.0e-5
+  @test amh(1, 2, -0.5) ≈ [0.924876  0.320496] atol=1.0e-5
+  Random.seed!(43)
+  @test rev_amh(1, 2, 0.5) ≈ 1 .- [0.483939  0.883911] atol=1.0e-5
   Random.seed!(43)
   x = simulate_copula(500000, amh, 3, 0.8)
   Random.seed!(43)

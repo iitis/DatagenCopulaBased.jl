@@ -2,6 +2,8 @@
 
 @testset "gaussian copula" begin
   Random.seed!(43)
+  @test gaussian_cop(1, [1. 0.; 0. 1.]) ≈ [0.589188  0.817617] atol=1.0e-5
+  Random.seed!(43)
   x = simulate_copula(500000, gaussian_cop, [1. 0.5; 0.5 1.])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
@@ -17,6 +19,8 @@
   @test norm(x-x2) == 0.
 end
 @testset "t-student copula" begin
+  Random.seed!(43)
+  @test tstudent_cop(1, [1. 0.; 0. 1.], 1) ≈ [0.936433  0.983987] atol=1.0e-5
   ν = 10
   rho = 0.5
   λ = 2*pdf(TDist(ν+1), -sqrt.((ν+1)*(1-rho)/(1+rho)))
@@ -47,6 +51,8 @@ end
   @test cov(xtt) ≈ [1. rho; rho 1.] atol=1.0e-2
 end
 @testset "Frechet copula" begin
+  Random.seed!(43)
+  @test frechet(1, 4, 1) ≈ [0.180975  0.180975  0.180975  0.180975] atol=1.0e-5
   Random.seed!(43)
   x = simulate_copula(500000, frechet, 3, 0.3)
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -95,6 +101,9 @@ end
   @test moρ2τ(0.6) ≈ 0.5 atol=1.0e-2
 end
 @testset "Marshall-Olkin copula" begin
+  Random.seed!(43)
+  @test marshallolkin(1, [1., 2., 3.]) ≈ [0.854724  0.821831] atol=1.0e-5
+
   m = [0.252982 0.201189;  0.464758 0.409039; 0.585662 0.5357]
   @test mocopula([0.2 0.3 0.4; 0.3 0.4 0.6; 0.4 0.5 0.7], 2, [1., 1.5, 2.]) ≈ m atol=1.0e-4
   Random.seed!(43)
