@@ -4,7 +4,7 @@
   Random.seed!(43)
   @test gaussian_cop(1, [1. 0.; 0. 1.]) ≈ [0.589188  0.817617] atol=1.0e-5
   Random.seed!(43)
-  x = simulate_copula(500000, gaussian_cop, [1. 0.5; 0.5 1.])
+  x = simulate_copula1(500000, gaussian_cop1([1. 0.5; 0.5 1.]))
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test tail(x[:,1], x[:,2], "l", 0.00001) ≈ 0
@@ -25,7 +25,8 @@ end
   rho = 0.5
   λ = 2*pdf(TDist(ν+1), -sqrt.((ν+1)*(1-rho)/(1+rho)))
   Random.seed!(43)
-  xt = simulate_copula(500000, tstudent_cop, [1. rho; rho 1.], ν);
+  xt = simulate_copula1(500000, tstudent_cop1([1. 0.5; 0.5 1.]), ν)
+  #xt = simulate_copula(500000, tstudent_cop, [1. rho; rho 1.], ν);
   @test pvalue(ExactOneSampleKSTest(xt[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(xt[:,2], Uniform(0,1))) > α
   @test tail(xt[:,1], xt[:,2], "l") ≈ λ atol=1.0e-1

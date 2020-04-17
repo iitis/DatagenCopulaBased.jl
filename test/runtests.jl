@@ -24,6 +24,7 @@ import DatagenCopulaBased: nestedcopulag, testnestedθϕ, nestedstep
 import DatagenCopulaBased: meanΣ, frechet, mean_outer, parameters, are_parameters_good, Σ_theor
 import DatagenCopulaBased: getcors_advanced
 import DatagenCopulaBased: random_unit_vector
+import DatagenCopulaBased: simulate_copula1, gaussian_cop1, tstudent_cop1
 
 # axiliary tests
 include("tailtest.jl")

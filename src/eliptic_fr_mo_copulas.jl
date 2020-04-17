@@ -2,6 +2,10 @@
 
 ## Elliptical copulas
 
+struct gaussian_cop1
+  Σ::Matrix{Float64}
+end
+
 """
     gaussian_cop(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
 
@@ -27,6 +31,17 @@ julia> gaussian_cop(10)
  0.190283  0.594451
 ```
 """
+function simulate_copula1(t::Int, copula::gaussian_cop1)
+  Σ = copula.Σ
+  z = transpose(rand(MvNormal(Σ),t))
+  for i in 1:size(Σ, 1)
+    d = Normal(0, sqrt.(Σ[i,i]))
+    z[:,i] = cdf.(d, z[:,i])
+  end
+  Array(z)
+end
+
+
 function gaussian_cop(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.])
   z = transpose(rand(MvNormal(Σ),t))
   for i in 1:size(Σ, 1)
@@ -60,6 +75,23 @@ julia> tstudent_cop(10)
  0.113788  0.633349
  ```
 """
+struct tstudent_cop1
+  Σ::Matrix{Float64}
+  ν::Int
+end
+
+function simulate_copula1(t::Int, copula::tstudent_cop1)
+  Σ = copula.Σ
+  ν = copula.ν
+  z = transpose(rand(MvNormal(Σ),t))
+  U = rand(Chisq(ν), size(z, 1))
+  for i in 1:size(Σ, 1)
+    x = z[:,i].*sqrt.(ν./U)./sqrt(Σ[i,i])
+    z[:,i] = cdf.(TDist(ν), x)
+  end
+  Array(z)
+end
+
 function tstudent_cop(t::Int, Σ::Matrix{Float64} = [1. 0.5; 0.5 1.], ν::Int=10)
   z = transpose(rand(MvNormal(Σ),t))
   U = rand(Chisq(ν), size(z, 1))
