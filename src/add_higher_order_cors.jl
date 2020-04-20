@@ -44,7 +44,7 @@ function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Boo
   μ = mean(x, dims = 1)
   y = (y.-μ)./S
   if naive
-    z = tstudent_cop(size(x,1), cor(x[:,ind]), ν)
+    z = simulate_copula1(size(x,1), Student_cop(cor(x[:,ind]), ν))
     y[:,ind] = quantile.(Normal(0,1), z)
   else
     U = rand(Chisq(ν), size(x, 1))
@@ -163,22 +163,6 @@ function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false
   quantile.(Normal(0,1), x).*S.+μ
 end
 
-"""
-  frechet(α::Float64, u::Matrix{Float64})
-
-returns a matrix of size u with data generated using Frechet maximal copula with
-parameter α
-"""
-function frechet(α::Float64, u::Matrix{Float64})
-  for j in 1:size(u, 1)
-    if (rand() < α)
-      for i in 1:size(u,2)
-        u[j,i] = u[j, end]
-      end
-    end
-  end
-  u
-end
 
 """
   gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)

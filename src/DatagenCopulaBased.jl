@@ -32,9 +32,11 @@ module DatagenCopulaBased
   # change Gaussian data by adding higher order cross-correlations
   include("add_higher_order_cors.jl")
 
-  export gaussian_cop, tstudent_cop, frechet, marshallolkin, gumbel, clayton, amh, frank
-  export rev_gumbel, rev_clayton, rev_amh
+  export clayton, amh, frank
+  export rev_clayton, rev_amh
 
+  export Gaussian_cop, Student_cop, Frechet_cop, Marshall_Olkin_cop
+  export Gumbel_cop, Gumbel_cop_rev, Clayton_cop, Clayton_cop_rev, AMH_cop, AMH_cop_rev
   export archcopulagen, chaincopulagen, nestedarchcopulagen
   export cormatgen, cormatgen_constant, cormatgen_toeplitz, convertmarg!, gcop2arch
   export cormatgen_constant_noised, cormatgen_toeplitz_noised, cormatgen_rand

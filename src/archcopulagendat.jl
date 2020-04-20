@@ -77,66 +77,172 @@ function arch_gen(copula::String, r::Matrix{T}, θ::Union{Float64, Int}) where T
   phi(u, θ, copula)
 end
 
+"""
+  struct Gumbel_cop
+
+    constructor Gumbel_cop(n::Int, θ::Union{Float64, Int})
+
+The Gumbel n variate copula parametrised by θ::Union{Float64, Int} ∈ [1, ∞), supported for n::Int ≧ 2.
+
+If Gumbel_cop(n::Int, θ::Union{Float64, Int}, cor::String) and cor == "Spearman", "Kendall",
+uses these correlations to compute θ, correlations must be greater than zero.
+
+
+"""
+struct Gumbel_cop
+  n::Int
+  θ::Union{Float64, Int}
+  function(::Type{Gumbel_cop})(n::Int, θ::Union{Float64, Int})
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      testθ(θ, "gumbel")
+      new(n, θ)
+  end
+  function(::Type{Gumbel_cop})(n::Int, ρ::Union{Float64, Int}, cor::String)
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      θ = getθ4arch(ρ, "gumbel", cor)
+      new(n, θ)
+  end
+end
 
 """
 
-  gumbel(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+  simulate_copula1(t::Int, copula::Gumbel_cop)
 
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from the gumbel copula
-parametrised by θ ∈ [1, ∞).
-It cor == "Spearman", "Kendall", uses these correlations for θ (these must be grater than zero).
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
+Gumbel_cop(n, θ)
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> gumbel(2, 3, 1.5)
+julia> simulate_copula1(2, Gumbel_cop(3, 1.5))
 2×3 Array{Float64,2}:
  0.535534  0.900389  0.666363
  0.410877  0.667139  0.637826
  ```
 
 """
+function simulate_copula1(t::Int, copula::Gumbel_cop)
+    θ = copula.θ
+    n = copula.n
+    return arch_gen("gumbel", rand(t,n+1), θ)
+end
 
+#=
 function gumbel(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
     θ = getθ4arch(θ, "gumbel", cor)
     return arch_gen("gumbel", rand(t,n+1), θ)
 end
+=#
 
 """
-  rev_gumbel(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+  struct Gumbel_cop_rev
 
-Returns 1 .- gumbel(...)
+constructor Gumbel_cop_rev(n::Int, θ::Union{Float64, Int})
 
-```jldoctest
+The reversed Gumbel n variate copula, i.e. such that the output is 1 .- u,
+where u is modelled by the corresponding Gumbel copula.
 
-  julia> Random.seed!(43);
+Parametrised by θ::Union{Float64, Int} ∈ [1, ∞), supported for n::Int ≧ 2.
 
-  julia> rev_gumbel(2, 3, 1.5)
-  2×3 Array{Float64,2}:
-   0.464466  0.0996114  0.333637
-   0.589123  0.332861   0.362174
+If Gumbel_cop_rev(n::Int, θ::Union{Float64, Int}, cor::String),
+and cor == "Spearman", "Kendall", uses these correlations to compute θ,
+correlations must be greater than zero.
 
-```
 
 """
-
-function rev_gumbel(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
-  1 .- gumbel(t, n, θ; cor = cor)
+struct Gumbel_cop_rev
+  n::Int
+  θ::Union{Float64, Int}
+  function(::Type{Gumbel_cop_rev})(n::Int, θ::Union{Float64, Int})
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      testθ(θ, "gumbel")
+      new(n, θ)
+  end
+  function(::Type{Gumbel_cop_rev})(n::Int, ρ::Union{Float64, Int}, cor::String)
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      θ = getθ4arch(ρ, "gumbel", cor)
+      new(n, θ)
+  end
 end
 
 """
 
-  clayton(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+  simulate_copula1(t::Int, copula::Gumbel_cop_tev)
 
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from the clayton copula
-parametrised by θ. Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2.
 
-It cor == "Spearman", "Kendall", uses these correlations for θ (these must be grater than zero).
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
+Gumbel_cop_rev(n, θ)
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> clayton(10, 2, 1)
+julia> simulate_copula1(2, Gumbel_cop_rev(3, 1.5))
+2×3 Array{Float64,2}:
+ 0.464466  0.0996114  0.333637
+ 0.589123  0.332861   0.362174
+
+ ```
+
+"""
+function simulate_copula1(t::Int, copula::Gumbel_cop_rev)
+    θ = copula.θ
+    n = copula.n
+    return 1 .- arch_gen("gumbel", rand(t,n+1), θ)
+end
+
+#=
+function rev_gumbel(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+  1 .- gumbel(t, n, θ; cor = cor)
+end
+=#
+
+"""
+  struct Clayton_cop
+
+    constructor Clayton_cop(n::Int, θ::Union{Float64, Int})
+
+The Clayton n variate copula parametrised by θ::Union{Float64, Int}.
+θ. Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
+supported for n::Int ≧ 2.
+
+If Clayton_cop(n::Int, θ::Union{Float64, Int}, cor::String)
+and cor == "Spearman", "Kendall", these correlations are used to compute θ,
+correlations must be greater than zero.
+
+
+"""
+struct Clayton_cop
+  n::Int
+  θ::Union{Float64, Int}
+  function(::Type{Clayton_cop})(n::Int, θ::Union{Float64, Int})
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      if n > 2
+        testθ(θ, "clayton")
+      else
+        (θ >= -1.) & (θ != 0.) || throw(DomainError("bivariate Clayton not supported for θ < -1 or θ = 0"))
+      end
+      new(n, θ)
+  end
+  function(::Type{Clayton_cop})(n::Int, ρ::Union{Float64, Int}, cor::String)
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      θ = getθ4arch(ρ, "clayton", cor)
+      new(n, θ)
+  end
+end
+
+"""
+
+  simulate_copula1(t::Int, copula::Clayton_cop)
+
+
+Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
+Clayton_cop(n, θ)
+
+```jldoctest
+julia> Random.seed!(43);
+
+julia> simulate_copula1(10, Clayton_cop(2, 1))
 10×2 Array{Float64,2}:
  0.770331  0.932834
  0.472847  0.0806845
@@ -151,7 +257,7 @@ julia> clayton(10, 2, 1)
 
  julia> Random.seed!(43);
 
- julia> clayton(2, 2, -0.5)
+ julia> simulate_copula1(2, Clayton_cop(2, -0.5))
  2×2 Array{Float64,2}:
   0.180975  0.907735
   0.775377  0.872074
@@ -159,13 +265,48 @@ julia> clayton(10, 2, 1)
  ```
 
 """
-
-function clayton(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
-  if (n == 2)*(θ < 0)
-    return chaincopulagen(t, [θ], "clayton"; cor=cor)
+function simulate_copula1(t::Int, copula::Clayton_cop)
+    θ = copula.θ
+    n = copula.n
+  if (n == 2) & (θ < 0)
+    return chaincopulagen(t, [θ], "clayton")
   else
-    θ = getθ4arch(θ, "clayton", cor)
     return arch_gen("clayton", rand(t,n+1), θ)
+  end
+end
+
+"""
+  Clayton_cop_rev
+
+  constructor Clayton_cop_rev(n::Int, θ::Union{Float64, Int})
+
+The reversed Clayton n variate copula parametrised by θ::Union{Float64, Int} i.e.
+such that the output is 1 .- u, where u is modelled by the corresponding Clayton copula.
+θ. Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
+supported for n::Int ≧ 2.
+
+If Clayton_cop_rev(n::Int, θ::Union{Float64, Int}, cor::String)
+where cor == "Spearman", "Kendall", these correlations are used to compute θ.
+Correlations must be greater than zero.
+"""
+
+
+struct Clayton_cop_rev
+  n::Int
+  θ::Union{Float64, Int}
+  function(::Type{Clayton_cop_rev})(n::Int, θ::Union{Float64, Int})
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      if n > 2
+        testθ(θ, "clayton")
+      else
+        (θ >= -1.) & (θ != 0.) || throw(DomainError("bivariate Clayton not supported for θ < -1 or θ = 0"))
+      end
+      new(n, θ)
+  end
+  function(::Type{Clayton_cop_rev})(n::Int, ρ::Union{Float64, Int}, cor::String)
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      θ = getθ4arch(ρ, "clayton", cor)
+      new(n, θ)
   end
 end
 
@@ -187,28 +328,57 @@ end
 
 """
 
-function rev_clayton(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
-  1 .- clayton(t, n, θ; cor = cor)
+function simulate_copula1(t::Int, copula::Clayton_cop_rev)
+  n = copula.n
+  θ = copula.θ
+  1 .- simulate_copula1(t, Clayton_cop(n, θ))
 end
 
+"""
+  AMH_cop
+
+  constructor AMH_cop(n::Int, θ::Union{Float64, Int})
+
+The Ali-Mikhail-Haq copula parametrised by θ. Domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
+
+Using constructor AMH_cop(n::Int, θ::Union{Float64, Int}, cor::String)
+where cor == "Spearman", "Kendall", these correlations are used to compute θ.
+Such correlations must be grater than zero and limited from above
+due to the θ domain.
+              - Spearman correlation must be in range (0, 0.5)
+              -  Kendall correlation must be in range (0, 1/3)
+"""
+
+struct AMH_cop
+  n::Int
+  θ::Union{Float64, Int}
+  function(::Type{AMH_cop})(n::Int, θ::Union{Float64, Int})
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      if n > 2
+        testθ(θ, "amh")
+      else
+      1 >=  θ >= -1 || throw(DomainError("bivariate AMH not supported for θ > 1 or θ < -1"))
+      end
+      new(n, θ)
+  end
+  function(::Type{AMH_cop})(n::Int, ρ::Union{Float64, Int}, cor::String)
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      θ = getθ4arch(ρ, "amh", cor)
+      new(n, θ)
+  end
+end
 
 """
 
-  amh(t::Int, n::Int, θ::Union{Float64, Int}; cor = "")
+  simulate_copula1(t::Int, copula::AMH_cop)
 
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from the
-Ali-Mikhail-Haq copula parametrised by θ. Domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
+Returns: t x n Matrix{Float}, t realisations of n-variate Ali-Mikhail-Haq copula
 
-It cor == "Spearman", "Kendall", uses these correlations for θ.
-These correlations must be grater than zero and there are limitations from above
-due to the θ domain.
-Spearman correlation must be in range (0, 0.5)
-Kendall correlation must be in range (0, 1/3)
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> amh(4, 2, -0.5)
+julia> simulate_copula1(4, AMH_cop(2, -0.5))
 4×2 Array{Float64,2}:
  0.180975  0.477109
  0.775377  0.885537
@@ -219,22 +389,79 @@ julia> amh(4, 2, -0.5)
 
 """
 
-function amh(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+function simulate_copula1(t::Int, copula::AMH_cop)
+  n = copula.n
+  θ = copula.θ
   if (θ in [0,1]) | (n == 2)*(θ < 0)
-    return chaincopulagen(t, [θ], "amh"; cor=cor)
+    return chaincopulagen(t, [θ], "amh")
   else
-    θ = getθ4arch(θ, "amh", cor)
     return arch_gen("amh", rand(t,n+1), θ)
   end
 end
 
+function amh(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+  if (θ in [0,1]) | (n == 2)*(θ < 0)
+    return chaincopulagen(t, [θ], "amh"; cor=cor)
+  else
+    if cor == ""
+      testθ(θ, "amh")
+    else
+      θ = getθ4arch(θ, "amh", cor)
+    end
+    return arch_gen("amh", rand(t,n+1), θ)
+  end
+end
+
+
 """
-  returns 1 .- amh(...)
+  AMH_cop_rev
+
+  constructor AMH_cop_rev(n::Int, θ::Union{Float64, Int})
+
+The reversed Ali-Mikhail-Haq copula parametrised by θ, i.e.
+such that the output is 1 .- u, where u is modelled by the corresponding Clayton copula.
+
+Domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
+
+
+Using constructor AMH_cop_rev(n::Int, θ::Union{Float64, Int}, cor::String)
+where cor == "Spearman", "Kendall", these correlations are used to compute θ.
+Such correlations must be grater than zero and limited from above
+due to the θ domain.
+              - Spearman correlation must be in range (0, 0.5)
+              -  Kendall correlation must be in range (0, 1/3)
+"""
+
+struct AMH_cop_rev
+  n::Int
+  θ::Union{Float64, Int}
+  function(::Type{AMH_cop_rev})(n::Int, θ::Union{Float64, Int})
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      if n > 2
+        testθ(θ, "amh")
+      else
+        1 >=  θ >= -1 || throw(DomainError("bivariate AMH not supported for θ > 1 or θ < -1"))
+      end
+      new(n, θ)
+  end
+  function(::Type{AMH_cop_rev})(n::Int, ρ::Union{Float64, Int}, cor::String)
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      θ = getθ4arch(ρ, "amh", cor)
+      new(n, θ)
+  end
+end
+
+"""
+
+  simulate_copula1(t::Int, copula::AMH_cop_rev)
+
+Returns: t x n Matrix{Float}, t realisations of n-variate reversed
+ Ali-Mikhail-Haq copula
 
 ```jldoctest
   julia> Random.seed!(43);
 
-  julia> rev_amh(4, 2, -0.5)
+  julia> simulate_copula1(4, rev_amh(2, -0.5))
   4×2 Array{Float64,2}:
   0.819025  0.522891
   0.224623  0.114463
@@ -244,6 +471,13 @@ end
 ```
 
 """
+
+
+function simulate_copula1(t::Int, copula::AMH_cop_rev)
+  n = copula.n
+  θ = copula.θ
+  1 .- simulate_copula1(t, AMH_cop(n, θ))
+end
 
 function rev_amh(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
   return 1 .- amh(t, n, θ; cor = cor)
@@ -286,7 +520,11 @@ function frank(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
   if (n == 2)*(θ < 0)
     return chaincopulagen(t, [θ], "frank"; cor=cor)
   else
-    θ = getθ4arch(θ, "frank", cor)
+    if cor == ""
+      testθ(θ, "frank")
+    else
+      θ = getθ4arch(θ, "frank", cor)
+    end
     return arch_gen("frank", rand(t,n+1), θ)
   end
 end
@@ -364,9 +602,6 @@ julia> getθ4arch(0.5, "gumbel", "Kendall")
 2.0
 
 
-julia> getθ4arch(1.5, "gumbel", "")
-1.5
-
 
 julia> getθ4arch(1.5, "gumbel", "Pearson")
 ERROR: AssertionError: Pearson correlation not supported
@@ -379,9 +614,6 @@ function getθ4arch(ρ::Union{Float64, Int}, copula::String, cor::String)
     θ = useρ(ρ , copula)
   elseif cor == "Kendall"
     θ = useτ(ρ , copula)
-  elseif cor == ""
-    testθ(ρ, copula)
-    θ = ρ
   else
     throw(AssertionError("$(cor) correlation not supported"))
   end

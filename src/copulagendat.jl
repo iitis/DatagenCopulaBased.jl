@@ -66,38 +66,44 @@ end
 
 # Obsolete implemnetations
 
-gausscopulagen(t::Int, Σ::Matrix{Float64}) = simulate_copula(t, gaussian_cop, Σ)
+gausscopulagen(t::Int, Σ::Matrix{Float64}) = simulate_copula1(t, Gaussian_cop(Σ))
 
-tstudentcopulagen(t::Int, Σ::Matrix{Float64}, ν::Int) = simulate_copula(t, tstudent_cop, Σ, ν)
+tstudentcopulagen(t::Int, Σ::Matrix{Float64}, ν::Int) = simulate_copula1(t, Student_cop(Σ, ν))
 
-frechetcopulagen(t::Int, args...) = simulate_copula(t, frechet, args...)
+frechetcopulagen(t::Int, args...) = simulate_copula1(t, Frechet_cop(args...))
 
-marshallolkincopulagen(t::Int, λ::Vector{Float64}) = simulate_copula(t, marshallolkin, λ)
+marshallolkincopulagen(t::Int, λ::Vector{Float64}) = simulate_copula1(t, Marshall_Olkin_cop(λ))
 
 
 function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
                                                               rev::Bool = false,
                                                               cor::String = "")
+
+    args = (n, θ)
+    if cor != ""
+        args = (n, θ, cor)
+    end
     if copula == "gumbel"
         if !rev
-            simulate_copula(t, gumbel, n, θ; cor = cor)
+            simulate_copula1(t, Gumbel_cop(args...))
         else
-            simulate_copula(t, rev_gumbel, n, θ; cor = cor)
+            simulate_copula1(t, Gumbel_cop_rev(args...))
         end
     elseif copula == "clayton"
         if !rev
-            simulate_copula(t, clayton, n, θ; cor = cor)
+            simulate_copula1(t, Clayton_cop(args...))
         else
-            simulate_copula(t, rev_clayton, n, θ; cor = cor)
+            simulate_copula1(t, Clayton_cop_rev(args...))
         end
     elseif copula == "amh"
         if !rev
-            simulate_copula(t, amh, n, θ; cor = cor)
+            simulate_copula1(t, AMH_cop(args...))
         else
-            simulate_copula(t, rev_amh, n, θ; cor = cor)
+            simulate_copula1(t, AMH_cop_rev(args...))
         end
     elseif copula == "frank"
-        simulate_copula(t, frank, n, θ; cor = cor)
+           simulate_copula(t, frank, n, θ; cor = cor)
+
     else
         throw(AssertionError("$(copula) copula is not supported"))
     end
