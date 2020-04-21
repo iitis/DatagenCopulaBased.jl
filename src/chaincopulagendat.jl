@@ -61,6 +61,26 @@ julia> chain_archimedeans(1, [4., 11.], "frank")
 
 ```
 """
+
+struct Chain_of_Archimedeans
+  theta::Vector{Float64}
+  copulas::Vector{String}
+  function(::Type{Chain_of_Archimedeans})(theta::Vector{Float64}, copulas::Vector{String})
+      length(theta) == length(copulas) || throw(BoundsError("length(θ) ≠ length(n)"))
+      map(i -> testbivθ(theta[i], copulas[i]), 1:length(theta))
+      for copula in copulas
+        copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
+      end
+      new(theta, copulas)
+  end
+  function(::Type{Chain_of_Archimedeans})(theta::Vector{Float64}, copula::String)
+      map(i -> testbivθ(theta[i], copula), 1:length(theta))
+      copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
+      new(theta, [copula for i in 1:length(theta)])
+  end
+end
+
+
 VFI = Union{Vector{Float64}, Vector{Int}}
 chain_archimedeans(t::Int, θ::VFI, copula::String; cor::String = "") =
 chain_archimedeans(t, θ, [fill(copula, length(θ))...]; cor = cor)

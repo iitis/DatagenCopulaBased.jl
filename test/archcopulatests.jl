@@ -75,15 +75,15 @@ end
     @test_throws DomainError Gumbel_cop(3, 1.1, "Kendall")
     @test_throws DomainError Gumbel_cop(3, 1.1, "Spearman")
     @test_throws AssertionError Gumbel_cop(3, 1.1, "Kendoll")
-    @test_throws AssertionError Gumbel_cop(1, 1.1)
-    @test_throws AssertionError Gumbel_cop(1, 1.1, "Kendall")
+    @test_throws DomainError Gumbel_cop(1, 1.1)
+    @test_throws DomainError Gumbel_cop(1, 1.1, "Kendall")
 
     @test_throws DomainError Gumbel_cop_rev(3, 0.3)
     @test_throws DomainError Gumbel_cop_rev(3, 1.1, "Kendall")
     @test_throws DomainError Gumbel_cop_rev(3, 1.1, "Spearman")
     @test_throws AssertionError Gumbel_cop_rev(3, 1.1, "Kendoll")
-    @test_throws AssertionError Gumbel_cop_rev(1, 1.1)
-    @test_throws AssertionError Gumbel_cop_rev(1, 1.1, "Kendall")
+    @test_throws DomainError Gumbel_cop_rev(1, 1.1)
+    @test_throws DomainError Gumbel_cop_rev(1, 1.1, "Kendall")
     @test_throws AssertionError archcopulagen(500000, 3, 2., "gumbol")
   end
 
@@ -145,16 +145,16 @@ end
     @test_throws DomainError Clayton_cop(3, 1.1, "Kendall")
     @test_throws DomainError Clayton_cop(3, 1.1, "Spearman")
     @test_throws AssertionError Clayton_cop(3, 1.1, "Kendoll")
-    @test_throws AssertionError Clayton_cop(1, 1.1)
-    @test_throws AssertionError Clayton_cop(1, 1.1, "Kendall")
+    @test_throws DomainError Clayton_cop(1, 1.1)
+    @test_throws DomainError Clayton_cop(1, 1.1, "Kendall")
 
     @test_throws DomainError Clayton_cop_rev(3, -0.3)
     @test_throws DomainError Clayton_cop_rev(2, -2.3)
     @test_throws DomainError Clayton_cop_rev(3, 1.1, "Kendall")
     @test_throws DomainError Clayton_cop_rev(3, 1.1, "Spearman")
     @test_throws AssertionError Clayton_cop_rev(3, 1.1, "Kendoll")
-    @test_throws AssertionError Clayton_cop_rev(1, 1.1)
-    @test_throws AssertionError Clayton_cop_rev(1, 1.1, "Kendall")
+    @test_throws DomainError Clayton_cop_rev(1, 1.1)
+    @test_throws DomainError Clayton_cop_rev(1, 1.1, "Kendall")
   end
   @testset "small example" begin
     Random.seed!(43)
@@ -203,12 +203,12 @@ end
 end
 @testset "frank copula" begin
     @test_throws DomainError Frank_cop(3, -0.3)
-    @test_throws DomainError Frank_cop(2, 0)
+    @test_throws DomainError Frank_cop(2, 0.)
     @test_throws DomainError Frank_cop(3, 1.1, "Kendall")
     @test_throws DomainError Frank_cop(3, 1.1, "Spearman")
     @test_throws AssertionError Frank_cop(3, 1.1, "Kendoll")
-    @test_throws AssertionError Frank_cop(1, 1.1)
-    @test_throws AssertionError Frank_cop(1, 1.1, "Kendall")
+    @test_throws DomainError Frank_cop(1, 1.1)
+    @test_throws DomainError Frank_cop(1, 1.1, "Kendall")
   @testset "exceptions" begin
   end
   @testset "small example" begin
@@ -244,16 +244,16 @@ end
     @test_throws DomainError AMH_cop(3, 0.5, "Kendall")
     @test_throws DomainError AMH_cop(3, 0.6, "Spearman")
     @test_throws AssertionError AMH_cop(3, 1.1, "Kendoll")
-    @test_throws AssertionError AMH_cop(1, 1.1)
-    @test_throws AssertionError AMH_cop(1, 1.1, "Kendall")
+    @test_throws DomainError AMH_cop(1, 1.1)
+    @test_throws DomainError AMH_cop(1, 1.1, "Kendall")
 
     @test_throws DomainError AMH_cop_rev(3, -0.3)
     @test_throws DomainError AMH_cop_rev(2, -1.2)
     @test_throws DomainError AMH_cop_rev(3, 0.5, "Kendall")
     @test_throws DomainError AMH_cop_rev(3, 0.55, "Spearman")
     @test_throws AssertionError AMH_cop_rev(3, 1.1, "Kendoll")
-    @test_throws AssertionError AMH_cop_rev(1, 1.1)
-    @test_throws AssertionError AMH_cop_rev(1, 1.1, "Kendall")
+    @test_throws DomainError AMH_cop_rev(1, 1.1)
+    @test_throws DomainError AMH_cop_rev(1, 1.1, "Kendall")
   end
   @testset "small example" begin
     Random.seed!(43)

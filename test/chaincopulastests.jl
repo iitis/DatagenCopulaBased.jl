@@ -16,6 +16,11 @@ end
   @test_throws DomainError usebivρ(-.9, "amh", "Spearman")
   @test_throws DomainError usebivρ(-.25, "amh", "Kendall")
   @test_throws AssertionError chaincopulagen(100000, [1.1, 1.6], "gumbel")
+  @test_throws AssertionError Chain_of_Archimedeans([2., 3.], ["frank", "gumbel"])
+  @test_throws BoundsError Chain_of_Archimedeans([2., 3., 4.], ["frank", "frank"])
+  @test_throws DomainError Chain_of_Archimedeans([2., -3.], ["frank", "clayton"])
+  @test_throws AssertionError Chain_of_Archimedeans([2., 3., 4.], "gumbel")
+  @test_throws DomainError Chain_of_Archimedeans([2., -3.], "clayton")
 end
 
 @testset "chain of Archimedean copulas" begin

@@ -112,13 +112,17 @@ end
 
 function nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String, m::Int = 0)
     if copula == "gumbel"
-        simulate_copula(t, nested_gumbel, n, ϕ, θ, m)
+        children = [Gumbel_cop(n[i], ϕ[i]) for i in 1:length(n)]
+        simulate_copula1(t, Nested_Gumbel_cop(children, m, θ))
     elseif copula == "clayton"
-        simulate_copula(t, nested_clayton, n, ϕ, θ, m)
+        children = [Clayton_cop(n[i], ϕ[i]) for i in 1:length(n)]
+        simulate_copula1(t, Nested_Clayton_cop(children, m, θ))
     elseif copula == "amh"
-        simulate_copula(t, nested_amh, n, ϕ, θ, m)
+        children = [AMH_cop(n[i], ϕ[i]) for i in 1:length(n)]
+        simulate_copula1(t, Nested_AMH_cop(children, m, θ))
     elseif copula == "frank"
-        simulate_copula(t, nested_frank, n, ϕ, θ, m)
+        children = [Frank_cop(n[i], ϕ[i]) for i in 1:length(n)]
+        simulate_copula1(t, Nested_Frank_cop(children, m, θ))
     else
         throw(AssertionError("$(copula) copula is not supported"))
     end
@@ -129,13 +133,20 @@ function nestedarchcopulagen(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{F
                                                              ϕ::Vector{Float64}, θ::Float64,
                                                              copula::String = "gumbel")
   copula == "gumbel" || throw(AssertionError("generator supported only for gumbel familly"))
-  simulate_copula(t, nested_gumbel, n, Ψ, ϕ, θ)
+  length(n) == length(Ψ) == length(ϕ) || throw(AssertionError("parameter vector must be of the sam size"))
+  parents = Nested_Gumbel_cop[]
+  for i in 1:length(n)
+      length(n[i]) == length(Ψ[i]) || throw(AssertionError("parameter vector must be of the sam size"))
+      child = [Gumbel_cop(n[i][j], Ψ[i][j])  for j in 1:length(n[i])]
+      push!(parents, Nested_Gumbel_cop(child, 0, ϕ[i]))
+  end
+  simulate_copula1(t, Double_Nested_Gumbel_cop(parents, θ))
 end
 
 
 function nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
     copula == "gumbel" || throw(AssertionError("generator supported only for gumbel familly"))
-    simulate_copula(t, nested_gumbel, θ)
+    simulate_copula1(t, Hierarchical_Gumbel_cop(θ))
 end
 
 

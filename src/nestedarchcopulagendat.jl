@@ -10,105 +10,336 @@
 
 
 """
-  function nested_clayton(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
+  Nested_Clayton_cop
 
-Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using
-nested Clayton copula in the form C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
+Nested Clayton copula, fields:
+  - children::Vector{Clayton_cop}  vector of childer copulas
+  - m::Int ≧ 0 - number of additional marginals modelled by the parent copula only
+  - θ::Float64 - parameterer of parent copula, domain θ > 0.
 
-Parent copula parameter is θ, i'th child copula size is n[i] and parameter is ϕ[i].
-If m ≠ 0, last m variables are modelled by the parent copula only.
+Nested Clayton copula is in the form C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
+If m > 0, last m variables are modelled by the parent copula only.
 
-Sufficient nesting condition yields ∀ᵢ ϕ[i] ≥ θ. Limits for θ are such as as for n > 2 variate Clayton copula.
+Constructior Nested_Clayton_cop(children::Vector{Clayton_cop}, m::Int, θ::Float64)
 
-```jldoctest
+Let ϕ be the vector of parameter of children copula, sufficient nesting conditin requires
+θ <= minimum(ϕ)
 
-    julia> Random.seed!(43);
+If using Nested_Clayton_cop(children::Vector{Clayton_cop}, m::Int, θ::Float64, cor::String)
+uses "Spearman" or "Kendall" correlation to compute θ
 
-  julia> nested_clayton(4, [2,2], [2., 3.], 1.1, 1)
-  4×5 Array{Float64,2}:
-   0.80125   0.879693  0.849878  0.73245   0.538354
-   0.25902   0.408295  0.729322  0.228969  0.064877
-   0.967594  0.949726  0.887957  0.684867  0.863298
-   0.537306  0.182984  0.399726  0.718501  0.415321
-
-
-```
 """
 
+struct Nested_Clayton_cop
+  children::Vector{Clayton_cop}
+  m::Int
+  θ::Float64
+  function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop}, m::Int, θ::Float64)
+      m >= 0 || throw(DomainError("not supported for m  < 0 "))
+      testθ(θ, "clayton")
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      maximum(ϕ) < θ+2*θ^2+750*θ^5 || @warn("θ << ϕ, marginals may not be uniform")
+      new(children, m, θ)
+  end
+  function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop}, m::Int, ρ::Float64, cor::String)
+      m >= 0 || throw(DomainError("not supported for m  < 0 "))
+      θ = getθ4arch(ρ, "clayton", cor)
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      maximum(ϕ) < θ+2*θ^2+750*θ^5 || @warn("θ << ϕ, marginals may not be uniform")
+      new(children, m, θ)
+  end
+end
+
+
+#=
 function nested_clayton(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
   n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+  #println(n1)
   n2 = sum(n)+m
   return nestedcopulag("clayton", n1, ϕ, θ, rand(t, n2+1))
 end
+=#
+
 
 """
-  function nested_amh(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
+  Nested_AMH_cop
 
-Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using
-nested Ali-Mikhail-Haq copula in the form C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
+Nested Ali-Mikhail-Haq copula, fields:
+  - children::Vector{AMH_cop}  vector of childer copulas
+  - m::Int ≧ 0 - number of additional marginals modelled by the parent copula only
+  - θ::Float64 - parameterer of parent copula, domain θ ∈ (0,1).
 
-Parent copula parameter is θ, i'th child copula size is n[i] and parameter is ϕ[i].
-If m ≠ 0, last m variables are modelled by the parent copula only.
+Nested Ali-Mikhail-Haq copula is in the form C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
+If m > 0, last m variables are modelled by the parent copula only.
 
-Sufficient nesting condition yields ∀ᵢ ϕ[i] ≥ θ. Limits for θ are such as as for n > 2 variate Ali-Mikhail-Haq copula.
+Constructior Nested_AMH_cop(children::Vector{AMH_cop}, m::Int, θ::Float64)
 
-```jldoctest
+Let ϕ be the vector of parameter of children copula, sufficient nesting conditin requires
+θ <= minimum(ϕ)
 
-  julia> Random.seed!(43);
+If using Nested_AMH_cop(children::Vector{AMH_cop}, m::Int, θ::Float64, cor::String)
+uses "Spearman" or "Kendall" correlation to compute θ
 
-  julia> nested_amh(4, [2,2], [.7, .8], 0.2, 1)
-  4×5 Array{Float64,2}:
-   0.589196  0.74137   0.748553  0.535984  0.220268
-   0.820417  0.928427  0.96363   0.293954  0.0232534
-   0.952909  0.926609  0.825948  0.469617  0.767546
-   0.958157  0.645533  0.17928   0.719127  0.820758
-
-
-```
 """
+
+struct Nested_AMH_cop
+  children::Vector{AMH_cop}
+  m::Int
+  θ::Float64
+  function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop}, m::Int, θ::Float64)
+      m >= 0 || throw(DomainError("not supported for m  < 0 "))
+      testθ(θ, "amh")
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      new(children, m, θ)
+  end
+  function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop}, m::Int, ρ::Float64, cor::String)
+      m >= 0 || throw(DomainError("not supported for m  < 0 "))
+      θ = getθ4arch(ρ, "amh", cor)
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      new(children, m, θ)
+  end
+end
+
+#=
+
+function simulate_copula1(t::Int, copula::Nested_AMH_cop)
+  m = copula.m
+  θ = copula.θ
+  children = copula.children
+  ϕ = [ch.θ for ch in children]
+  n = [ch.n for ch in children]
+  n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+  n2 = sum(n)+m
+  return nestedcopulag("amh", n1, ϕ, θ, rand(t, n2+1))
+end
+
 
 function nested_amh(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
   n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
   n2 = sum(n)+m
   return nestedcopulag("amh", n1, ϕ, θ, rand(t, n2+1))
 end
+=#
+"""
+  Nested_Frank_cop
+
+Nested Frank copula, fields:
+  - children::Vector{Frank_cop}  vector of childer copulas
+  - m::Int ≧ 0 - number of additional marginals modelled by the parent copula only
+  - θ::Float64 - parameterer of parent copula, domain θ ∈ (0,∞).
+
+Nested Frank copula is in the form C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
+If m > 0, last m variables are modelled by the parent copula only.
+
+Constructior Nested_Frank_cop(children::Vector{Frank_cop}, m::Int, θ::Float64)
+
+Let ϕ be the vector of parameter of children copula, sufficient nesting conditin requires
+θ <= minimum(ϕ)
+
+If using Nested_Frank_cop(children::Vector{Frank_cop}, m::Int, θ::Float64, cor::String)
+uses "Spearman" or "Kendall" correlation to compute θ
 
 """
-  function nested_frank(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
 
-Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using
-nested Frank copula in the form C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
+struct Nested_Frank_cop
+  children::Vector{Frank_cop}
+  m::Int
+  θ::Float64
+  function(::Type{Nested_Frank_cop})(children::Vector{Frank_cop}, m::Int, θ::Float64)
+      m >= 0 || throw(DomainError("not supported for m  < 0 "))
+      testθ(θ, "frank")
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      new(children, m, θ)
+  end
+  function(::Type{Nested_Frank_cop})(children::Vector{Frank_cop}, m::Int, ρ::Float64, cor::String)
+      m >= 0 || throw(DomainError("not supported for m  < 0 "))
+      θ = getθ4arch(ρ, "frank", cor)
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      new(children, m, θ)
+  end
+end
 
-Parent copula parameter is θ, i'th child copula size is n[i] and parameter is ϕ[i].
-If m ≠ 0, last m variables are modelled by the parent copula only.
+"""
+  Nested_Gumbel_cop
 
-Sufficient nesting condition yields ∀ᵢ ϕ[i] ≥ θ. Limits for θ are such as as for n > 2 variate Frank copula.
+Nested Gumbel copula, fields:
+  - children::Vector{Gumbel_cop}  vector of childer copulas
+  - m::Int ≧ 0 - number of additional marginals modelled by the parent copula only
+  - θ::Float64 - parameterer of parent copula, domain θ ∈ [1,∞).
+
+Nested Gumbel copula is in the form C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
+If m > 0, last m variables are modelled by the parent copula only.
+
+Constructior Nested_Gumbel_cop(children::Vector{Frank_cop}, m::Int, θ::Float64)
+
+Let ϕ be the vector of parameter of children copula, sufficient nesting conditin requires
+θ <= minimum(ϕ)
+
+If using Nested_Gumbel_cop(children::Vector{Gumbel_cop}, m::Int, θ::Float64, cor::String)
+uses "Spearman" or "Kendall" correlation to compute θ
+
+"""
+
+struct Nested_Gumbel_cop
+  children::Vector{Gumbel_cop}
+  m::Int
+  θ::Float64
+  function(::Type{Nested_Gumbel_cop})(children::Vector{Gumbel_cop}, m::Int, θ::Float64)
+      m >= 0 || throw(DomainError("not supported for m  < 0 "))
+      testθ(θ, "gumbel")
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      new(children, m, θ)
+  end
+  function(::Type{Nested_Gumbel_cop})(children::Vector{Gumbel_cop}, m::Int, ρ::Float64, cor::String)
+      m >= 0 || throw(DomainError("not supported for m  < 0 "))
+      θ = getθ4arch(ρ, "gumbel", cor)
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      new(children, m, θ)
+  end
+end
+
+"""
+  function simulate_copula1(t::Int, copula::Nested_Clayton_cop)
+
+Returns Matrix{Float} of t realisations of sum(n)+m random variables generated using:
+Nested Clayton copula, Nested AMH copula, Nested Frank copula or Nested Gumbel copula
 
 ```jldoctest
 
-  julia> Random.seed!(43);
+julia> Random.seed!(43);
+
+julia> c1 = Clayton_cop(2, 2.)
+Clayton_cop(2, 2.0)
+
+julia> c2 = Clayton_cop(2, 3.)
+Clayton_cop(2, 3.0)
+
+julia> cp = Nested_Clayton_cop([c1, c2], 1, 1.1)
+Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 2.0), Clayton_cop(2, 3.0)], 1, 1.1)
+
+julia> simulate_copula1(4, cp)
+4×5 Array{Float64,2}:
+ 0.80125   0.879693  0.849878  0.73245   0.538354
+ 0.25902   0.408295  0.729322  0.228969  0.064877
+ 0.967594  0.949726  0.887957  0.684867  0.863298
+ 0.537306  0.182984  0.399726  0.718501  0.415321
 
 
-  julia> nested_frank(4, [2,2], [.7, .8], 0.2, 1)
-  4×5 Array{Float64,2}:
-  0.716339  0.83584   0.781909   0.564834   0.153479
-  0.706925  0.878726  0.934177   0.0671711  0.0262611
-  0.91952   0.875725  0.742692   0.277226   0.701578
-  0.895148  0.321701  0.0521964  0.654462   0.838012
+ ```jldoctest
+
+ julia> c1 = AMH_cop(2, .7)
+ AMH_cop(2, 0.7)
+
+ julia> c2 = AMH_cop(2, .8)
+ AMH_cop(2, 0.8)
+
+ julia> cp = Nested_AMH_cop([c1, c2], 1, 0.2)
+ Nested_AMH_cop(AMH_cop[AMH_cop(2, 0.7), AMH_cop(2, 0.8)], 1, 0.2)
+
+ julia> Random.seed!(43);
+
+ julia> simulate_copula1(4, cp)
+ 4×5 Array{Float64,2}:
+  0.589196  0.74137   0.748553  0.535984  0.220268
+  0.820417  0.928427  0.96363   0.293954  0.0232534
+  0.952909  0.926609  0.825948  0.469617  0.767546
+  0.958157  0.645533  0.17928   0.719127  0.820758
+
+ ```
 
 ```
 """
 
+function simulate_copula1(t::Int, copula::Union{Nested_Clayton_cop, Nested_AMH_cop, Nested_Frank_cop, Nested_Gumbel_cop})
+    m = copula.m
+    θ = copula.θ
+    children = copula.children
+    ϕ = [ch.θ for ch in children]
+    n = [ch.n for ch in children]
+    n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+    n2 = sum(n)+m
+    if typeof(copula) == Nested_Clayton_cop
+      return nestedcopulag("clayton", n1, ϕ, θ, rand(t, n2+1))
+    elseif typeof(copula) == Nested_AMH_cop
+      return nestedcopulag("amh", n1, ϕ, θ, rand(t, n2+1))
+    elseif typeof(copula) == Nested_Frank_cop
+      return nestedcopulag("frank", n1, ϕ, θ, rand(t, n2+1))
+    else
+      return nestedcopulag("gumbel", n1, ϕ, θ, rand(t, n2+1))
+    end
+end
+
+#=
 function nested_frank(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
   n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
   n2 = sum(n)+m
   return nestedcopulag("frank", n1, ϕ, θ, rand(t, n2+1))
 end
+=#
+
+"""
+    Double_Nested_Gumbel_cop
+
+Double_Nested Gumbel copula, fields:
+  - children::Vector{Nested_Gumbel_cop}  vector of childer copulas
+  - θ::Float64 - parameterer of parent copula, domain θ ∈ [1,∞).
+
+Requires sufficient nesting condition for θ and child copulas
+
+ If using Doulbe_Nested_Gumbel_cop(children::Vector{Nested_Gumbel_cop}, m::Int, θ::Float64, cor::String)
+ uses "Spearman" or "Kendall" correlation to compute θ
+"""
+
+struct Double_Nested_Gumbel_cop
+  children::Vector{Nested_Gumbel_cop}
+  θ::Float64
+  function(::Type{Double_Nested_Gumbel_cop})(children::Vector{Nested_Gumbel_cop}, θ::Float64)
+      testθ(θ, "gumbel")
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      new(children, θ)
+  end
+  function(::Type{Double_Nested_Gumbel_cop})(children::Vector{Nested_Gumbel_cop}, ρ::Float64, cor::String)
+      θ = getθ4arch(ρ, "gumbel", cor)
+      ϕ = [ch.θ for ch in children]
+      θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
+      new(children, θ)
+  end
+end
+
+"""
+    simulate_copula1(t::Int, copula::Double_Nested_Gumbel_cop)
+
+Simylated double nested Gumbel copula
+"""
+
+function simulate_copula1(t::Int, copula::Double_Nested_Gumbel_cop)
+    θ = copula.θ
+    v = copula.children
+    n = [ch.n for ch in v[1].children]
+    Ψ = [ch.θ for ch in v[1].children]
+    X = nested_gumbel(t, n, Ψ, v[1].θ./θ, v[1].m)
+    for i in 2:length(v)
+        n = [ch.n for ch in v[i].children]
+        Ψ = [ch.θ for ch in v[i].children]
+        X = hcat(X, nested_gumbel(t, n, Ψ, v[i].θ./θ, v[i].m))
+    end
+    phi(-log.(X)./levygen(θ, rand(t)), θ, "gumbel")
+end
+
 
 """
   nested_gumbel(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
 
-this is more complicated, there are 3 posibilities
+Sample nested Gumbel copula, axiliary function for simulate_copula1(t::Int, copula::Double_Nested_Gumbel_cop)
 """
 
 function nested_gumbel(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
@@ -117,11 +348,7 @@ function nested_gumbel(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64,
   return nestedcopulag("gumbel", n1, ϕ, θ, rand(t, n2+1))
 end
 
-"""
-  Returns t realisations of ∑ᵢ ∑ⱼ nᵢⱼ variate data from double nested gumbel copula.
-  C_θ(C_ϕ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_ϕₖ(C_Ψₖ₁(u,...), ..., C_Ψₖ,ₗₖ(u,...)))
-   where lᵢ = length(n[i])
-"""
+#=
 
 function nested_gumbel(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}},
                                                              ϕ::Vector{Float64}, θ::Float64)
@@ -132,16 +359,41 @@ function nested_gumbel(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64
   end
   phi(-log.(X)./levygen(θ, rand(t)), θ, "gumbel")
 end
-
+=#
 
 """
-  nested_gumbel(t::Int, θ::Vector{Float64})
+ Hierarchical_Gumbel_cop
 
-Returns t realisations of length(θ)+1 variate data from hierarchically nested Gumbel copula.
+The hierarchically nested Gumbel copula.
 C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)
+"""
 
+struct Hierarchical_Gumbel_cop
+  θ::Vector{Float64}
+  function(::Type{Hierarchical_Gumbel_cop})(θ::Vector{Float64})
+      testθ(θ[end], "gumbel")
+      issorted(θ; rev=true) || throw(DomainError("wrong heirarchy of parameters"))
+      new(θ)
+  end
+end
 
 """
+    simulate_copula1(t::Int, copula::Hierarchical_Gumbel_cop)
+
+Returns t realisations of length(θ)+1 variate data from Hierarchical_Gumbel_cop(θ)
+"""
+
+function simulate_copula1(t::Int, copula::Hierarchical_Gumbel_cop)
+  θ = copula.θ
+  θ = vcat(θ, [1.])
+  X = rand(t,1)
+  for i in 1:length(θ)-1
+    X = nestedstep("gumbel", hcat(X, rand(t)), ones(t), θ[i], θ[i+1])
+  end
+  X
+end
+
+#=
 function nested_gumbel(t::Int, θ::Vector{Float64})
   testθ(θ[end], "gumbel")
   issorted(θ; rev=true) || throw(DomainError("wrong heirarchy of parameters"))
@@ -152,7 +404,7 @@ function nested_gumbel(t::Int, θ::Vector{Float64})
   end
   X
 end
-
+=#
 
 """
   nestedcopulag(copula::String, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, r::Matrix{Float64})

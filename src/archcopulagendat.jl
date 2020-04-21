@@ -1,6 +1,6 @@
 # Archimedean copulas
 """
-  getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
+  getV0(θ::Float64, v::Vector{Float64}, copula::String)
 
 Returns Vector{Float} or Vector{Int} of realisations of axiliary variable V0
 used to ganarate data from 1d archimedean copula with parameter Θ, given v:
@@ -16,7 +16,7 @@ julia> getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton")
  1.64237
 ```
 """
-function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
+function getV0(θ::Float64, v::Vector{Float64}, copula::String)
   if copula == "clayton"
     return quantile.(Gamma(1/θ, 1), v)
   elseif copula == "amh"
@@ -30,7 +30,7 @@ function getV0(θ::Union{Float64, Int}, v::Vector{Float64}, copula::String)
 end
 
 """
-  phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
+  phi(u::Matrix{Float64}, θ::Float64, copula::String)
 
 Given a matrix t realisations of n variate data ℜᵗⁿ ∋ u = -log(rand(t,n))./V0
 returns it transformed through an inverse generator of archimedean copula. Output
@@ -44,7 +44,7 @@ julia> julia> phi([0.2 0.6; 0.4 0.8], 2., "clayton")
  0.745356  0.620174
 ```
 """
-function phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
+function phi(u::Matrix{Float64}, θ::Float64, copula::String)
   if copula == "clayton"
     return (1 .+ u).^(-1/θ)
   elseif copula == "amh"
@@ -58,7 +58,7 @@ function phi(u::Matrix{Float64}, θ::Union{Float64, Int}, copula::String)
 end
 
 """
-  arch_gen(copula::String, r::Matrix{Float}, θ::Union{Float64, Int})
+  arch_gen(copula::String, r::Matrix{Float}, θ::Float64)
 
 Auxiliary function used to generate data from archimedean copula (clayton, gumbel, frank or amh)
 parametrised by a single parameter θ given a matrix of independent [0,1] distributerd
@@ -72,7 +72,7 @@ random vectors.
 ```
 
 """
-function arch_gen(copula::String, r::Matrix{T}, θ::Union{Float64, Int}) where T <:AbstractFloat
+function arch_gen(copula::String, r::Matrix{T}, θ::Float64) where T <:AbstractFloat
   u = -log.(r[:,1:end-1])./getV0(θ, r[:,end], copula)
   phi(u, θ, copula)
 end
@@ -80,25 +80,25 @@ end
 """
   struct Gumbel_cop
 
-    constructor Gumbel_cop(n::Int, θ::Union{Float64, Int})
+    constructor Gumbel_cop(n::Int, θ::Float64)
 
-The Gumbel n variate copula parametrised by θ::Union{Float64, Int} ∈ [1, ∞), supported for n::Int ≧ 2.
+The Gumbel n variate copula parametrised by θ::Float64 ∈ [1, ∞), supported for n::Int ≧ 2.
 
-If Gumbel_cop(n::Int, θ::Union{Float64, Int}, cor::String) and cor == "Spearman", "Kendall",
+If Gumbel_cop(n::Int, θ::Float64, cor::String) and cor == "Spearman", "Kendall",
 uses these correlations to compute θ, correlations must be greater than zero.
 
 
 """
 struct Gumbel_cop
   n::Int
-  θ::Union{Float64, Int}
-  function(::Type{Gumbel_cop})(n::Int, θ::Union{Float64, Int})
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  θ::Float64
+  function(::Type{Gumbel_cop})(n::Int, θ::Float64)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       testθ(θ, "gumbel")
       new(n, θ)
   end
-  function(::Type{Gumbel_cop})(n::Int, ρ::Union{Float64, Int}, cor::String)
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  function(::Type{Gumbel_cop})(n::Int, ρ::Float64, cor::String)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "gumbel", cor)
       new(n, θ)
   end
@@ -129,7 +129,7 @@ function simulate_copula1(t::Int, copula::Gumbel_cop)
 end
 
 #=
-function gumbel(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+function gumbel(t::Int, n::Int, θ::Float64; cor::String = "")
     θ = getθ4arch(θ, "gumbel", cor)
     return arch_gen("gumbel", rand(t,n+1), θ)
 end
@@ -138,14 +138,14 @@ end
 """
   struct Gumbel_cop_rev
 
-constructor Gumbel_cop_rev(n::Int, θ::Union{Float64, Int})
+constructor Gumbel_cop_rev(n::Int, θ::Float64)
 
 The reversed Gumbel n variate copula, i.e. such that the output is 1 .- u,
 where u is modelled by the corresponding Gumbel copula.
 
-Parametrised by θ::Union{Float64, Int} ∈ [1, ∞), supported for n::Int ≧ 2.
+Parametrised by θ::Float64 ∈ [1, ∞), supported for n::Int ≧ 2.
 
-If Gumbel_cop_rev(n::Int, θ::Union{Float64, Int}, cor::String),
+If Gumbel_cop_rev(n::Int, θ::Float64, cor::String),
 and cor == "Spearman", "Kendall", uses these correlations to compute θ,
 correlations must be greater than zero.
 
@@ -153,14 +153,14 @@ correlations must be greater than zero.
 """
 struct Gumbel_cop_rev
   n::Int
-  θ::Union{Float64, Int}
-  function(::Type{Gumbel_cop_rev})(n::Int, θ::Union{Float64, Int})
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  θ::Float64
+  function(::Type{Gumbel_cop_rev})(n::Int, θ::Float64)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       testθ(θ, "gumbel")
       new(n, θ)
   end
-  function(::Type{Gumbel_cop_rev})(n::Int, ρ::Union{Float64, Int}, cor::String)
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  function(::Type{Gumbel_cop_rev})(n::Int, ρ::Float64, cor::String)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "gumbel", cor)
       new(n, θ)
   end
@@ -192,7 +192,7 @@ function simulate_copula1(t::Int, copula::Gumbel_cop_rev)
 end
 
 #=
-function rev_gumbel(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+function rev_gumbel(t::Int, n::Int, θ::Float64; cor::String = "")
   1 .- gumbel(t, n, θ; cor = cor)
 end
 =#
@@ -200,13 +200,13 @@ end
 """
   struct Clayton_cop
 
-    constructor Clayton_cop(n::Int, θ::Union{Float64, Int})
+    constructor Clayton_cop(n::Int, θ::Float64)
 
-The Clayton n variate copula parametrised by θ::Union{Float64, Int}.
+The Clayton n variate copula parametrised by θ::Float64.
 Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
 supported for n::Int ≧ 2.
 
-If Clayton_cop(n::Int, θ::Union{Float64, Int}, cor::String)
+If Clayton_cop(n::Int, θ::Float64, cor::String)
 and cor == "Spearman", "Kendall", these correlations are used to compute θ,
 correlations must be greater than zero.
 
@@ -214,9 +214,9 @@ correlations must be greater than zero.
 """
 struct Clayton_cop
   n::Int
-  θ::Union{Float64, Int}
-  function(::Type{Clayton_cop})(n::Int, θ::Union{Float64, Int})
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  θ::Float64
+  function(::Type{Clayton_cop})(n::Int, θ::Float64)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "clayton")
       else
@@ -224,8 +224,8 @@ struct Clayton_cop
       end
       new(n, θ)
   end
-  function(::Type{Clayton_cop})(n::Int, ρ::Union{Float64, Int}, cor::String)
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  function(::Type{Clayton_cop})(n::Int, ρ::Float64, cor::String)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "clayton", cor)
       new(n, θ)
   end
@@ -278,14 +278,14 @@ end
 """
   Clayton_cop_rev
 
-  constructor Clayton_cop_rev(n::Int, θ::Union{Float64, Int})
+  constructor Clayton_cop_rev(n::Int, θ::Float64)
 
-The reversed Clayton n variate copula parametrised by θ::Union{Float64, Int} i.e.
+The reversed Clayton n variate copula parametrised by θ::Float64 i.e.
 such that the output is 1 .- u, where u is modelled by the corresponding Clayton copula.
 θ. Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
 supported for n::Int ≧ 2.
 
-If Clayton_cop_rev(n::Int, θ::Union{Float64, Int}, cor::String)
+If Clayton_cop_rev(n::Int, θ::Float64, cor::String)
 where cor == "Spearman", "Kendall", these correlations are used to compute θ.
 Correlations must be greater than zero.
 """
@@ -293,9 +293,9 @@ Correlations must be greater than zero.
 
 struct Clayton_cop_rev
   n::Int
-  θ::Union{Float64, Int}
-  function(::Type{Clayton_cop_rev})(n::Int, θ::Union{Float64, Int})
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  θ::Float64
+  function(::Type{Clayton_cop_rev})(n::Int, θ::Float64)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "clayton")
       else
@@ -303,15 +303,15 @@ struct Clayton_cop_rev
       end
       new(n, θ)
   end
-  function(::Type{Clayton_cop_rev})(n::Int, ρ::Union{Float64, Int}, cor::String)
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  function(::Type{Clayton_cop_rev})(n::Int, ρ::Float64, cor::String)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "clayton", cor)
       new(n, θ)
   end
 end
 
 """
-  rev_clayton(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+  rev_clayton(t::Int, n::Int, θ::Float64; cor::String = "")
 
   Returns 1 .- clayton(....)
 
@@ -337,11 +337,11 @@ end
 """
   AMH_cop
 
-  constructor AMH_cop(n::Int, θ::Union{Float64, Int})
+  constructor AMH_cop(n::Int, θ::Float64)
 
 The Ali-Mikhail-Haq copula parametrised by θ. Domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
 
-Using constructor AMH_cop(n::Int, θ::Union{Float64, Int}, cor::String)
+Using constructor AMH_cop(n::Int, θ::Float64, cor::String)
 where cor == "Spearman", "Kendall", these correlations are used to compute θ.
 Such correlations must be grater than zero and limited from above
 due to the θ domain.
@@ -351,9 +351,9 @@ due to the θ domain.
 
 struct AMH_cop
   n::Int
-  θ::Union{Float64, Int}
-  function(::Type{AMH_cop})(n::Int, θ::Union{Float64, Int})
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  θ::Float64
+  function(::Type{AMH_cop})(n::Int, θ::Float64)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "amh")
       else
@@ -361,8 +361,8 @@ struct AMH_cop
       end
       new(n, θ)
   end
-  function(::Type{AMH_cop})(n::Int, ρ::Union{Float64, Int}, cor::String)
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  function(::Type{AMH_cop})(n::Int, ρ::Float64, cor::String)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "amh", cor)
       new(n, θ)
   end
@@ -400,7 +400,7 @@ function simulate_copula1(t::Int, copula::AMH_cop)
 end
 
 #=
-function amh(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+function amh(t::Int, n::Int, θ::Float64; cor::String = "")
   if (θ in [0,1]) | (n == 2)*(θ < 0)
     return chaincopulagen(t, [θ], "amh"; cor=cor)
   else
@@ -417,7 +417,7 @@ end
 """
   AMH_cop_rev
 
-  constructor AMH_cop_rev(n::Int, θ::Union{Float64, Int})
+  constructor AMH_cop_rev(n::Int, θ::Float64)
 
 The reversed Ali-Mikhail-Haq copula parametrised by θ, i.e.
 such that the output is 1 .- u, where u is modelled by the corresponding Clayton copula.
@@ -425,7 +425,7 @@ such that the output is 1 .- u, where u is modelled by the corresponding Clayton
 Domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
 
 
-Using constructor AMH_cop_rev(n::Int, θ::Union{Float64, Int}, cor::String)
+Using constructor AMH_cop_rev(n::Int, θ::Float64, cor::String)
 where cor == "Spearman", "Kendall", these correlations are used to compute θ.
 Such correlations must be grater than zero and limited from above
 due to the θ domain.
@@ -435,9 +435,9 @@ due to the θ domain.
 
 struct AMH_cop_rev
   n::Int
-  θ::Union{Float64, Int}
-  function(::Type{AMH_cop_rev})(n::Int, θ::Union{Float64, Int})
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  θ::Float64
+  function(::Type{AMH_cop_rev})(n::Int, θ::Float64)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "amh")
       else
@@ -445,8 +445,8 @@ struct AMH_cop_rev
       end
       new(n, θ)
   end
-  function(::Type{AMH_cop_rev})(n::Int, ρ::Union{Float64, Int}, cor::String)
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  function(::Type{AMH_cop_rev})(n::Int, ρ::Float64, cor::String)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "amh", cor)
       new(n, θ)
   end
@@ -481,7 +481,7 @@ function simulate_copula1(t::Int, copula::AMH_cop_rev)
 end
 
 #=
-function rev_amh(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+function rev_amh(t::Int, n::Int, θ::Float64; cor::String = "")
   return 1 .- amh(t, n, θ; cor = cor)
 end
 =#
@@ -489,13 +489,13 @@ end
 """
   struct Frank_cop
 
-constructor Frank_cop(n::Int, θ::Union{Float64, Int})
+constructor Frank_cop(n::Int, θ::Float64)
 
-The Frank n variate copula parametrised by θ::Union{Float64, Int}.
+The Frank n variate copula parametrised by θ::Float64.
 Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ (-∞, 0) ∪ (0, ∞) for n = 2,
 supported for n::Int ≧ 2.
 
-If Frank_cop(n::Int, θ::Union{Float64, Int}, cor::String)
+If Frank_cop(n::Int, θ::Float64, cor::String)
 and cor == "Spearman", "Kendall", these correlations are used to compute θ,
 correlations must be greater than zero.
 
@@ -504,9 +504,9 @@ correlations must be greater than zero.
 
 struct Frank_cop
   n::Int
-  θ::Union{Float64, Int}
-  function(::Type{Frank_cop})(n::Int, θ::Union{Float64, Int})
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  θ::Float64
+  function(::Type{Frank_cop})(n::Int, θ::Float64)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "frank")
       else
@@ -514,8 +514,8 @@ struct Frank_cop
       end
       new(n, θ)
   end
-  function(::Type{Frank_cop})(n::Int, ρ::Union{Float64, Int}, cor::String)
-      n >= 2 || throw(AssertionError("not supported for n < 2"))
+  function(::Type{Frank_cop})(n::Int, ρ::Float64, cor::String)
+      n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "frank", cor)
       new(n, θ)
   end
@@ -562,7 +562,7 @@ end
 
 #=
 
-function frank(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
+function frank(t::Int, n::Int, θ::Float64; cor::String = "")
   if (n == 2)*(θ < 0)
     return chaincopulagen(t, [θ], "frank"; cor=cor)
   else
@@ -577,11 +577,11 @@ end
 
 =#
 """
-  function testθ(θ::Union{Float64, Int}, copula::String)
+  function testθ(θ::Float64, copula::String)
 
 Tests the parameter θ value for archimedean copula, returns void
 """
-function testθ(θ::Union{Float64, Int}, copula::String)
+function testθ(θ::Float64, copula::String)
   if copula == "gumbel"
     θ >= 1 || throw(DomainError("gumbel copula not supported for θ < 1"))
   elseif copula == "amh"
@@ -633,7 +633,7 @@ function useτ(τ::Float64, copula::String)
 end
 
 """
-  getθ4arch(ρ::Union{Float64, Int}, copula::String, cor::String)
+  getθ4arch(ρ::Float64, copula::String, cor::String)
 
   get the copula parameter given the correlation, test if the parameter is in range
 
@@ -655,7 +655,7 @@ ERROR: AssertionError: Pearson correlation not supported
 ```
 """
 
-function getθ4arch(ρ::Union{Float64, Int}, copula::String, cor::String)
+function getθ4arch(ρ::Float64, copula::String, cor::String)
   if cor == "Spearman"
     θ = useρ(ρ , copula)
   elseif cor == "Kendall"
