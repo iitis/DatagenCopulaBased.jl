@@ -102,7 +102,7 @@ function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
             simulate_copula1(t, AMH_cop_rev(args...))
         end
     elseif copula == "frank"
-           simulate_copula(t, frank, n, θ; cor = cor)
+           simulate_copula1(t, Frank_cop(args...))
 
     else
         throw(AssertionError("$(copula) copula is not supported"))

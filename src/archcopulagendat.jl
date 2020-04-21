@@ -203,7 +203,7 @@ end
     constructor Clayton_cop(n::Int, θ::Union{Float64, Int})
 
 The Clayton n variate copula parametrised by θ::Union{Float64, Int}.
-θ. Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
+Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
 supported for n::Int ≧ 2.
 
 If Clayton_cop(n::Int, θ::Union{Float64, Int}, cor::String)
@@ -399,6 +399,7 @@ function simulate_copula1(t::Int, copula::AMH_cop)
   end
 end
 
+#=
 function amh(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
   if (θ in [0,1]) | (n == 2)*(θ < 0)
     return chaincopulagen(t, [θ], "amh"; cor=cor)
@@ -411,7 +412,7 @@ function amh(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
     return arch_gen("amh", rand(t,n+1), θ)
   end
 end
-
+=#
 
 """
   AMH_cop_rev
@@ -479,42 +480,87 @@ function simulate_copula1(t::Int, copula::AMH_cop_rev)
   1 .- simulate_copula1(t, AMH_cop(n, θ))
 end
 
+#=
 function rev_amh(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
   return 1 .- amh(t, n, θ; cor = cor)
 end
+=#
+
+"""
+  struct Frank_cop
+
+constructor Frank_cop(n::Int, θ::Union{Float64, Int})
+
+The Frank n variate copula parametrised by θ::Union{Float64, Int}.
+Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ (-∞, 0) ∪ (0, ∞) for n = 2,
+supported for n::Int ≧ 2.
+
+If Frank_cop(n::Int, θ::Union{Float64, Int}, cor::String)
+and cor == "Spearman", "Kendall", these correlations are used to compute θ,
+correlations must be greater than zero.
 
 """
 
-  frank(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
 
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from the clayton copula
-parametrised by θ. Domain θ ∈ (0, ∞) for n > 2 and θ ∈ (-∞, 0) ∪ (0, ∞) for n = 2.
+struct Frank_cop
+  n::Int
+  θ::Union{Float64, Int}
+  function(::Type{Frank_cop})(n::Int, θ::Union{Float64, Int})
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      if n > 2
+        testθ(θ, "frank")
+      else
+        θ != 0 || throw(DomainError("bivariate frank not supported for θ = 0"))
+      end
+      new(n, θ)
+  end
+  function(::Type{Frank_cop})(n::Int, ρ::Union{Float64, Int}, cor::String)
+      n >= 2 || throw(AssertionError("not supported for n < 2"))
+      θ = getθ4arch(ρ, "frank", cor)
+      new(n, θ)
+  end
+end
 
-It cor == "Spearman", "Kendall", uses these correlations for θ (these must be grater than zero).
-
-```jldoctest
-
-julia> Random.seed!(43);
-
-julia> frank(4, 2, 3.5)
-4×2 Array{Float64,2}:
- 0.227231  0.363146
- 0.94705   0.979777
- 0.877446  0.824164
- 0.64929   0.140499
-
-
- julia> Random.seed!(43);
-
- julia> frank(4, 2, 0.2; cor = "Spearman")
- 4×2 Array{Float64,2}:
-  0.111685  0.277792
-  0.92239   0.97086
-  0.894941  0.840751
-  0.864546  0.271543
-
-```
 """
+  simulate_copula1(t::Int, copula::Frank_cop)
+
+  Returns: t x n Matrix{Float}, t realisations of n-variate Frank copula
+
+  ```jldoctest
+
+  julia> Random.seed!(43);
+
+  julia> simulate_copula1(4, Frank_cop(2, 3.5))
+  4×2 Array{Float64,2}:
+   0.227231  0.363146
+   0.94705   0.979777
+   0.877446  0.824164
+   0.64929   0.140499
+
+
+   julia> Random.seed!(43);
+
+   julia> simulate_copula1(4, Frank_cop(2, 0.2, "Spearman"))
+   4×2 Array{Float64,2}:
+    0.111685  0.277792
+    0.92239   0.97086
+    0.894941  0.840751
+    0.864546  0.271543
+
+  ```
+"""
+
+function simulate_copula1(t::Int, copula::Frank_cop)
+  n = copula.n
+  θ = copula.θ
+  if (n == 2) & (θ < 0)
+    return chaincopulagen(t, [θ], "frank")
+  else
+    return arch_gen("frank", rand(t,n+1), θ)
+  end
+end
+
+#=
 
 function frank(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
   if (n == 2)*(θ < 0)
@@ -529,7 +575,7 @@ function frank(t::Int, n::Int, θ::Union{Float64, Int}; cor::String = "")
   end
 end
 
-
+=#
 """
   function testθ(θ::Union{Float64, Int}, copula::String)
 
