@@ -8,7 +8,9 @@
   eval(Expr(:toplevel, :(@everywhere using Random)))
   eval(Expr(:toplevel, :(@everywhere Random.seed!(44))))
   @test nestedfrankgen(5., 3., [1, 1, 2]) == [9, 54, 63]
-  x = simulate_copula(250000, nested_frank, [3, 2],  [8., 10.], 2., 2)
+  a = Frank_cop(3, 8.)
+  b = Frank_cop(2, 10.)
+  x = simulate_copula1(250000, Nested_Frank_cop([a,b], 2, 2.))
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
