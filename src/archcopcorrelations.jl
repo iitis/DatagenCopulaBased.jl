@@ -60,7 +60,7 @@ function AMHτ2θ(τ::Float64)
   -0.9999
 end
 
-# pearson ρ to copulas parameter
+# Spearman ρ to copulas parameter
 
 """
  ρ2θ(ρ::Union{Float64, Int}, copula::String)

@@ -39,7 +39,7 @@ end
       cp = Nested_Clayton_cop([c1, c2], 1, 1.1)
 
       Random.seed!(43)
-      @test simulate_copula1(1, cp) ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
+      @test simulate_copula(1, cp) ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
     end
     @testset "large example on data" begin
       c1 = Clayton_cop(2, 3.)
@@ -49,11 +49,11 @@ end
       Random.seed!(42)
       x1 = nestedarchcopulagen(1000, [2, 3],  [3., 4.], 1.5, "clayton", 2)
       Random.seed!(42)
-      x2 = simulate_copula1(1000, cp)
+      x2 = simulate_copula(1000, cp)
       @test norm(x1 -x2) ≈ 0.
 
       Random.seed!(42)
-      x = simulate_copula1(80000, cp)
+      x = simulate_copula(80000, cp)
       @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
       @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
       @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -74,7 +74,7 @@ end
       #test on correlations
       c1 = Clayton_cop(2, .7, "Kendall")
       cp = Nested_Clayton_cop([c1], 1, 0.3, "Kendall")
-      x = simulate_copula1(75000, cp)
+      x = simulate_copula(75000, cp)
       @test corkendall(x)[:,1] ≈ [1, 0.7, 0.3] atol=1.0e-2
     end
   end
@@ -93,7 +93,7 @@ end
       c2 = AMH_cop(2, .9)
       cp = Nested_AMH_cop([c1, c2], 1, 0.5)
       Random.seed!(43)
-      @test simulate_copula1(1, cp) ≈ [0.587322  0.910074  0.931225  0.953353  0.665769] atol=1.0e-5
+      @test simulate_copula(1, cp) ≈ [0.587322  0.910074  0.931225  0.953353  0.665769] atol=1.0e-5
     end
     @testset "large example" begin
       c1 = AMH_cop(3, .8)
@@ -101,13 +101,13 @@ end
       cp = Nested_AMH_cop([c1, c2], 2, 0.5)
       # test old dispatching
       Random.seed!(43)
-      x2 = simulate_copula1(1000, cp)
+      x2 = simulate_copula(1000, cp)
       Random.seed!(43)
       x1 = nestedarchcopulagen(1000, [3, 2], [0.8, 0.7], 0.5, "amh", 2)
       @test norm(x1 -x2) ≈ 0.
 
       Random.seed!(43)
-      x = simulate_copula1(150000, cp)
+      x = simulate_copula(150000, cp)
       @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
       @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
       @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -129,7 +129,7 @@ end
       #test on correlations
       c1 = AMH_cop(2, .2, "Kendall")
       cp = Nested_AMH_cop([c1], 1, 0.1, "Kendall")
-      x = simulate_copula1(80000, cp)
+      x = simulate_copula(80000, cp)
       @test corkendall(x)[:,1] ≈ [1, 0.2, 0.1] atol=1.0e-2
     end
   end
@@ -148,7 +148,7 @@ end
     a = Frank_cop(2, 2.)
     b = Frank_cop(2, 3.)
     cp = Nested_Frank_cop([a,b], 1, 1.1)
-    @test simulate_copula1(1, cp) ≈ [0.599183  0.908848  0.950577  0.966366  0.692735] atol=1.0e-5
+    @test simulate_copula(1, cp) ≈ [0.599183  0.908848  0.950577  0.966366  0.692735] atol=1.0e-5
   end
   @testset "large data set" begin
     # dest old dispatching
@@ -156,14 +156,14 @@ end
     b = Frank_cop(2, 10.)
     cp = Nested_Frank_cop([a,b], 2, 2.)
     Random.seed!(44)
-    x3 = simulate_copula1(1000, cp)
+    x3 = simulate_copula(1000, cp)
 
     Random.seed!(44)
     x1 = nestedarchcopulagen(1000, [3, 2],  [8., 10.], 2., "frank", 2)
     @test norm(x1 -x3) ≈ 0.
 
     Random.seed!(44)
-    x = simulate_copula1(250000, cp)
+    x = simulate_copula(250000, cp)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -186,7 +186,7 @@ end
     # correlation tests
     c1 = Frank_cop(2, .6, "Kendall")
     cp = Nested_Frank_cop([c1], 1, 0.2, "Kendall")
-    x = simulate_copula1(80000, cp)
+    x = simulate_copula(80000, cp)
     @test corkendall(x)[:,1] ≈ [1, 0.6, 0.2] atol=1.0e-2
   end
 end
@@ -205,7 +205,7 @@ end
     b = Gumbel_cop(2, 3.)
     cp = Nested_Gumbel_cop([a,b], 1, 1.1)
     Random.seed!(43)
-    @test simulate_copula1(1, cp) ≈ [0.841862  0.935749  0.83778  0.856959  0.502151] atol=1.0e-5
+    @test simulate_copula(1, cp) ≈ [0.841862  0.935749  0.83778  0.856959  0.502151] atol=1.0e-5
     Random.seed!(43)
     @test nested_gumbel(1, [2,2], [2., 3.], 1.1, 1) ≈ [0.841862  0.935749  0.83778  0.856959  0.502151] atol=1.0e-5
   end
@@ -217,11 +217,11 @@ end
     Random.seed!(44)
     x1 = nestedarchcopulagen(1000, [2,2], [4.2, 6.1], 2.1, "gumbel", 1)
     Random.seed!(44)
-    x3 = simulate_copula1(1000, cp)
+    x3 = simulate_copula(1000, cp)
     @test norm(x1 -x3) ≈ 0.
 
     Random.seed!(44)
-    x = simulate_copula1(500000, cp)
+    x = simulate_copula(500000, cp)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -239,7 +239,7 @@ end
     # correlation tests
     c1 = Gumbel_cop(2, .8, "Kendall")
     cp = Nested_Gumbel_cop([c1], 1, 0.2, "Kendall")
-    x = simulate_copula1(80000, cp)
+    x = simulate_copula(80000, cp)
     @test corkendall(x)[:,1] ≈ [1, 0.8, 0.2] atol=1.0e-2
   end
 end
@@ -271,7 +271,7 @@ end
     cgp = Double_Nested_Gumbel_cop([cp, cp1], 1.1)
 
     Random.seed!(43)
-    @test simulate_copula1(1, cgp) ≈ [0.710120 0.784970 0.918531 0.92325 0.21553 0.222828 0.4300154 0.240420] atol=1.0e-5
+    @test simulate_copula(1, cgp) ≈ [0.710120 0.784970 0.918531 0.92325 0.21553 0.222828 0.4300154 0.240420] atol=1.0e-5
   end
   @testset "large data" begin
     a = Gumbel_cop(2, 4.1)
@@ -287,11 +287,11 @@ end
     Random.seed!(43)
     x1 = nestedarchcopulagen(1000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2, "gumbel")
     Random.seed!(43)
-    x3 = simulate_copula1(1000, cgp)
+    x3 = simulate_copula(1000, cgp)
     @test norm(x3 - x1) ≈ 0.
 
     Random.seed!(43)
-    x = simulate_copula1(200000, cgp)
+    x = simulate_copula(200000, cgp)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -311,7 +311,7 @@ end
     cp1 = Nested_Gumbel_cop([a1], 1, 0.4, "Kendall")
     cgp = Double_Nested_Gumbel_cop([cp, cp1], 0.2, "Kendall")
 
-    x = simulate_copula1(250000, cgp)
+    x = simulate_copula(250000, cgp)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -344,18 +344,18 @@ end
   end
   @testset "simple example" begin
     Random.seed!(43)
-    @test simulate_copula1(1, Hierarchical_Gumbel_cop([2., 1.8, 1.7])) ≈ [0.454559  0.737742  0.782404  0.870944] atol=1.0e-5
+    @test simulate_copula(1, Hierarchical_Gumbel_cop([2., 1.8, 1.7])) ≈ [0.454559  0.737742  0.782404  0.870944] atol=1.0e-5
   end
   @testset "larger example" begin
     # test old dispatching
     Random.seed!(42)
     x1 = nestedarchcopulagen(1000, [4.2, 3.6, 1.1], "gumbel")
     Random.seed!(42)
-    x2 = simulate_copula1(1000, Hierarchical_Gumbel_cop([4.2, 3.6, 1.1]))
+    x2 = simulate_copula(1000, Hierarchical_Gumbel_cop([4.2, 3.6, 1.1]))
     @test norm(x2 - x1) ≈ 0.
 
     Random.seed!(42)
-    x = simulate_copula1(500000, Hierarchical_Gumbel_cop([4.2, 3.6, 1.1]))
+    x = simulate_copula(500000, Hierarchical_Gumbel_cop([4.2, 3.6, 1.1]))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -367,7 +367,7 @@ end
 
     # correlations
     Random.seed!(42)
-    x = simulate_copula1(500000, Hierarchical_Gumbel_cop([0.9, 0.2], "Kendall"))
+    x = simulate_copula(500000, Hierarchical_Gumbel_cop([0.9, 0.2], "Kendall"))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α

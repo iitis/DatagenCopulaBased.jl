@@ -21,19 +21,3 @@ function moρ2τ(ρ::Float64)
   f(τ) = 1/2 .*sin.(τ[1]*pi/2)+τ[1]/2 - ρ[1]
   fzero(f, -0.999, 0.999)
 end
-
-#=
-# some Marshall-Olkin copulas helpers
-
-function getmoλ(λ::Vector{Float64}, ind::Vector{Int})
-  n = floor(Int, log(2, length(λ)+1))
-  s = collect(combinations(1:n))
-  λ[[ind == a for a in s]]
-end
-
-function setmoλ!(λ::Vector{Float64}, ind::Vector{Int}, a::Float64)
-  n = floor(Int, log(2, length(λ)+1))
-  s = collect(combinations(1:n))
-  λ[[ind == a for a in s]] = a
-end
-=#

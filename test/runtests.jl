@@ -11,7 +11,7 @@ using Combinatorics
 using SpecialFunctions
 
 #import DatagenCopulaBased: simulate_copula
-import DatagenCopulaBased: rand2cop, fncopulagen
+import DatagenCopulaBased: rand2cop, fncopulagen, chainfrechetcopulagen, chain_frechet
 import DatagenCopulaBased: logseriescdf, logseriesquantile, levyel, levygen, tiltedlevygen
 import DatagenCopulaBased: Ginv, InvlaJ, sampleInvlaJ, elInvlaF, nestedfrankgen
 import DatagenCopulaBased: getV0, phi
@@ -24,7 +24,7 @@ import DatagenCopulaBased: nestedcopulag, testnestedθϕ, nestedstep
 import DatagenCopulaBased: meanΣ, frechet, mean_outer, parameters, are_parameters_good, Σ_theor
 import DatagenCopulaBased: getcors_advanced
 import DatagenCopulaBased: random_unit_vector
-import DatagenCopulaBased: simulate_copula1
+import DatagenCopulaBased: archcopulagen, chaincopulagen, nestedarchcopulagen
 
 # axiliary tests
 include("tailtest.jl")

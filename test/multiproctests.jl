@@ -10,7 +10,7 @@
   @test nestedfrankgen(5., 3., [1, 1, 2]) == [9, 54, 63]
   a = Frank_cop(3, 8.)
   b = Frank_cop(2, 10.)
-  x = simulate_copula1(250000, Nested_Frank_cop([a,b], 2, 2.))
+  x = simulate_copula(250000, Nested_Frank_cop([a,b], 2, 2.))
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α

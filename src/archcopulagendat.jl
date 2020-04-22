@@ -2,9 +2,9 @@
 """
   getV0(θ::Float64, v::Vector{Float64}, copula::String)
 
-Returns Vector{Float} or Vector{Int} of realisations of axiliary variable V0
+Returns Vector{Float} or Vector{Int} of realizations of axiliary variable V0
 used to ganarate data from 1d archimedean copula with parameter Θ, given v:
-realisations of 1d variable uniformly distributed on [0,1]
+realizations of 1d variable uniformly distributed on [0,1]
 
 ```jldoctest
 
@@ -32,13 +32,13 @@ end
 """
   phi(u::Matrix{Float64}, θ::Float64, copula::String)
 
-Given a matrix t realisations of n variate data ℜᵗⁿ ∋ u = -log(rand(t,n))./V0
+Given a matrix t realizations of n variate data R^{t x n} ∋ u = -log(rand(t,n))./V0
 returns it transformed through an inverse generator of archimedean copula. Output
-is distributed uniformly on [0,1]ⁿ
+is distributed uniformly on [0,1]ⁿ.
 
 ```jldoctest
 
-julia> julia> phi([0.2 0.6; 0.4 0.8], 2., "clayton")
+julia> phi([0.2 0.6; 0.4 0.8], 2., "clayton")
 2×2 Array{Float64,2}:
  0.845154  0.6742
  0.745356  0.620174
@@ -61,7 +61,7 @@ end
   arch_gen(copula::String, r::Matrix{Float}, θ::Float64)
 
 Auxiliary function used to generate data from archimedean copula (clayton, gumbel, frank or amh)
-parametrised by a single parameter θ given a matrix of independent [0,1] distributerd
+parametrized by a single parameter θ given a matrix of independent [0,1] distributerd
 random vectors.
 
 ```jldoctest
@@ -70,7 +70,6 @@ random vectors.
    0.675778  0.851993
    0.687482  0.736394
 ```
-
 """
 function arch_gen(copula::String, r::Matrix{T}, θ::Float64) where T <:AbstractFloat
   u = -log.(r[:,1:end-1])./getV0(θ, r[:,end], copula)
@@ -78,16 +77,32 @@ function arch_gen(copula::String, r::Matrix{T}, θ::Float64) where T <:AbstractF
 end
 
 """
-  struct Gumbel_cop
+    Gumbel_cop
 
-    constructor Gumbel_cop(n::Int, θ::Float64)
+Fields:
+  - n::Int - number of marginals
+  - θ::Float64 - parameter
 
-The Gumbel n variate copula parametrised by θ::Float64 ∈ [1, ∞), supported for n::Int ≧ 2.
+Constructor
 
-If Gumbel_cop(n::Int, θ::Float64, cor::String) and cor == "Spearman", "Kendall",
-uses these correlations to compute θ, correlations must be greater than zero.
+        Gumbel_cop(n::Int, θ::Float64)
 
+The Gumbel n variate copula is parameterized by θ::Float64 ∈ [1, ∞), supported for n::Int ≧ 2.
 
+Constructor
+
+    Gumbel_cop(n::Int, θ::Float64, cor::String)
+
+where cor == "Spearman", "Kendall" uses these correlations to compute θ, correlations must be greater than zero.
+
+```jldoctest
+
+julia> Gumbel_cop(4, 3.)
+Gumbel_cop(4, 3.0)
+
+julia> Gumbel_cop(4, .75, "Kendall")
+Gumbel_cop(4, 4.0)
+```
 """
 struct Gumbel_cop
   n::Int
@@ -105,51 +120,54 @@ struct Gumbel_cop
 end
 
 """
+    simulate_copula(t::Int, copula::Gumbel_cop)
 
-  simulate_copula1(t::Int, copula::Gumbel_cop)
-
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
-Gumbel_cop(n, θ)
+Returns t realizations from the Gumbel copula -  Gumbel_cop(n, θ)
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> simulate_copula1(2, Gumbel_cop(3, 1.5))
+julia> simulate_copula(2, Gumbel_cop(3, 1.5))
 2×3 Array{Float64,2}:
  0.535534  0.900389  0.666363
  0.410877  0.667139  0.637826
- ```
-
+```
 """
-function simulate_copula1(t::Int, copula::Gumbel_cop)
+function simulate_copula(t::Int, copula::Gumbel_cop)
     θ = copula.θ
     n = copula.n
     return arch_gen("gumbel", rand(t,n+1), θ)
 end
 
-#=
-function gumbel(t::Int, n::Int, θ::Float64; cor::String = "")
-    θ = getθ4arch(θ, "gumbel", cor)
-    return arch_gen("gumbel", rand(t,n+1), θ)
-end
-=#
-
 """
-  struct Gumbel_cop_rev
+    Gumbel_cop_rev
 
-constructor Gumbel_cop_rev(n::Int, θ::Float64)
+Fields:
+  - n::Int - number of marginals
+  - θ::Float64 - parameter
 
-The reversed Gumbel n variate copula, i.e. such that the output is 1 .- u,
-where u is modelled by the corresponding Gumbel copula.
+Constructor
 
-Parametrised by θ::Float64 ∈ [1, ∞), supported for n::Int ≧ 2.
+    Gumbel_cop_rev(n::Int, θ::Float64)
 
-If Gumbel_cop_rev(n::Int, θ::Float64, cor::String),
-and cor == "Spearman", "Kendall", uses these correlations to compute θ,
+The reversed Gumbel copula (reversed means u → 1 .- u),
+parameterized by θ::Float64 ∈ [1, ∞), supported for n::Int ≧ 2.
+
+Constructor
+
+    Gumbel_cop_rev(n::Int, θ::Float64, cor::String)
+
+where cor == "Spearman", "Kendall", uses these correlations to compute θ,
 correlations must be greater than zero.
 
+```jldoctest
+julia> Gumbel_cop_rev(4, .75, "Kendall")
+Gumbel_cop_rev(4, 4.0)
 
+julia> Gumbel_cop_rev(4, 3.)
+Gumbel_cop_rev(4, 3.0)
+
+```
 """
 struct Gumbel_cop_rev
   n::Int
@@ -167,50 +185,52 @@ struct Gumbel_cop_rev
 end
 
 """
+    simulate_copula(t::Int, copula::Gumbel_cop_rev)
 
-  simulate_copula1(t::Int, copula::Gumbel_cop_tev)
-
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
-Gumbel_cop_rev(n, θ)
+Returns t realizations from the Gumbel _cop _rev(n, θ) - the reversed Gumbel copula (reversed means u → 1 .- u).
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> simulate_copula1(2, Gumbel_cop_rev(3, 1.5))
+julia> simulate_copula(2, Gumbel_cop_rev(3, 1.5))
 2×3 Array{Float64,2}:
  0.464466  0.0996114  0.333637
  0.589123  0.332861   0.362174
-
- ```
-
+```
 """
-function simulate_copula1(t::Int, copula::Gumbel_cop_rev)
+function simulate_copula(t::Int, copula::Gumbel_cop_rev)
     θ = copula.θ
     n = copula.n
     return 1 .- arch_gen("gumbel", rand(t,n+1), θ)
 end
 
-#=
-function rev_gumbel(t::Int, n::Int, θ::Float64; cor::String = "")
-  1 .- gumbel(t, n, θ; cor = cor)
-end
-=#
-
 """
-  struct Clayton_cop
+    Clayton_cop
 
-    constructor Clayton_cop(n::Int, θ::Float64)
+Fields:
+  - n::Int - number of marginals
+  - θ::Float64 - parameter
 
-The Clayton n variate copula parametrised by θ::Float64.
-Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
+Constructor
+
+    Clayton_cop(n::Int, θ::Float64)
+
+The Clayton n variate copula parameterized by θ::Float64, such that θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
 supported for n::Int ≧ 2.
 
-If Clayton_cop(n::Int, θ::Float64, cor::String)
-and cor == "Spearman", "Kendall", these correlations are used to compute θ,
-correlations must be greater than zero.
+Constructor
 
+    Clayton_cop(n::Int, θ::Float64, cor::String)
 
+uses cor == "Spearman", "Kendall" to compute θ, correlations must be greater than zero.
+
+```jldoctest
+julia> Clayton_cop(4, 3.)
+Clayton_cop(4, 3.0)
+
+julia> Clayton_cop(4, 0.9, "Spearman")
+Clayton_cop(4, 5.5595567742323775)
+```
 """
 struct Clayton_cop
   n::Int
@@ -232,17 +252,15 @@ struct Clayton_cop
 end
 
 """
+    simulate_copula(t::Int, copula::Clayton_cop)
 
-  simulate_copula1(t::Int, copula::Clayton_cop)
 
-
-Returns: t x n Matrix{Float}, t realisations of n-variate data generated from
-Clayton_cop(n, θ)
+Returns t realizations from the Clayton copula - Clayton_cop(n, θ)
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> simulate_copula1(10, Clayton_cop(2, 1))
+julia> simulate_copula(10, Clayton_cop(2, 1))
 10×2 Array{Float64,2}:
  0.770331  0.932834
  0.472847  0.0806845
@@ -257,15 +275,13 @@ julia> simulate_copula1(10, Clayton_cop(2, 1))
 
  julia> Random.seed!(43);
 
- julia> simulate_copula1(2, Clayton_cop(2, -0.5))
+ julia> simulate_copula(2, Clayton_cop(2, -0.5))
  2×2 Array{Float64,2}:
   0.180975  0.907735
   0.775377  0.872074
-
- ```
-
+```
 """
-function simulate_copula1(t::Int, copula::Clayton_cop)
+function simulate_copula(t::Int, copula::Clayton_cop)
     θ = copula.θ
     n = copula.n
   if (n == 2) & (θ < 0)
@@ -276,21 +292,36 @@ function simulate_copula1(t::Int, copula::Clayton_cop)
 end
 
 """
-  Clayton_cop_rev
+    Clayton_cop_rev
 
-  constructor Clayton_cop_rev(n::Int, θ::Float64)
+Fields:
+- n::Int - number of marginals
+- θ::Float64 - parameter
 
-The reversed Clayton n variate copula parametrised by θ::Float64 i.e.
-such that the output is 1 .- u, where u is modelled by the corresponding Clayton copula.
-θ. Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
+Constructor
+
+    Clayton_cop_rev(n::Int, θ::Float64)
+
+The reversed Clayton copula parameterized by θ::Float64 (reversed means u → 1 .- u).
+Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
 supported for n::Int ≧ 2.
 
-If Clayton_cop_rev(n::Int, θ::Float64, cor::String)
-where cor == "Spearman", "Kendall", these correlations are used to compute θ.
-Correlations must be greater than zero.
+Constructor
+
+    Clayton_cop_rev(n::Int, θ::Float64, cor::String)
+
+uses cor == "Spearman", "Kendall"  to compute θ, correlations must be greater than zero.
+
+```jldoctest
+
+julia> Clayton_cop_rev(4, 3.)
+Clayton_cop_rev(4, 3.0)
+
+julia> Clayton_cop_rev(4, 0.9, "Spearman")
+Clayton_cop_rev(4, 5.5595567742323775)
+
+```
 """
-
-
 struct Clayton_cop_rev
   n::Int
   θ::Float64
@@ -311,44 +342,57 @@ struct Clayton_cop_rev
 end
 
 """
-  rev_clayton(t::Int, n::Int, θ::Float64; cor::String = "")
+    simulate_copula(t::Int, copula::Clayton_cop_rev)
 
-  Returns 1 .- clayton(....)
+Returns t realizations form the Clayton _cop _rev(n, θ) - the reversed Clayton copula (reversed means u → 1 .- u)
 
 ```jldoctest
 
   julia> Random.seed!(43);
 
-  julia> rev_clayton(2, 2, -0.5)
+  julia> simulate_copula(2, Clayton_cop_rev(2, -0.5))
   2×2 Array{Float64,2}:
    0.819025  0.0922652
    0.224623  0.127926
-
 ```
-
 """
-
-function simulate_copula1(t::Int, copula::Clayton_cop_rev)
+function simulate_copula(t::Int, copula::Clayton_cop_rev)
   n = copula.n
   θ = copula.θ
-  1 .- simulate_copula1(t, Clayton_cop(n, θ))
+  1 .- simulate_copula(t, Clayton_cop(n, θ))
 end
 
 """
-  AMH_cop
+    AMH_cop
 
-  constructor AMH_cop(n::Int, θ::Float64)
+Fields:
+- n::Int - number of marginals
+- θ::Float64 - parameter
 
-The Ali-Mikhail-Haq copula parametrised by θ. Domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
+Constructor
 
-Using constructor AMH_cop(n::Int, θ::Float64, cor::String)
-where cor == "Spearman", "Kendall", these correlations are used to compute θ.
-Such correlations must be grater than zero and limited from above
+    AMH_cop(n::Int, θ::Float64)
+
+The Ali-Mikhail-Haq copula parameterized by θ, domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
+
+Constructor
+
+    AMH_cop(n::Int, θ::Float64, cor::String)
+
+uses cor == "Spearman", "Kendall" to compute θ. Such correlations must be grater than zero and limited from above
 due to the θ domain.
-              - Spearman correlation must be in range (0, 0.5)
-              -  Kendall correlation must be in range (0, 1/3)
-"""
+            - Spearman correlation must be in range (0, 0.5)
+            - Kendall correlation must be in range (0, 1/3)
 
+```jldoctest
+julia> AMH_cop(4, .3)
+AMH_cop(4, 0.3)
+
+julia> AMH_cop(4, .3, "Kendall")
+AMH_cop(4, 0.9999)
+
+```
+"""
 struct AMH_cop
   n::Int
   θ::Float64
@@ -369,27 +413,22 @@ struct AMH_cop
 end
 
 """
+    simulate_copula(t::Int, copula::AMH_cop)
 
-  simulate_copula1(t::Int, copula::AMH_cop)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate Ali-Mikhail-Haq copula
-
+Returns t realizations from the Ali-Mikhail-Haq - copulaAMH_cop(n, θ)
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> simulate_copula1(4, AMH_cop(2, -0.5))
+julia> simulate_copula(4, AMH_cop(2, -0.5))
 4×2 Array{Float64,2}:
  0.180975  0.477109
  0.775377  0.885537
  0.888934  0.759717
  0.924876  0.313789
-
- ```
-
+```
 """
-
-function simulate_copula1(t::Int, copula::AMH_cop)
+function simulate_copula(t::Int, copula::AMH_cop)
   n = copula.n
   θ = copula.θ
   if (θ in [0,1]) | (n == 2)*(θ < 0)
@@ -399,40 +438,35 @@ function simulate_copula1(t::Int, copula::AMH_cop)
   end
 end
 
-#=
-function amh(t::Int, n::Int, θ::Float64; cor::String = "")
-  if (θ in [0,1]) | (n == 2)*(θ < 0)
-    return chaincopulagen(t, [θ], "amh"; cor=cor)
-  else
-    if cor == ""
-      testθ(θ, "amh")
-    else
-      θ = getθ4arch(θ, "amh", cor)
-    end
-    return arch_gen("amh", rand(t,n+1), θ)
-  end
-end
-=#
-
 """
-  AMH_cop_rev
+    AMH_cop_rev
 
-  constructor AMH_cop_rev(n::Int, θ::Float64)
+Fields:
+  - n::Int - number of marginals
+  - θ::Float64 - parameter
 
-The reversed Ali-Mikhail-Haq copula parametrised by θ, i.e.
-such that the output is 1 .- u, where u is modelled by the corresponding Clayton copula.
+Constructor
 
+    AMH_cop_rev(n::Int, θ::Float64)
+
+The reversed Ali-Mikhail-Haq copula parametrized by θ, i.e.
+such that the output is 1 .- u, where u is modelled by the corresponding AMH copula.
 Domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
 
+Constructor
 
-Using constructor AMH_cop_rev(n::Int, θ::Float64, cor::String)
-where cor == "Spearman", "Kendall", these correlations are used to compute θ.
-Such correlations must be grater than zero and limited from above
+    AMH_cop_rev(n::Int, θ::Float64, cor::String)
+
+uses cor == "Spearman", "Kendall" to compute θ. Such correlations must be grater than zero and limited from above
 due to the θ domain.
               - Spearman correlation must be in range (0, 0.5)
               -  Kendall correlation must be in range (0, 1/3)
-"""
 
+```jldoctest
+julia> AMH_cop_rev(4, .3)
+AMH_cop_rev(4, 0.3)
+```
+"""
 struct AMH_cop_rev
   n::Int
   θ::Float64
@@ -453,55 +487,55 @@ struct AMH_cop_rev
 end
 
 """
+    simulate_copula(t::Int, copula::AMH_cop_rev)
 
-  simulate_copula1(t::Int, copula::AMH_cop_rev)
-
-Returns: t x n Matrix{Float}, t realisations of n-variate reversed
- Ali-Mikhail-Haq copula
+Returns t realizations from the reversed Ali-Mikhail-Haq copulaAMH _cop _rev(n, θ), reversed means u → 1 .- u.
 
 ```jldoctest
-  julia> Random.seed!(43);
+julia> Random.seed!(43);
 
-  julia> simulate_copula1(4, rev_amh(2, -0.5))
-  4×2 Array{Float64,2}:
-  0.819025  0.522891
-  0.224623  0.114463
-  0.111066  0.240283
-  0.075124  0.686211
-
+julia> simulate_copula(4, rev_amh(2, -0.5))
+4×2 Array{Float64,2}:
+0.819025  0.522891
+0.224623  0.114463
+0.111066  0.240283
+0.075124  0.686211
 ```
-
 """
-
-
-function simulate_copula1(t::Int, copula::AMH_cop_rev)
+function simulate_copula(t::Int, copula::AMH_cop_rev)
   n = copula.n
   θ = copula.θ
-  1 .- simulate_copula1(t, AMH_cop(n, θ))
+  1 .- simulate_copula(t, AMH_cop(n, θ))
 end
-
-#=
-function rev_amh(t::Int, n::Int, θ::Float64; cor::String = "")
-  return 1 .- amh(t, n, θ; cor = cor)
-end
-=#
 
 """
-  struct Frank_cop
+    Frank_cop
 
-constructor Frank_cop(n::Int, θ::Float64)
+Fields:
+- n::Int - number of marginals
+- θ::Float64 - parameter
 
-The Frank n variate copula parametrised by θ::Float64.
+Constructor
+
+    Frank_cop(n::Int, θ::Float64)
+
+The Frank n variate copula parameterized by θ::Float64.
 Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ (-∞, 0) ∪ (0, ∞) for n = 2,
 supported for n::Int ≧ 2.
 
-If Frank_cop(n::Int, θ::Float64, cor::String)
-and cor == "Spearman", "Kendall", these correlations are used to compute θ,
-correlations must be greater than zero.
+Constructor
 
+    Frank_cop(n::Int, θ::Float64, cor::String)
+uses cor == "Spearman", "Kendall" to compute θ, correlations must be greater than zero.
+
+```jldoctest
+julia> Frank_cop(2, -5.)
+Frank_cop(2, -5.0)
+
+julia> Frank_cop(4, .3)
+Frank_cop(4, 0.3)
+```
 """
-
-
 struct Frank_cop
   n::Int
   θ::Float64
@@ -522,35 +556,31 @@ struct Frank_cop
 end
 
 """
-  simulate_copula1(t::Int, copula::Frank_cop)
+    simulate_copula(t::Int, copula::Frank_cop)
 
-  Returns: t x n Matrix{Float}, t realisations of n-variate Frank copula
+Returns t realizations from the n-variate Frank copula - Frank _cop(n, θ)
 
-  ```jldoctest
+```jldoctest
+julia> Random.seed!(43);
 
-  julia> Random.seed!(43);
+julia> simulate_copula(4, Frank_cop(2, 3.5))
+4×2 Array{Float64,2}:
+  0.227231  0.363146
+  0.94705   0.979777
+  0.877446  0.824164
+  0.64929   0.140499
 
-  julia> simulate_copula1(4, Frank_cop(2, 3.5))
+julia> Random.seed!(43);
+
+julia> simulate_copula(4, Frank_cop(2, 0.2, "Spearman"))
   4×2 Array{Float64,2}:
-   0.227231  0.363146
-   0.94705   0.979777
-   0.877446  0.824164
-   0.64929   0.140499
-
-
-   julia> Random.seed!(43);
-
-   julia> simulate_copula1(4, Frank_cop(2, 0.2, "Spearman"))
-   4×2 Array{Float64,2}:
-    0.111685  0.277792
-    0.92239   0.97086
-    0.894941  0.840751
-    0.864546  0.271543
-
-  ```
+  0.111685  0.277792
+  0.92239   0.97086
+  0.894941  0.840751
+  0.864546  0.271543
+```
 """
-
-function simulate_copula1(t::Int, copula::Frank_cop)
+function simulate_copula(t::Int, copula::Frank_cop)
   n = copula.n
   θ = copula.θ
   if (n == 2) & (θ < 0)
@@ -560,22 +590,6 @@ function simulate_copula1(t::Int, copula::Frank_cop)
   end
 end
 
-#=
-
-function frank(t::Int, n::Int, θ::Float64; cor::String = "")
-  if (n == 2)*(θ < 0)
-    return chaincopulagen(t, [θ], "frank"; cor=cor)
-  else
-    if cor == ""
-      testθ(θ, "frank")
-    else
-      θ = getθ4arch(θ, "frank", cor)
-    end
-    return arch_gen("frank", rand(t,n+1), θ)
-  end
-end
-
-=#
 """
   function testθ(θ::Float64, copula::String)
 
@@ -595,8 +609,9 @@ end
 """
   useρ(ρ::Float64, copula::String)
 
-Tests the available pearson correlation for archimedean copula, returns Float,
-corresponding copula parameter θ.
+Tests the available Spearman correlation for the Archimedean copula.
+
+Returns Float64, the copula parameter θ with the Spearman correlation ρ.
 ```jldoctest
 
 julia> useρ(0.75, "gumbel")
@@ -654,7 +669,6 @@ ERROR: AssertionError: Pearson correlation not supported use Kendall or Spearman
 
 ```
 """
-
 function getθ4arch(ρ::Float64, copula::String, cor::String)
   if cor == "Spearman"
     θ = useρ(ρ , copula)

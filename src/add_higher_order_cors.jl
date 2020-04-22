@@ -3,12 +3,13 @@ VP = Vector{Pair{String,Vector{Int64}}}
 # our algorithm
 
 """
-  gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int)
+    gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false)
 
-  Takes x ∈ Rᵗˣⁿ a matrix of t realisations of data from Gaussin n-variate distribution.
-  Return a matrix of size x, where chosen subset of marginals (ind) has a
-   t-Student copula with ν degrees of freedom, all univariate marginals are
-   unchanged
+Takes x the matrix of t realizations of data from Gaussian n-variate distribution.
+
+Return the matrix of size x, where chosen subset of marginals (indexed by ind) has the
+t-Student copula with ν degrees of freedom, all univariate marginals are
+unchanged. If naive, performs the naive resampling.
 
 ```jldoctest
 
@@ -33,7 +34,6 @@ julia> gcop2tstudent(x, [1,2], 6)
   0.928668   1.50472     0.966819
   0.223439   1.12372     0.989712
  -0.710786   0.239012   -1.54419
-
 ```
 """
 function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false)
@@ -44,7 +44,7 @@ function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Boo
   μ = mean(x, dims = 1)
   y = (y.-μ)./S
   if naive
-    z = simulate_copula1(size(x,1), Student_cop(cor(x[:,ind]), ν))
+    z = simulate_copula(size(x,1), Student_cop(cor(x[:,ind]), ν))
     y[:,ind] = quantile.(Normal(0,1), z)
   else
     U = rand(Chisq(ν), size(x, 1))
@@ -58,13 +58,19 @@ function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Boo
 end
 
 """
-  gcop2arch(x::Matrix{Float64}, inds::VP)
+    gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}}; naive::Bool = false, notnested::Bool = false)
 
-Takes x ∈ Rᵗˣⁿ a matrix of t realisations of data from Gaussin n-variate distribution.
+
+Takes x the matrix of t realizations of data from Gaussian n-variate distribution.
 Return a matrix of size x, where chosen subset of marginals (inds[i][2]) has an Archimedean
 sub-copula (denoted by inds[i][1]), all univariate marginals are unchanged.
-e.g. inds = ["clayton" => [1,2]] a subset of marginals indexed by 1,2 to such with
-Clayton sub-copula
+
+For example inds = ["clayton" => [1,2]] means that the subset of marginals indexed by 1,2
+will be changed to the Clayton sub-copula. Inds may have more elements but marginals must
+not overlap.
+
+If naive, the naive resampling will be used. In notnested nested Archimedean copulas
+will not be used.
 
 ```jldoctest
 
@@ -89,7 +95,6 @@ julia> gcop2arch(x, ["clayton" => [1,2]]; naive::Bool = false, notnested::Bool =
   0.157683   1.47768    0.966819
   0.154893   0.893253   0.989712
  -0.657297  -0.339814  -1.54419
-
 ```
 """
 function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested::Bool = false)
@@ -117,12 +122,12 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested:
 end
 
 """
-  gcop2frechet(x::Matrix{Float64}, inds::VP)
+    gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false)
 
-Takes x ∈ Rᵗˣⁿ a matrix of t realisations of data from Gaussin n-variate distribution.
-Return a matrix of size x, where chosen subset of marginals (inds) has Frechet maximal
-sub-copula, all univariate marginals are unchanged.
+Takes x the matrix of t realizations of data from the Gaussian n-variate distribution.
 
+Return the matrix of size x, where chosen subset of marginals (determined by inds) has the Frechet (one parameter)
+sub-copula, all univariate marginals are unchanged. If naive, performs the naive resampling.
 
 ```jldoctest
 
@@ -139,7 +144,7 @@ julia> x = rand(MvNormal(Σ), 6)'
   0.518149   1.55065     0.989712
  -0.886205   0.149748   -1.54419
 
-julia> gcop2frechet(x, [1,2]; naive = false)
+julia> gcop2frechet(x, [1,2])
 6×3 Array{Float64,2}:
  -0.875777   -0.374723   -0.384124
   0.0960334   0.905703   -0.571326
@@ -147,7 +152,6 @@ julia> gcop2frechet(x, [1,2]; naive = false)
   0.813717    1.8513      0.966819
   0.599255    1.56873     0.989712
  -0.7223     -0.172507   -1.54419
-
 ```
 """
 function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false)
@@ -163,14 +167,15 @@ function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false
   quantile.(Normal(0,1), x).*S.+μ
 end
 
-
 """
-  gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
+    gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
 
-Takes x ∈ Rᵗˣⁿ a matrix of t realisations of data from Gaussin n-variate distribution.
-Return a matrix of size x, where chosen subset of marginals (inds) has bivariate Marshal Olkin
-sub-copula parametrised by free parameters λ1 and λ2. All univariate marginals are unchanged.
+Takes x the matrix of t realizations of data from Gaussian n-variate distribution.
 
+Return a matrix of size x, where chosen subset of marginals (inds) has bi-variate Marshall-Olkin
+sub-copula parameterized by the free parameters λ1 and λ2.
+λ12 is computed form the correlation between marginals. All univariate marginals are unchanged.
+If naive, uses the naive resampling.
 
 ```jldoctest
 
@@ -213,7 +218,6 @@ function gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 
   quantile.(Normal(0,1), x).*S.+μ
 end
 
-
 """
   testind(inds::Vector{Pair{String,Vector{Int64}}})
 
@@ -228,7 +232,6 @@ function testind(inds::Vector{Pair{String,Vector{Int64}}})
   end
   unique(indar) == indar || throw(AssertionError("differnt subcopulas must have different indices"))
 end
-
 
 """
   norm2unifind(x::Matrix{Float64}, i::Vector{Int}, cop::String)

@@ -1,9 +1,11 @@
-
 # transforms marginal univariate distributions
+
+VecVec = Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}
+
 """
   convertmarg!(X::Matrix, d::UnionAll, p::Vector{Vector})
 
-Takes matrix X of realisations of size(X,2) = n dimensional random variable, with
+Takes matrix X of realizations of size(X,2) = n dimensional random variable, with
 uniform marginals numbered by i, and convert those marginals to common distribution
 d with parameters p[i].
 If `testunif = true` each marginal is tested for uniformity.
@@ -29,8 +31,6 @@ julia> x
   1.70477    10.4192
 ```
 """
-VecVec = Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}
-
 function convertmarg!(U::Matrix{T}, d::UnionAll, p::VecVec = [fill([0,1], size(U, 2))...];
                                                 testunif::Bool = true) where T <: AbstractFloat
   for i = 1:size(U, 2)
@@ -54,7 +54,7 @@ If altersing = true, some σ are positive and some negative, else ∀ᵢⱼ σ�
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> julia> cormatgen(2)
+julia> cormatgen(2)
 2×2 Array{Float64,2}:
  1.0       0.660768
  0.660768  1.0

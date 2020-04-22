@@ -42,7 +42,6 @@ end
 """
 Return a Vector{Float64} of  of pseudo cdf of Levy stable distribution with parameters
 α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0, given a vector of Float64 - u
-
 """
 function levygen(θ::Union{Int, Float64}, u::Vector{Float64})
   p = invperm(sortperm(u))
@@ -56,7 +55,6 @@ end
 Returns a Vector{Float} genrated from the expotencialy tilted levy stable pdf
 f(x; V0, α) = exp(-V0^α) g(x; α)/exp(-V0), where g(x; α) is a stable Levy pdf
 with parameters α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0.
-
 """
 function tiltedlevygen(V0::Vector{Float64}, α::Float64)
   t = length(V0)
