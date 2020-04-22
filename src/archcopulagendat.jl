@@ -650,7 +650,7 @@ julia> getθ4arch(0.5, "gumbel", "Kendall")
 
 
 julia> getθ4arch(1.5, "gumbel", "Pearson")
-ERROR: AssertionError: Pearson correlation not supported
+ERROR: AssertionError: Pearson correlation not supported use Kendall or Spearman
 
 ```
 """
@@ -661,7 +661,7 @@ function getθ4arch(ρ::Float64, copula::String, cor::String)
   elseif cor == "Kendall"
     θ = useτ(ρ , copula)
   else
-    throw(AssertionError("$(cor) correlation not supported"))
+    throw(AssertionError("$(cor) correlation not supported use Kendall or Spearman"))
   end
   return θ
 end

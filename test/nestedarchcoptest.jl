@@ -217,10 +217,7 @@ end
     Random.seed!(44)
     x1 = nestedarchcopulagen(1000, [2,2], [4.2, 6.1], 2.1, "gumbel", 1)
     Random.seed!(44)
-    x2 = nested_gumbel(1000, [2,2], [4.2, 6.1], 2.1, 1)
-    Random.seed!(44)
     x3 = simulate_copula1(1000, cp)
-    @test norm(x1 -x2) ≈ 0.
     @test norm(x1 -x3) ≈ 0.
 
     Random.seed!(44)
@@ -341,6 +338,9 @@ end
   @testset "exceptions" begin
     @test_throws DomainError Hierarchical_Gumbel_cop([5., 6., 7.])
     @test_throws DomainError Hierarchical_Gumbel_cop([1.5, 1., 0.5])
+    @test_throws DomainError Hierarchical_Gumbel_cop([0.6, 0.4, 0.6], "Kendall")
+    @test_throws DomainError Hierarchical_Gumbel_cop([0.6, 0.4, -0.6], "Kendall")
+    @test_throws AssertionError Hierarchical_Gumbel_cop([0.6, 0.4, -0.6], "Kendoll")
   end
   @testset "simple example" begin
     Random.seed!(43)
@@ -364,5 +364,15 @@ end
     @test tail(x[:,2], x[:,3], "r", 0.01) ≈ 2-2^(1/3.6) atol=1.0e-1
     @test tail(x[:,3], x[:,4], "r", 0.01) ≈ 2-2^(1/1.1) atol=1.0e-2
     @test tail(x[:,1], x[:,2], "l", 0.00001) ≈ 0
+
+    # correlations
+    Random.seed!(42)
+    x = simulate_copula1(500000, Hierarchical_Gumbel_cop([0.9, 0.2], "Kendall"))
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    c = corkendall(x)
+    @test c[:,1] ≈ [1., 0.9, 0.2] atol=1.0e-2
+    @test c[:,3] ≈ [0.2, 0.2, 1.] atol=1.0e-2
   end
 end

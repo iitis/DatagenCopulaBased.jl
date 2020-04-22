@@ -1,3 +1,5 @@
+
+#=
 """
     simulate_copula(t::Int, copula::Function, args...)
 
@@ -62,9 +64,9 @@ function simulate_copula(t::Int, copula::Function, args...; cor = "")
         return copula(t, args...)
     end
 end
+=#
 
-
-# Obsolete implemnetations
+# Old implemnetations
 
 gausscopulagen(t::Int, Σ::Matrix{Float64}) = simulate_copula1(t, Gaussian_cop(Σ))
 
@@ -75,7 +77,7 @@ frechetcopulagen(t::Int, args...) = simulate_copula1(t, Frechet_cop(args...))
 marshallolkincopulagen(t::Int, λ::Vector{Float64}) = simulate_copula1(t, Marshall_Olkin_cop(λ))
 
 
-function archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String;
+function archcopulagen(t::Int, n::Int, θ::Float64, copula::String;
                                                               rev::Bool = false,
                                                               cor::String = "")
 
@@ -151,16 +153,20 @@ end
 
 
 function chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zero(α))
-    simulate_copula(t, chain_frechet, α, β)
+    simulate_copula1(t, Chain_of_Frechet(α, β))
 end
 
-VFI = Union{Vector{Float64}, Vector{Int}}
 
-function chaincopulagen(t::Int, θ::VFI, copula::Union{Vector{String}, String};
+function chaincopulagen(t::Int, θ::Vector{Float64}, copula::Union{Vector{String}, String};
                                         rev::Bool = false, cor::String = "")
+    args = (θ, copula)
+    if cor != ""
+        args = (θ, copula, cor)
+    end
+
     if rev == false
-      return simulate_copula(t, chain_archimedeans, θ, copula, cor = cor)
+      return simulate_copula1(t, Chain_of_Archimedeans(args...))
     else
-      return simulate_copula(t, rev_chain_archimedeans, θ, copula, cor = cor)
+      return 1 .- simulate_copula1(t, Chain_of_Archimedeans(args...))
     end
  end

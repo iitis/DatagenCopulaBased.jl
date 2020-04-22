@@ -35,52 +35,125 @@ function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
 end
 
 """
-  chain_archimedeans(t::Int, θ::Union{Vector{Float64}, Vector{Int}},
-                                copula::Union{String, Vector{String}};
-                                cor::String = "")
+  Chain_of_Archimedeans
 
-Returns: t x n Matrix{Float}, t realisations of n variate data, where n = length(θ)+1.
-To generate data uses chain of bivariate Archimedean one parameter copulas.
+Subsequent pairs of marginals are modelled by buvariate copulas form the archimedean
+familly, following copulas are supported: "Clayton", "Frank", "Ali-Mikhail-Haq",
+"Gumbel" copula is not supported.
 
-Following copula families are supported: clayton, frank and amh -- Ali-Mikhail-Haq.
+fileds:
+    - n::Int - number of variables
+    - θ::Vector{Float64} - a vector of parameters
+    - copulas::Vector{String} - a vector indicating bivariate copulas.
+    possible elements "clayton", "frank", "amh"
 
-It cor == pearson, kendall, uses correlation coeficient as a parameter
+Constructors:
+   Chain_of_Archimedeans(θ::Vector{Float64}, copulas::Vector{String})
+
+Requires length(θ) = length(copulas) and limitations on θ for particular bivariate copulas
+
+  Chain_of_Archimedeans(θ::Vector{Float64}, copulas::String)
+
+One copula familly for all subsequent pairs of marginals.
+
+  Chain_of_Archimedeans(θ::Vector{Float64}, copulas::Vector{String}, cor::String)
+  Chain_of_Archimedeans(θ::Vector{Float64}, copulas::String, cor::String)
+
+Uses cor = "Kendall", "Spearman" to compute parameters of the copula
+
+In all cases n = length(θ)+1.
+
+```jldoctest
+
+julia> c = Chain_of_Archimedeans([4., 11.], "frank")
+Chain_of_Archimedeans(3, [4.0, 11.0], ["frank", "frank"])
+
+julia> c = Chain_of_Archimedeans([.5, .7], ["frank", "clayton"], "Kendall")
+Chain_of_Archimedeans(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
+
+
+```
+
+"""
+
+struct Chain_of_Archimedeans
+  n::Int
+  θ::Vector{Float64}
+  copulas::Vector{String}
+  function(::Type{Chain_of_Archimedeans})(θ::Vector{Float64}, copulas::Vector{String})
+      n = length(θ)+1
+      n-1 == length(copulas) || throw(BoundsError("length(θ) ≠ length(copulas)"))
+      map(i -> testbivθ(θ[i], copulas[i]), 1:n-1)
+      for copula in copulas
+        copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
+      end
+      new(n, θ, copulas)
+  end
+  function(::Type{Chain_of_Archimedeans})(θ::Vector{Float64}, copulas::Vector{String}, cor::String)
+      n = length(θ)+1
+      n - 1 == length(copulas) || throw(BoundsError("length(θ) ≠ length(copulas)"))
+      for copula in copulas
+        copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
+      end
+      θ = map(i -> usebivρ(θ[i], copulas[i], cor), 1:n-1)
+      new(n, θ, copulas)
+  end
+  function(::Type{Chain_of_Archimedeans})(θ::Vector{Float64}, copula::String)
+      n = length(θ)+1
+      map(i -> testbivθ(θ[i], copula), 1:n-1)
+      copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
+      new(n, θ, [copula for i in 1:n-1])
+  end
+  function(::Type{Chain_of_Archimedeans})(θ::Vector{Float64}, copula::String, cor::String)
+      n = length(θ)+1
+      map(i -> testbivθ(θ[i], copula), 1:n-1)
+      copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
+      θ = map(i -> usebivρ(θ[i], copula, cor), 1:n-1)
+      new(n, θ, [copula for i in 1:n-1])
+  end
+end
+
+"""
+  function simulate_copula1(t::Int, copula::Chain_of_Archimedeans)
+
+Returns: t x n Matrix{Float}, t realisations of multivariate data modelled by
+Chain_of_Archimedeans
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> chain_archimedeans(1, [4., 11.], "frank")
+julia> c = Chain_of_Archimedeans([4., 11.], "frank")
+Chain_of_Archimedeans(3, [4.0, 11.0], ["frank", "frank"])
+
+julia> simulate_copula1(1, c)
 1×3 Array{Float64,2}:
  0.180975  0.492923  0.679345
 
+
+ julia> c = Chain_of_Archimedeans([.5, .7], ["frank", "clayton"], "Kendall")
+ Chain_of_Archimedeans(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
+
  julia> Random.seed!(43);
 
- julia> chain_archimedeans(1, [4., 11.], ["frank", "clayton"])
-1×3 Array{Float64,2}:
- 0.180975  0.492923  0.600322
+ julia> simulate_copula1(1, c)
+ 1×3 Array{Float64,2}:
+  0.180975  0.408582  0.646887
 
 ```
 """
 
-struct Chain_of_Archimedeans
-  theta::Vector{Float64}
-  copulas::Vector{String}
-  function(::Type{Chain_of_Archimedeans})(theta::Vector{Float64}, copulas::Vector{String})
-      length(theta) == length(copulas) || throw(BoundsError("length(θ) ≠ length(n)"))
-      map(i -> testbivθ(theta[i], copulas[i]), 1:length(theta))
-      for copula in copulas
-        copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
-      end
-      new(theta, copulas)
+function simulate_copula1(t::Int, copula::Chain_of_Archimedeans)
+  θ = copula.θ
+  copulas = copula.copulas
+  u = rand(t,1)
+  for i in 1:copula.n-1
+    u = hcat(u, rand2cop(u[:, i], θ[i], copulas[i]))
   end
-  function(::Type{Chain_of_Archimedeans})(theta::Vector{Float64}, copula::String)
-      map(i -> testbivθ(theta[i], copula), 1:length(theta))
-      copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
-      new(theta, [copula for i in 1:length(theta)])
-  end
+  return u
 end
 
 
+#=
 VFI = Union{Vector{Float64}, Vector{Int}}
 chain_archimedeans(t::Int, θ::VFI, copula::String; cor::String = "") =
 chain_archimedeans(t, θ, [fill(copula, length(θ))...]; cor = cor)
@@ -120,7 +193,7 @@ function rev_chain_archimedeans(t::Int, θ::VFI, copula::Union{String, Vector{St
                                                 cor::String = "")
   1 .- chain_archimedeans(t, θ, copula; cor = cor)
 end
-
+=#
 """
   testbivθ(θ::Union{Float64}, copula::String)
 
@@ -147,6 +220,7 @@ For clayton or frank copula correlation fulfulling (-1 > ρᵢ > 1) ∧ (ρᵢ �
 For amh copula pearson correlation fulfilling -0.2816 > ρᵢ >= .5. while kendall -0.18 < τ < 1/3
 """
 function usebivρ(ρ::Float64, copula::String, cor::String)
+  cor in["Kendall", "Spearman"] || throw(AssertionError("$(cor) correlation is not supported, use Kendall or Spearman"))
   if copula == "amh"
       -0.2816 < ρ <= 0.5 || throw(DomainError("correlation coeficiant must fulfill -0.2816 < ρ <= 0.5"))
     if cor == "Kendall"
@@ -161,30 +235,90 @@ end
 
 
 # chain frechet copulas
+"""
+  Chain_of_Frechet
+
+Chain of bivariate Frechet copulas. Models each subsequent pair of marginals by the
+bivariate Frechet copula.
+Fields:
+  n::Int - number of marginals
+  α::Vector{Float64}  - vector of parameters for the maximal copula
+  β::Vector{Float64} - vector of parameters for the minimal copula
+
+Here α[i] and β[i] parametrised bivariate Frechet copula between i th and i+1 th
+marginals.
+
+Constructors
+
+  Chain_of_Frechet(α::Vector{Float64})
+here β = zero(0)
+
+Chain_of_Frechet(α::Vector{Float64}, β::Vector{Float64})
+
+```jldoctest
+julia> Chain_of_Frechet([0.2, 0.3, 0.4])
+Chain_of_Frechet(4, [0.2, 0.3, 0.4], [0.0, 0.0, 0.0])
+
+julia> Chain_of_Frechet([0.2, 0.3, 0.4], [0.1, 0.1, 0.1])
+Chain_of_Frechet(4, [0.2, 0.3, 0.4], [0.1, 0.1, 0.1])
+
+```
 
 """
-  chain_frechet(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
 
-Retenares data from a chain of bivariate two parameter frechet copuls with parameters
-vectors α and β, such that ∀ᵢ 0 α[i] + β[i] ≤1 α[i] > 0, and β[i] > 0 |α| = |β|
+struct Chain_of_Frechet
+  n::Int
+  α::Vector{Float64}
+  β::Vector{Float64}
+  function(::Type{Chain_of_Frechet})(α::Vector{Float64})
+      n = length(α)+1
+      β = zero(α)
+      minimum(α) >= 0 || throw(DomainError("negative α parameter"))
+      maximum(α) <= 1 || throw(DomainError("α parameter greater than 1"))
+      new(n, α, β)
+  end
+  function(::Type{Chain_of_Frechet})(α::Vector{Float64}, β::Vector{Float64})
+      n = length(α)+1
+      n == length(β) +1 || throw(AssertionError("length(α) ≠ length(β)"))
+      minimum(α) >= 0 || throw(DomainError("negative α parameter"))
+      minimum(β) >= 0 || throw(DomainError("negative β parameter"))
+      maximum(α+β) <= 1 || throw(DomainError("α[i] + β[i] > 0"))
+      new(n, α, β)
+  end
+end
+
+"""
+    simulate_copula1(t::Int, copula::Chain_of_Frechet)
+
+
+Returns data from a chain of bivariate two parameter Frechet copulas
 
 ```jldoctest
 julia> Random.seed!(43)
 
-julia> chain_frechet(10, [0.6, 0.4], [0.3, 0.5])
-10×3 Array{Float64,2}:
- 0.996764  0.996764  0.996764
- 0.204033  0.795967  0.204033
- 0.979901  0.979901  0.0200985
- 0.120669  0.879331  0.120669
- 0.453027  0.453027  0.453027
- 0.800909  0.199091  0.800909
- 0.54892   0.54892   0.54892
- 0.933832  0.933832  0.0661679
- 0.396943  0.396943  0.396943
- 0.804096  0.851275  0.955881
+julia> simulate_copula1(10, Chain_of_Frechet([0.6, 0.4], [0.3, 0.5]))
+  10×3 Array{Float64,2}:
+  0.996764  0.996764  0.996764
+  0.204033  0.795967  0.204033
+  0.979901  0.979901  0.0200985
+  0.120669  0.879331  0.120669
+  0.453027  0.453027  0.453027
+  0.800909  0.199091  0.800909
+  0.54892   0.54892   0.54892
+  0.933832  0.933832  0.0661679
+  0.396943  0.396943  0.396943
+  0.804096  0.851275  0.955881
 ```
 """
+
+function simulate_copula1(t::Int, copula::Chain_of_Frechet)
+  α = copula.α
+  β = copula.β
+  n = copula.n
+  fncopulagen(α, β, rand(t, n))
+end
+
+#=
 function chain_frechet(t::Int, α::Vector{Float64}, β::Vector{Float64} = zero(α))
   length(α) == length(β) || throw(AssertionError("different lengths of parameters"))
   minimum(α) >= 0 || throw(DomainError("negative α parameter"))
@@ -192,7 +326,7 @@ function chain_frechet(t::Int, α::Vector{Float64}, β::Vector{Float64} = zero(�
   maximum(α+β) <= 1 || throw(DomainError("α[i] + β[i] > 0"))
   fncopulagen(α, β, rand(t, length(α)+1))
 end
-
+=#
 """
 
   fncopulagen(α::Vector{Float64}, β::Vector{Float64}, u::Matrix{Float64})

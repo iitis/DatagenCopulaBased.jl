@@ -362,32 +362,80 @@ end
 =#
 
 """
- Hierarchical_Gumbel_cop
+    Hierarchical_Gumbel_cop
 
 The hierarchically nested Gumbel copula.
-C_θₙ(... C_θ₂(C_θ₁(u₁, u₂), u₃)...,  uₙ)
+    C_θₙ₋₁(C_θₙ₋₂( ... C_θ₂(C_θ₁(u₁, u₂), u₃)...uₙ₋₁) uₙ)
+
+Fields:
+    - n::Int - number of marginals
+    - θ::Vector{Float64} - vector of parameters, must be decreasing  and θ[end] ≧ 1, for the
+        sufficient nesting condition to be fulfilled.
+
+Costructor
+    Hierarchical_Gumbel_cop(θ::Vector{Float64})
+
+    Hierarchical_Gumbel_cop(ρ::Vector{Float64}, cor::String)
+
+    uses cor = "Kendall" or "Spearman" correlation to compute θ
+
+```jldoctest
+
+julia> c = Hierarchical_Gumbel_cop([5., 4., 3.])
+Hierarchical_Gumbel_cop(4, [5.0, 4.0, 3.0])
+
+julia> c = Hierarchical_Gumbel_cop([0.95, 0.5, 0.05], "Kendall")
+Hierarchical_Gumbel_cop(4, [19.999999999999982, 2.0, 1.0526315789473684])
+
+
+```
+
 """
 
 struct Hierarchical_Gumbel_cop
+  n::Int
   θ::Vector{Float64}
   function(::Type{Hierarchical_Gumbel_cop})(θ::Vector{Float64})
       testθ(θ[end], "gumbel")
-      issorted(θ; rev=true) || throw(DomainError("wrong heirarchy of parameters"))
-      new(θ)
+      issorted(θ; rev=true) || throw(DomainError("parameters must be descending"))
+      new(length(θ)+1, θ)
+  end
+  function(::Type{Hierarchical_Gumbel_cop})(ρ::Vector{Float64}, cor::String)
+      θ = map(i -> getθ4arch(ρ[i], "gumbel", cor), 1:length(ρ))
+      issorted(θ; rev=true) || throw(DomainError("parameters must be descending"))
+      new(length(θ)+1, θ)
   end
 end
 
 """
     simulate_copula1(t::Int, copula::Hierarchical_Gumbel_cop)
 
-Returns t realisations of length(θ)+1 variate data from Hierarchical_Gumbel_cop(θ)
+Returns t realisations of multivariate data from hierarchically nested Gumbel copula, i.e.
+Hierarchical_Gumbel_cop(θ)
+
+```jldoctest
+julia> using Random
+
+julia> Random.seed!(43);
+
+julia> c = Hierarchical_Gumbel_cop([5., 4., 3.])
+Hierarchical_Gumbel_cop(4, [5.0, 4.0, 3.0])
+
+julia> simulate_copula1(3, c)
+3×4 Array{Float64,2}:
+ 0.63944   0.785665  0.646324  0.834632
+ 0.794524  0.743891  0.638179  0.779129
+ 0.355646  0.374227  0.119397  0.341991
+
+```
 """
 
 function simulate_copula1(t::Int, copula::Hierarchical_Gumbel_cop)
   θ = copula.θ
+  n = copula.n
   θ = vcat(θ, [1.])
   X = rand(t,1)
-  for i in 1:length(θ)-1
+  for i in 1:(n-1)
     X = nestedstep("gumbel", hcat(X, rand(t)), ones(t), θ[i], θ[i+1])
   end
   X

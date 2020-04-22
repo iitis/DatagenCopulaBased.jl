@@ -39,7 +39,7 @@ module DatagenCopulaBased
   export Gumbel_cop, Gumbel_cop_rev, Clayton_cop, Clayton_cop_rev, AMH_cop, AMH_cop_rev, Frank_cop
   export Nested_Clayton_cop, Nested_AMH_cop, Nested_Frank_cop, Nested_Gumbel_cop
   export Double_Nested_Gumbel_cop, Hierarchical_Gumbel_cop
-  export Chain_of_Archimedeans
+  export Chain_of_Archimedeans, Chain_of_Frechet
 
   export archcopulagen, chaincopulagen, nestedarchcopulagen
   export cormatgen, cormatgen_constant, cormatgen_toeplitz, convertmarg!, gcop2arch
@@ -47,8 +47,9 @@ module DatagenCopulaBased
   export cormatgen_two_constant, cormatgen_two_constant_noised
   export chainfrechetcopulagen
   export gcop2tstudent, gcop2frechet, gcop2marshallolkin
-  export nested_gumbel, nested_clayton, nested_frank, nested_amh
-  export chain_frechet, chain_archimedeans, rev_chain_archimedeans
+  #export nested_gumbel, nested_clayton, nested_frank, nested_amh
+  export chain_frechet
+  export simulate_copula1
 
   # obsolete implemntations
   export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshallolkincopulagen
