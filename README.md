@@ -24,7 +24,7 @@ pkg> add DatagenCopulaBased
 ```
 To install the files Julia 1.0 or higher is required.
 
-## Sampling data
+# Sampling data
 
 To sample `t` realisations of data from `copula::TypeOfCopula` use
 ```julia
@@ -100,7 +100,7 @@ julia> simulate_copula(5, c)
  0.0661758  0.893326
 ```
 
-## Frechet family copulas
+## The Frechet copula
 
 The two parameters Frechet copula is `C(u₁, u₂) = α C_{max}(u₁, u₂) + β C_{min}(u₁, u₂) + (1- α - β) C_{⟂}(u₁, u₂)`. Here `C_{max}(u₁, u₂)` yields maximal `1` cross-correlation, while `C_{min}(u₁, u₂)` minimal `-1` cross correlation. The `C_{min}(u₁, u₂)` is the copula only in the bivariate case.
 Obviously we require `0 ≤ α ≤ 1` , where `0 ≤ β ≤ 1` and `0 ≤ 1-α - β ≤ 1`.
@@ -225,7 +225,7 @@ julia> corspearman(x)
  0.499801  1.0       0.498891
  0.498785  0.498891  1.0  
 ```
-The reversed Gumbel, Clayton and Ali-Mikhail-Haq copulas are supported as well, these are:
+The reversed Gumbel, Clayton and Ali-Mikhail-Haq copulas are supported as well:
 
 ```julia
 julia> Gumbel_cop_rev(n::Int, θ::Float64)
@@ -261,7 +261,7 @@ julia> simulate_copula(10, c)
  0.0302191  0.0887757
 ```
 
-### The Nested Archimedean copulas
+### The nested Archimedean copulas
 
 The Nested Archimedean copula is
 `C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ)`.
@@ -401,11 +401,11 @@ julia> corkendall(x)
  0.100877  0.100512  0.100408  0.0996016  1.0  
 ```
 
-### The chain of bivariate copulas
+## The chain of bivariate copulas
 
 The chain of the bivariate copulas is determined by the sequence of bivariate copulas `C₁, C₂, ..., Cₙ₋₁` where each model the subsequent pair of marginals `Cₖ(uₖ, uₖ₊₁)`.  Hence the cross-correlation is introduced locally and decreases as the distance between marginals grows.
 
-#### The chain of bivariate Archimedean copulas
+### The chain of bivariate Archimedean copulas
 
 In this case, each element of the copula chain is the Archimedean copula (Clayton, Frank and Ali-Mikhail-Haq families are supported). Hence the chain is parameterized by the parameters vector `θ` (with parameters domains as in the case of bivariate copulas) and the vector of string determining the copula family. Following families are supported: Clayton - key: "clayton", Frank - key: "frank" and Ali-Mikhail-Haq - key: "amh".
 The `i`th element of the vector `θ` (and the `i`th element of the string with copulas names) determine the cross-correlation between the `i`th and the `i+1`th marginal. Number of marginals is `n = length(θ)+1`
@@ -461,7 +461,7 @@ julia> corkendall(x)
  -0.371927  -0.413443  -0.69934    1.0   
 ```
 
-#### The chain of bivariate Frechet copulas
+### The chain of bivariate Frechet copulas
 
 
 Here, each bivariate copula is the two parameters Frechet one `Cₖ = C_{αₖ,βₖ}(uₖ, uₖ₊₁)`, where `αₖ` and `βₖ` are elements of parameter vectors `α` and `β` that must be of the equal size. Number of marginals in `n = length(α) = length(β)`.
