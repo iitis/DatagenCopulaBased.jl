@@ -4,15 +4,16 @@
 [![Coverage Status](https://coveralls.io/repos/github/iitis/DatagenCopulaBased.jl/badge.svg?branch=master)](https://coveralls.io/github/iitis/DatagenCopulaBased.jl?branch=master)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3676933.svg)](https://doi.org/10.5281/zenodo.3676933)
 
-Copula based data generator. Returns data in the form of the `t x n` matrix `U` where`t` numerates the number of realisations, while `n` numerates the number of marginals. Be default each marginal (`U[:,i]`) is uniformly distributed on the segment `[0,1]`.
+Copula based data generator. Returns data in the form of the `t x n` matrix `U` where`t` numerates the number of realizations, and `n` numerates the number of marginals. By the copula definition each marginal `uᵢ` is uniformly distributed on the segment `[0,1]`. Realizations of such marginal would be `U[:,i]`.
 
-Interdependence between marginals is modelled by the appropriate `n`-variate copula function, see e.g.: R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007). See also Domino, K., 'Selected Methods for non-Gaussian Data Analysis', Gliwice, IITiS PAN, 2019, [arXiv:1811.10486] (https://arxiv.org/abs/1811.10486).
+Interdependence between marginals is modeled by the `n`-variate copula, see e.g.: R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007). See also Domino, K., 'Selected Methods for non-Gaussian Data Analysis', Gliwice, IITiS PAN, 2019, [arXiv:1811.10486] (https://arxiv.org/abs/1811.10486).
 
 This module support the following copula families:
 * Elliptical copulas (Gaussian, t-Student),
-* Archimedean (nested) copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq),
 * Frechet copulas (maximal, minimal, independent),
-* Marshall-Olkin copulas.
+* Marshall-Olkin copulas,
+* Archimedean copulas (Clayton, Frank, Gumbel, Ali-Mikhail-Haq),
+* Archimedean nested copulas.
 
 ## Installation
 
@@ -21,14 +22,17 @@ Within Julia, run
 ```julia
 pkg> add DatagenCopulaBased
 ```
-to install the files Julia 1.0 or higher is required.
+To install the files Julia 1.0 or higher is required.
 
 ## Sampling data
 
-To sample `t` realisations of data use `simulate_copula(t::Int, copula::TypeOfCopula)`.
+To sample `t` realisations of data from `copula::TypeOfCopula` use
+```julia
+julia> simulate_copula(t::Int, copula::TypeOfCopula)
+```
 
 ```julia
-julia> julia> Random.seed!(43);
+julia> Random.seed!(43);
 
 julia> simulate_copula(3, Gaussian_cop([1. 0.5; 0.5 1.]))
 3×2 Array{Float64,2}:
@@ -36,13 +40,12 @@ julia> simulate_copula(3, Gaussian_cop([1. 0.5; 0.5 1.]))
  0.708285  0.924962
  0.747341  0.156994
 ```
-Following copula types are supported.
+Following copulas are supported.
 
 ## Elliptical copulas
 
-These use the multivariate elliptical distribution (such as Gaussian or t-Student) to construct a copula. Suppose `F(x₁, ..., xₙ)` is a Cumulative Density Function (CDF)
-of such multivariate distribution, and `Fᵢ(xᵢ)` is univariate CDF of its `i`
-th marginal. Hence `uᵢ = Fᵢ(xᵢ)` is modeled by the uniform distribution on `[0,1]`. Given the eliptical multivariate distribution, the elliptical
+Elliptical copula is derived form the multivariate elliptical distribution (such as the Gaussian or the t-Student). Suppose `F(x₁, ..., xₙ)` is the Cumulative Density Function (CDF)
+of such multivariate distribution, and `Fᵢ(xᵢ)` is the univariate CDF of its `i`th marginal (we assume it is continuous). Hence `uᵢ = Fᵢ(xᵢ)` is modeled by the uniform distribution on `[0,1]`. Given the elliptical multivariate distribution, the elliptical
 copula is: `C(u₁, ..., uₙ) = F(F₁⁻¹(u₁), ..., Fₙ⁻¹(uₙ))`.
 
 ### The Gaussian copula
@@ -50,8 +53,7 @@ copula is: `C(u₁, ..., uₙ) = F(F₁⁻¹(u₁), ..., Fₙ⁻¹(uₙ))`.
 ```julia
 julia> Gaussian_cop(Σ::Matrix{Float64})
 ```
-is parametrised by the correlation matrix `Σ` that needs to be
-symmetric, positivelly defined and with ones on the diagonal. The number of marginals is given by the size of `Σ`.
+The Gaussian copula is parameterized by the correlation matrix `Σ` that needs to be symmetric, positively defined and with ones on the diagonal. The number of marginals is given by the size of `Σ`.
 
 ```julia
 julia> Gaussian_cop([1. 0.5; 0.5 1.])
@@ -61,10 +63,10 @@ Gaussian_cop([1.0 0.5; 0.5 1.0])
 ### The t-Student copula
 
 ```julia
-julia> Student_cop(Σ::Matrix{Float64}, ν::Int=10)
+julia> Student_cop(Σ::Matrix{Float64}, ν::Int)
 ```
 
-Is parametrised by the `Σ` matrix a in the Gaussian copula case, and by the integer parameter `ν > 0 ` interpreted as the number of degrees of freedom. The number of marginals is given by the size of `Σ`.
+The t-Student copula is parameterized by the `Σ` matrix a in the Gaussian copula case, and by the integer parameter `ν > 0 ` interpreted as the number of degrees of freedom. The number of marginals is given by the size of `Σ`.
 
 ```julia
 julia> Student_cop([1. 0.5; 0.5 1.], 1)
@@ -73,51 +75,111 @@ Student_cop([1.0 0.5; 0.5 1.0], 1)
 
 ## The Marshall-Olkin copula
 
-Number of marginals is `n = ceil(Int, log(2, length(λ)-1))`.
-Parameters are ordered as follow: `λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]` with non-negative elements `λₛ`.
+The Marshall-Olkin copula is derived form the Marshall-Olkin exponential distribution with positively valued parameters. The Marshall-Olkin copula models the dependency between the random variables subjected to external shocks. The shock connected with the single variable is modeled there by `λₖ`, while the shock connected with two variables by `λₖₗ`, etc...
 
-......
+```julia
+julia> Marshal_Olkin_cop(λ::Vector{Float64})
+```
 
-To generate data from the Marshall-Olkin copula we use algorithm presented P. Embrechts, F. Lindskog, A McNeil 'modeling Dependence with Copulas and Applications to Risk Management', 2001
-∗∗
+Parameters are ordered as follow in the argument vector `λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]`, all must be non-negative. The number of marginals of such implemented Marshal-Olkin copula is `n = ceil(Int, log(2, length(λ)-1))`.
 
+To generate data from the Marshall-Olkin copula we use algorithm presented in P. Embrechts, F. Lindskog, A McNeil 'modeling Dependence with Copulas and Applications to Risk Management', 2001.
+
+```julia
+julia> Random.seed!(43);
+
+julia> c = Marshall_Olkin_cop([1., 2., 3.])
+Marshall_Olkin_cop(2, [1.0, 2.0, 3.0])
+
+julia> simulate_copula(5, c)
+5×2 Array{Float64,2}:
+ 0.576703   0.795618
+ 0.361453   0.625213
+ 0.624422   0.101533
+ 0.731702   0.12085
+ 0.0661758  0.893326
+```
 
 ## Frechet family copulas
 
-Two parameters Frechet copula, `C = α C_{max} + β C_{min} + (1- α - β) C_{⟂}`
-is supported only for `n == 2`. Here where `0 ≤ α` , where `0 ≤ β` and `α + β ≤ 1`.
+The two parameters Frechet copula is `C(u₁, u₂) = α C_{max}(u₁, u₂) + β C_{min}(u₁, u₂) + (1- α - β) C_{⟂}(u₁, u₂)`. Here `C_{max}(u₁, u₂)` yields maximal `1` cross-correlation, while `C_{min}(u₁, u₂)` minimal `-1` cross correlation. The `C_{min}(u₁, u₂)` is the copula only in the bivariate case.
+Obviously we require `0 ≤ α ≤ 1` , where `0 ≤ β ≤ 1` and `0 ≤ 1-α - β ≤ 1`.
 
-....
-One parameter Frechet copula,
+```julia
+julia> Frechet_cop(n::Int, α::Float64, β::Float64)
+```
+is supported only for `n = 2`.
 
-....
+```julia
+julia> c = Frechet_cop(2, 0.4, 0.4)
+Frechet_cop(2, 0.4, 0.4)
 
-To generate `t` realisation of `n` variate one parameter Frechet copula `Cf = α C_{max} + (1-α) C_{⟂}`, where `0 ≤ α ≤ 1` run:
+julia> Random.seed!(43);
+
+julia> simulate_copula(10, c)
+10×2 Array{Float64,2}:
+ 0.180975   0.661781  
+ 0.0742681  0.0742681
+ 0.888934   0.125437  
+ 0.0950087  0.0950087
+ 0.869526   0.130474  
+ 0.912603   0.740184  
+ 0.995362   0.00463791
+ 0.400537   0.0288987
+ 0.521601   0.521601  
+ 0.955881   0.851275  
+```
+
+The one parameter Frechet copula `C(u₁, ..., uₙ) = α C_{max}(u₁, ..., uₙ) + (1-α) C_{⟂}(u₁, ..., uₙ)`, where `0 ≤ α ≤ 1` is supported for any `n ≥ 2`.
+
+```julia
+julia> Frechet_cop(n::Int, α::Float64)
+```
+```julia
+julia> c = Frechet_cop(3, 0.4)
+Frechet_cop(3, 0.4, 0.0)
+
+julia> Random.seed!(43);
+
+julia> simulate_copula(10, c)
+10×3 Array{Float64,2}:
+ 0.180975  0.661781    0.996764
+ 0.775377  0.0742681   0.204033
+ 0.979901  0.979901    0.979901
+ 0.924876  0.0950087   0.120669
+ 0.453027  0.453027    0.453027
+ 0.912603  0.740184    0.800909
+ 0.828727  0.00463791  0.54892
+ 0.400537  0.0288987   0.933832
+ 0.396943  0.396943    0.396943
+ 0.804096  0.804096    0.804096
+ ```
 
 ## The Archimedean copulas
 
-The bivariate Archimedean copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by means of the continuous strictlydecreasing generator parametrised by `θ`. The generator fulfills `φ(t): [0,1] →[0, ∞)`.
+The bivariate Archimedean copula `C(u₁,u₂) = φ⁻¹(φ(u₁)+φ(u₂))` is defined by the continuous strictly decreasing generator function `φ(t)` parameterized by `θ`. Such generator must fulfill `φ(t): [0,1] →[0, ∞)`.
+The `n`-variate Archimedean copula can be defined analogically: `C(u₁,..., uₙ) = φ⁻¹(φ(u₁)+...+φ(uₙ))`. Here the constrains for the `θ` parameter are more strict, see: M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174.
 
-The `n`-variate Archimedean copula canbe defined analogically: `C(u₁,..., uₙ) = φ⁻¹(φ(u₁)+...+φ(uₙ))`. Here the constrains for the`θ` parameter are more strict, see: M. Hofert, 'Sampling Archimedean copulas', Computational Statistics & Data Analysis, 52 (2008), 5163-5174. Following Archimedean copulas are supported:
+Following Archimedean copulas are supported in the module:
 
- * Clayton copula - domain: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ [-1, 0) ∪ (0, ∞)` for `n = 2`,
+ * Clayton copula - parameter domain: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ [-1, 0) ∪ (0, ∞)` for `n = 2`,
  ```julia
  julia> Clayton_cop(n::Int, θ::Float64)
  ```
- * Frank copula - domain: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (-∞, 0) ∪ (0, ∞)` for `n = 2`,
+ * Frank copula - parameter domain: `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (-∞, 0) ∪ (0, ∞)` for `n = 2`,
  ```julia
  julia> Frank_cop(n::Int, θ::Float64)
  ```
- * Gumbel copula - domain: `θ ∈ [1, ∞)`,
+ * Gumbel copula - parameter domain: `θ ∈ [1, ∞)`,
  ```julia
  julia> Gumbel_cop(n::Int, θ::Float64)
  ```
- * Ali-Mikhail-Haq copula - domain: `θ ∈ (0, 1)` for `n > 2` and  `θ ∈ [-1, 1]` for `n = 2`
+ * Ali-Mikhail-Haq copula - parameter domain: `θ ∈ (0, 1)` for `n > 2` and  `θ ∈ [-1, 1]` for `n = 2`
  ```julia
  julia> AMH_cop(n::Int, θ::Float64)
  ```
 
-For sampling algorithms see as well P. Kumar, 'Probability Distributions and Estimation
+For implemented sampling algorithms see as well P. Kumar, 'Probability Distributions and Estimation
 of Ali-Mikhail-Haq Copula', Applied Mathematical Sciences, Vol. 4, 2010, no. 14, 657 - 666; and R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007).
 
 
@@ -130,11 +192,10 @@ julia> simulate_copula(5, Clayton_cop(3, 3.))
  0.835776    0.485913    0.35429   
  0.760815    0.979532    0.635902  
 ```
-Returns `t` realisations of `n`-variate random vector, with uniformly distributed marginals on `[0,1]`. The cross-correlation  is modelled by the corresponding Archimedean copula.
 
-The optional `String` parameter od each Archimedean copula is used to determine the parameter given the expected `Kendall` or `Speraman` correlation. Here only positive correlations are supported, and some limitations are for the Ali-Mikhail-Haq copula.
+The optional third `String` parameter is used to compute `θ` from the expected `Kendall` or `Speraman` cross-correlation. Here only positive correlations are supported, and there are some limitations are for the Ali-Mikhail-Haq copula due to limitations on `θ` there.
 
-Kendall correlation case
+
 ```julia
 julia> Random.seed!(43);
 
@@ -150,7 +211,6 @@ julia> corkendall(x)
  0.499212  0.499466  1.0   
 ```
 
-Spearman correlation case
 ```julia
 julia> Random.seed!(43);
 
@@ -177,17 +237,35 @@ julia> Clayton_cop_rev(n::Int, θ::Float64)
 julia> AMH_cop_rev(n::Int, θ::Float64)
 ```
 
-The reversed copula is introduced by the following transformation  `∀ᵢ uᵢ → 1-uᵢ`.
-For modeling justification see: K. Domino, T. Błachowicz, M. Ciupak, 'The use of copula functions for predictive analysis of correlations between extreme storm tides',
+The reversed copula is introduced by the following transformation  `∀ᵢ uᵢ → 1-uᵢ`. For modeling justification see: K. Domino, T. Błachowicz, M. Ciupak, 'The use of copula functions for predictive analysis of correlations between extreme storm tides',
 Physica A: Statistical Mechanics and its Applications 413, 489-497, (2014); and K. Domino, T. Błachowicz, 'The use of copula functions for modeling the risk of
 investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistical Mechanics and its Applications 413, 77-85, (2014).
+
+```julia
+julia> c = Clayton_cop_rev(2, 5.)
+Clayton_cop_rev(2, 5.0)
+
+julia> Random.seed!(43);
+
+julia> simulate_copula(10, c)
+10×2 Array{Float64,2}:
+ 0.0838518  0.0246107
+ 0.753705   0.845248
+ 0.0135262  0.149148
+ 0.815509   0.906639
+ 0.575087   0.63889  
+ 0.0574951  0.140628
+ 0.314763   0.638385
+ 0.135894   0.279956
+ 0.623248   0.603208
+ 0.0302191  0.0887757
+```
 
 ### The Nested Archimedean copulas
 
 The Nested Archimedean copula is
-C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
-Here `θ` parametrises the parent copula while `ϕᵢ` parametrises the child copula. If `m > 0`, some variables will be modeled by the parent copula only.
-The example is:
+`C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ)`.
+Here `θ` is the parameter of the parent copula while `ϕᵢ` is the parameter of the child copula. If `m > 0`, some random variables will be modeled by the parent copula only. The example is:
 
 ```julia
 julia> Nested_Clayton_cop(childred::Vector{Clayton_cop}, m::Int, θ::Float64)
@@ -203,7 +281,7 @@ Clayton_cop(2, 4.0)
 julia> Nested_Clayton_cop([a,b], 0, 1.)
 Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 3.0), Clayton_cop(2, 4.0)], 0, 1.0)
 ```
-Only the nesting within the same family is supported. The sufficient nesting condition requires parameters of the children copulas to be larger than the parameter of the parent copula. For sampling one uses the algorithm form  McNeil, A.J., 'Sampling nested Archimedeancopulas', Journal of Statistical Computation and Simulation 78, 567–581 (2008).
+Only the nesting within the same family is supported. The sufficient nesting condition requires parameters of the children copulas to be larger than the parameter of the parent copula. For sampling one uses the algorithm form  McNeil, A.J., 'Sampling nested Archimedean copulas', Journal of Statistical Computation and Simulation 78, 567–581 (2008).
 
 ```julia
 julia> a = Clayton_cop(2, 0.9, "Kendall")
@@ -230,34 +308,180 @@ For the Gumbel copula the double nesting is supported. Double Nested copula is: 
 julia> Double_Nested_Gumbel_cop(children::Vector{Nested_Gumbel_cop}, θ)
 ```
 
-Hierarchical nested Gumbel copula is supported as well `C_θₙ₋₁(C_θₙ₋₂( ... C_θ₂(C_θ₁(u₁, u₂), u₃) ,..., uₙ₋₁)uₙ)`
+```julia
+julia> a = Gumbel_cop(2, 2.)
+Gumbel_cop(2, 2.0)
+
+julia> b = Gumbel_cop(2, 3.)
+Gumbel_cop(2, 3.0)
+
+julia> c = Gumbel_cop(2, 4.)
+Gumbel_cop(2, 4.0)
+
+julia> p = Nested_Gumbel_cop([a,b], 0, 1.75)
+Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 2.0), Gumbel_cop(2, 3.0)], 0, 1.75)
+
+julia> p1 = Nested_Gumbel_cop([c], 1, 1.5)
+Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 4.0)], 1, 1.5)
+
+julia> gp = Double_Nested_Gumbel_cop([p, p1], 1.2)
+Double_Nested_Gumbel_cop(Nested_Gumbel_cop[Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 2.0), Gumbel_cop(2, 3.0)], 0, 1.75), Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 4.0)], 1, 1.5)], 1.2)
+
+julia> Random.seed!(43);
+
+julia> simulate_copula(2, gp)
+2×7 Array{Float64,2}:
+ 0.083989  0.443772  0.845775  0.897145  0.02686   0.0191048  0.124419
+ 0.690867  0.797652  0.544804  0.316169  0.809687  0.76435    0.631206
+```
+
+More straight forward example
+
+```julia
+julia> a = Gumbel_cop(2, .9, "Kendall")
+Gumbel_cop(2, 10.000000000000002)
+
+julia> b = Gumbel_cop(2, 0.8, "Kendall")
+Gumbel_cop(2, 5.000000000000001)
+
+julia> p = Nested_Gumbel_cop([a], 1, 0.6, "Kendall")
+Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 10.000000000000002)], 1, 2.5)
+
+julia> p1 = Nested_Gumbel_cop([b], 1, 0.5, "Kendall")
+Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.000000000000001)], 1, 2.0)
+
+julia> pp = Double_Nested_Gumbel_cop([p,p1], 0.1, "Kendall")
+Double_Nested_Gumbel_cop(Nested_Gumbel_cop[Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 10.000000000000002)], 1, 2.5), Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.000000000000001)], 1, 2.0)], 1.1111111111111112)
+
+julia> x = simulate_copula(750_000, pp);
+
+julia> corkendall(x)
+6×6 Array{Float64,2}:
+ 1.0        0.909916   0.600939   0.0994432  0.0991968  0.0995348
+ 0.909916   1.0        0.600903   0.0995319  0.0992872  0.0995307
+ 0.600939   0.600903   1.0        0.0995064  0.0991779  0.0996755
+ 0.0994432  0.0995319  0.0995064  1.0        0.819777   0.500635
+ 0.0991968  0.0992872  0.0991779  0.819777   1.0        0.500701
+ 0.0995348  0.0995307  0.0996755  0.500635   0.500701   1.0   
+```
+
+Hierarchical nested Gumbel copula is supported as well `C_θₙ₋₁(C_θₙ₋₂( ... C_θ₂(C_θ₁(u₁, u₂), u₃) ,..., uₙ₋₁)uₙ)`. Here bivariate Gumbel copulas are nested one in the another. The most inner is the ground ... ground child one and the most outer is the ground ... ground parent one. Numbel of marginals is `n = length(θ)+1`.
+
+```julia
+julia> Hierarchical_Gumbel_cop(θ::Vector{Float64})
+```
+Here `θ` is the parameter vector, starting form the ground ... ground child one and ending on the ground ... ground parent one. Hence elements of `θ`
+must be sorted in the descending order.
+
+```julia
+julia> c = Hierarchical_Gumbel_cop([5., 4., 3.])
+Hierarchical_Gumbel_cop(4, [5.0, 4.0, 3.0])
+
+julia> Random.seed!(43);
+
+julia> simulate_copula(3, c)
+3×4 Array{Float64,2}:
+ 0.63944   0.785665  0.646324  0.834632
+ 0.794524  0.743891  0.638179  0.779129
+ 0.355646  0.374227  0.119397  0.341991
+```
+
+```julia
+julia> c = Hierarchical_Gumbel_cop([.9, 0.7, 0.5, 0.1], "Kendall")
+Hierarchical_Gumbel_cop(5, [10.000000000000002, 3.333333333333333, 2.0, 1.1111111111111112])
+
+julia> x = simulate_copula(750_000, c);
+
+julia> corkendall(x)
+5×5 Array{Float64,2}:
+ 1.0       0.899958  0.699628  0.500192   0.100877
+ 0.899958  1.0       0.699562  0.500114   0.100512
+ 0.699628  0.699562  1.0       0.500033   0.100408
+ 0.500192  0.500114  0.500033  1.0        0.0996016
+ 0.100877  0.100512  0.100408  0.0996016  1.0  
+```
+
+### The chain of bivariate copulas
+
+The chain of the bivariate copulas is determined by the sequence of bivariate copulas `C₁, C₂, ..., Cₙ₋₁` where each model the subsequent pair of marginals `Cₖ(uₖ, uₖ₊₁)`.  Hence the cross-correlation is introduced locally and decreases as the distance between marginals grows.
+
+#### The chain of bivariate Archimedean copulas
+
+In this case, each element of the copula chain is the Archimedean copula (Clayton, Frank and Ali-Mikhail-Haq families are supported). Hence the chain is parameterized by the parameters vector `θ` (with parameters domains as in the case of bivariate copulas) and the vector of string determining the copula family. Following families are supported: Clayton - key: "clayton", Frank - key: "frank" and Ali-Mikhail-Haq - key: "amh".
+The `i`th element of the vector `θ` (and the `i`th element of the string with copulas names) determine the cross-correlation between the `i`th and the `i+1`th marginal. Number of marginals is `n = length(θ)+1`
+
+```julia
+julia> Chain_of_Archimedeans(θ::Vector{Float64}, copulas::Vector{String})
+```
+
+if one want to use one copula type, use
+
+```julia
+julia> Chain_of_Archimedeans(θ::Vector{Float64}, copulas::String)
+```
+
+```julia
+julia> Chain_of_Archimedeans([2., 3.], ["clayton", "frank"])
+Chain_of_Archimedeans(3, [2.0, 3.0], ["clayton", "frank"])
+```
+
+```julia
+julia> Chain_of_Archimedeans([2., 3.], "frank")
+Chain_of_Archimedeans(3, [2.0, 3.0], ["frank", "frank"])
+
+```
+
+```julia
+julia> c = Chain_of_Archimedeans([0.7, 0.5, 0.7], "clayton", "Kendall")
+Chain_of_Archimedeans(4, [4.666666666666666, 2.0, 4.666666666666666], ["clayton", "clayton", "clayton"])
+
+julia> x = simulate_copula(750_000, c);
+
+julia> corkendall(x)
+4×4 Array{Float64,2}:
+ 1.0       0.700064  0.444706  0.400159
+ 0.700064  1.0       0.501203  0.444567
+ 0.444706  0.501203  1.0       0.70026
+ 0.400159  0.444567  0.70026   1.0     
+```
+
+Negative correlations are supported here as well:
+
+```julia
+julia> c = Chain_of_Archimedeans([0.7, 0.5, -0.7], "clayton", "Kendall")
+Chain_of_Archimedeans(4, [4.666666666666666, 2.0, -0.8235294117647058], ["clayton", "clayton", "clayton"])
+
+julia> x = simulate_copula(750_000, c);
+
+julia> corkendall(x)
+4×4 Array{Float64,2}:
+  1.0        0.700338   0.444138  -0.371927
+  0.700338   1.0        0.499917  -0.413443
+  0.444138   0.499917   1.0       -0.69934
+ -0.371927  -0.413443  -0.69934    1.0   
+```
+
+#### The chain of bivariate Frechet copulas
 
 
-.....
+Here, each bivariate copula is the two parameters Frechet one `Cₖ = C_{αₖ,βₖ}(uₖ, uₖ₊₁)`, where `αₖ` and `βₖ` are elements of parameter vectors `α` and `β` that must be of the equal size. Number of marginals in `n = length(α) = length(β)`.
 
-### The chain of bivariate Archimedean copulas
-The chain of the Archimedean copulas is determined by the vector of parameters `θ`, and the vector of copulas (in the string form).
-The `i`th element of `θ` (and copulas) i.e. `θ[i]` (and copulas[i]) determine the cross-correlation between the `i`th and the `i+1`th marginal.
-Following families are supported: Clayton - key: "clayton", Frank - key: "frank" and Ali-Mikhail-Haq - key: "amh".
+```julia
+julia> c = Chain_of_Frechet(α, β)
+```
 
+```julia
+julia> c = Chain_of_Frechet([0.2, 0.3], [0.5, 0.1])
+Chain_of_Frechet(3, [0.2, 0.3], [0.5, 0.1])
 
-.....
+julia> Random.seed!(43);
 
-To generate `t` realisations of the `n=length(θ)+1` variate data, using the chain of the bivariate Archimedean copulas parametrised by the vector of parameter `θ` run:
-
-.....
-
-
-### Chain of bivariate Frechet copulas
-
-In other words `∀i∈[1, length(θ)]` data are generated from following Frechet copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
-distributed on `[0,1]`, hence we got a multivariate copula, defined by subsequent bivariate sub-copulas.
-The relation between marginals `i` and `j`: `i ≠ j+1` are defined by a sequence of
-bivariate copulas.
-
-......
-
-To generate `t` realisations of `length(α)+1` multivariate data using a chain two parameter bivariate Frechet copulas with parameter `αᵢ` and `βᵢ` for each neighbour (i'th and i+1'th) marginals run:
+julia> simulate_copula(3, c)
+3×3 Array{Float64,2}:
+ 0.828727  0.171273  0.180975
+ 0.400537  0.408278  0.775377
+ 0.429437  0.912603  0.888934
+```
 
 
 ## Correlation matrix generation
@@ -278,7 +502,7 @@ or
 julia> cormatgen_rand(n::Int)
 ```
 
-for different methods we have different outputs:
+For different methods we have different outputs
 
 ```julia
 julia> Random.seed!(43);
@@ -298,9 +522,11 @@ julia> cormatgen_rand(4)
  0.486979  0.808264  0.731206  1.0  
 ```
 
+In general the second case gives higher values of correlations.
+
 ### Deterministic cases
 
-To generate a correlation matrix with constant elements run:
+To generate a correlation matrix with constant elements run
 
 ```julia
 julia> cormatgen_constant(n::Int, α::Float64)
@@ -316,12 +542,11 @@ julia> cormatgen_constant(4, 0.4)
  0.4  0.4  1.0  0.4
  0.4  0.4  0.4  1.0
 ```
-the generalisation is
+the generalisation is with two parameters `0 <= α <= 1` and `α > β`
 
 ```julia
 julia> cormatgen_two_constant(n::Int, α::Float64, β::Float64)
 ```
-parameters should satisfy `0 <= α <= 1` and `α > β`.
 
 ```julia
 julia> cormatgen_two_constant(4, 0.5, 0.2)
@@ -331,7 +556,9 @@ julia> cormatgen_two_constant(4, 0.5, 0.2)
  0.2  0.2  1.0  0.2
  0.2  0.2  0.2  1.0
 ```
-to generate Toeplitz matrix with parameter `0 <= ρ <= 1` run:
+Here the first constant refer to the "nesting" of the higher
+correlation for the first half of marginals.
+To generate the Toeplitz matrix with parameter `0 <= ρ <= 1` run:
 
 ```julia
 julia> cormatgen_toeplitz(n::Int, ρ::Float64)
@@ -346,7 +573,7 @@ julia> cormatgen_toeplitz(4, 0.5)
 
 ### Partially random and partially deterministic cases
 
-To generate constant matrix with noise run:
+To generate constant matrix with the noise run
 
 ```julia
 julia> cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1.-α)/2.)
@@ -364,18 +591,21 @@ julia> cormatgen_constant_noised(4, 0.5)
  0.346992  0.512183  0.538089  1.0   
 ```
 
-Analogically generate noised two constants matrix run
+Analogically to generate noised two constants matrix run
 
 ```julia
 julia> Random.seed!(43);
 
-julia> cormatgen_two_constant_noised(4, 0.5, 0.2)
+julia> cormatgen_two_constant_noised(4, 0.8, 0.2)
 4×4 Array{Float64,2}:
- 1.0        0.314724  0.290368  0.0469922
- 0.314724   1.0       0.014256  0.212183
- 0.290368   0.014256  1.0       0.238089
- 0.0469922  0.212183  0.238089  1.0   
+ 1.0       0.754384  0.194805  0.171162
+ 0.754384  1.0       0.117009  0.27321
+ 0.194805  0.117009  1.0       0.139476
+ 0.171162  0.27321   0.139476  1.0    
 ```
+
+Here the first constant refer to the "nesting" of the higher
+correlation for the first half of marginals.
 Finally to generate noised Toeplitz matrix run:
 
 ```julia
@@ -396,13 +626,13 @@ julia> cormatgen_toeplitz_noised(4, 0.5)
 
 ## Changes the subset of marginals of multivariate Gaussian distributed data
 
-To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of t-Student sub-copula with
+To change the chosen marginals subset, determined by the vector of indices`ind`, of the multivariate Gaussian distributed data `x` by means of t-Student sub-copula with
 a parameter `ν` run:
 
 ```julia
 julia> gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false)
 ```
-all univariate marginal distributions are Gaussian and unaffected by a transformation.
+all univariate marginal distributions will be Gaussian, hence unaffected by the transformation. The keyword `naive` means the naive resampling if true.
 
 ```julia
 
@@ -428,12 +658,14 @@ julia> gcop2tstudent(x, [1,2], 6)
   0.226484   1.12436     0.989712
  -0.727203   0.238701   -1.54419
 ```
-To change a chosen marginals subset `inds[i][2]` of multivariate Gaussian distributed data `x` by means of Archimedean sub-copula of family `inds[i][1]` run:
+To change the chosen marginals subset  of the multivariate Gaussian distributed data `x` by means of the Archimedean copula run:
 
 ```julia
 julia> gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}}; naive::Bool = false, notnested::Bool = false)
 ```
-many disjoint subsets numbered by `i` with different Archimedean sub-copulas are possible. As before all univariate marginal distributions are Gaussian and unaffected by a transformation. Named parameter `naive` indicates a use of a naive algorithm of data substitution. Named parameter `notnested` means the use of one parameter Archimedean copula instead of a nested one.
+
+Marginals to be changed are list in `inds[i][2]`, while the corresponding Archimedean copula is determined in `inds[i][1]`.
+Many disjoint subsets of marginals with different Archimedean copulas can be transformed. All univariate marginal distributions are Gaussian hence unaffected by the transformation. The keyword `naive` indicates the use of the naive data resampling if `true`. The keyword `notnested` if `true` indicates the use of one parameter Archimedean copula instead of a nested one.
 
 ```julia
 
@@ -461,12 +693,12 @@ julia> gcop2arch(x, ["clayton" => [1,2]])
 
 ```
 
-To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of Frechet maximal sub-copula:
+To change the chosen marginals subset list in `ind` of the multivariate Gaussian distributed data `x` by means of the Frechet maximal copula run:
 
 ```julia
 julia> gcop2frechet(x::Matrix{Float64}, ind::Vector{Int}; naive::Bool = false)
 ```
-all univariate marginal distributions are Gaussian and unaffected by a transformation.
+all univariate marginal distributions are Gaussian as they are unaffected by the transformation. The keyword `naive` means naive resampling if true.
 
 ```julia
 
@@ -493,14 +725,13 @@ julia> gcop2frechet(x, [1,2])
  -0.7223     -0.172507   -1.54419
 ```
 
-To change a chosen marginals subset `ind` of multivariate Gaussian distributed data `x` by means of bivariate Marshall-Olkin copula:
+To change the chosen marginals subset list in `ind` of themultivariate Gaussian distributed data `x` by means of the bivariate Marshall-Olkin copula run:
 
 ```julia
 julia> gcop2marshallolkin(x::Matrix{Float64}, ind::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
 ```
-all univariate marginal distributions are Gaussian and unaffected by a transformation.
-We require `length(ind) = 2` `λ1 ≧ 0` and `λ2 ≧ 0`. The parameter `λ12` is computed from expected
-correlation between both changed marginals.
+all univariate marginal distributions are Gaussian and unaffected by the transformation. In the keyword `naive` is `true` uses the naive resampling.
+The algorithm requires `length(ind) = 2` `λ₁ ≥ 0` and `λ₂ ≥ 0`. The parameter `λ₁₂` is computed from expected correlation between both changed marginals.
 
 ```julia
 
@@ -532,7 +763,7 @@ julia> gcop2marshallolkin(x, [1,2])
 
 ### Converting marginals
 
-Takes matrix `X`: `size(X) = (t, n)` ie `t` realisations of `n`-dimensional random variable, with all uniform marginal univariate distributions `∀ᵢ X[:,i] ∼ Uniform(0,1)`, and convert those marginals to common distribution `d` with parameters `p[i]`
+Takes matrix `X`: `size(X) = (t, n)` ie `t` realisations of `n`-dimensional random variable, with all uniform marginal univariate distributions `∀ᵢ X[:,i] ∼ Uniform(0,1)`, and convert those marginals to the common distribution `d` with parameters `p[i]`
 
 ```julia
 julia> convertmarg!(U::Matrix{T}, d::UnionAll, p::Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}; testunif::Bool = true)
@@ -600,7 +831,7 @@ julia> quantile.(d(p...), U)
 ```
 
 ```julia
-julia> julia> quantile.(Levy(0, 1), U)
+julia> quantile.(Levy(0, 1), U)
 10×2 Array{Float64,2}:
  3.42919    18.3279  
  7.14305   112.728   
@@ -614,333 +845,41 @@ julia> julia> quantile.(Levy(0, 1), U)
  0.582946    3.52799
 ```
 
-# Old implementation
+## Old dispatching, will be removed in future
 
-## Elliptical copulas
-
-### The Gaussian copula
 
 ```julia
 julia> gausscopulagen(t::Int, Σ::Matrix{Float64})
 ```
-Returns `t` realisations of `n`-variate random vector, with uniformly distributed marginals on `[0,1]`. The cross-correlation is modelled by the Gaussian copula, parametrised by the symmetric positively defined `n x n` correlation matrix `Σ` (with ones on the diagonal). The number of marginals is given by the size of `Σ`.
-
-```julia
-
-julia> using Random
-
-julia> Random.seed!(43);
-
-julia> gausscopulagen(10, [1. 0.5; 0.5 1.])
-10×2 Array{Float64,2}:
- 0.589188  0.815308
- 0.708285  0.924962
- 0.747341  0.156994
- 0.227634  0.183116
- 0.227575  0.957376
- 0.271558  0.364803
- 0.445691  0.52792
- 0.585362  0.23135
- 0.498593  0.48266
- 0.190283  0.594451
- ```
-
-### The t-Student copula
-
-```julia
-julia> tstudentcopulagen(t::Int, Σ::Matrix{Float64}, ν)
-```
-
-Returns `t` realisations of `n`-variate random vector, with uniformly distributed marginals on `[0,1]`. The cross-correlation is modelled by the t-Student copula, parametrised by the symmetric positively defined `n x n` correlation matrix `Σ` (with ones on the diagonal) and the integer parameter `ν` interpreted as the number of degrees of freedom. The number of marginals is given by the size of `Σ`.
-
-```julia
-julia> Random.seed!(43);
-
-julia> tstudentcopulagen(10, [1. 0.5; 0.5 1.], 10)
-10×2 Array{Float64,2}:
- 0.658199  0.937148
- 0.718244  0.92602  
- 0.809521  0.0980325
- 0.263068  0.222589
- 0.187187  0.971109
- 0.245373  0.346428
- 0.452336  0.524498
- 0.57113   0.272525
- 0.498443  0.48082  
- 0.113788  0.633349
-```
-
-## The Archimedean copulas
-
-The bivariate and `n`-variate Archimedean copula is parametrised by one parameter `θ`. Following archimedean copula are supported:
-
- * Clayton copula - keyword = "clayton": `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ [-1, 0) ∪ (0, ∞)` for `n = 2`,
- * Frank copula - keyword = "frank": `θ ∈ (0, ∞)` for `n > 2` and `θ ∈ (-∞, 0) ∪ (0, ∞)` for `n = 2`,
- * Gumbel copula - keyword = "gumbel": `θ ∈ [1, ∞)`,
- * Ali-Mikhail-Haq copula - keyword = "amh": `θ ∈ (0, 1)` for `n > 2` and  `θ ∈ [-1, 1]` for `n = 2`.
-
-To sample `t` realisations of `n`-variate data from the Archimedean copula with parameter ``θ`` run
 
 ```julia
 julia> archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String; rev::Bool = false, cor::String = "")
 ```
 
 ```julia
-julia> Random.seed!(43);
-
-julia> archcopulagen(10, 2, 1, "clayton")
-10×2 Array{Float64,2}:
- 0.770331  0.932834
- 0.472847  0.0806845
- 0.970749  0.653029
- 0.622159  0.0518025
- 0.402461  0.228549
- 0.946375  0.842883
- 0.809076  0.129038
- 0.747983  0.433829
- 0.374341  0.437269
- 0.973066  0.910103
-```
-
- * If `cor = Kendall`, uses the Kendall's τ correlation coefficient to compute the parameter `θ`.
- * If `cor = Spearman`, uses the Spearman ρ correlation coefficient to compute the parameter `θ`.
- * If `reversed = true` returns data from reversed copula.
-
-The reversed copula is introduced by the following transformation  `∀ᵢ uᵢ → 1-uᵢ`, e.g. see: K. Domino, T. Błachowicz, M. Ciupak, 'The use of copula functions for predictive analysis of correlations between extreme storm tides',
-Physica A: Statistical Mechanics and its Applications 413, 489-497, (2014); and K. Domino, T. Błachowicz, 'The use of copula functions for modeling the risk of investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistical Mechanics and its Applications 413, 77-85, (2014).
-
-
-### The Nested Archimedean copulas
-
-
-```julia
-
 julia> nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String, m::Int = 0)
-
-```
-
-The parameter `n` is the vector of numbers of variables of the children copulas, the parameter `ϕ` is the vector of
-parameters of the children copulas, and `θ` is the parameter of the parent copula. The parameter `m` is the number of variables modelled only by the parent copula. Only the nesting within the same family is supported. The sufficient nesting condition requires `0 < θ ≤ minimum(ϕ)`.
-
-
-```julia
-
-julia> Random.seed!(43);
-
-julia> nestedarchcopulagen(10, [2,2], [2., 3.], 1.1, "clayton", 1)
-10×5 Array{Float64,2}:
- 0.333487  0.584206   0.970471  0.352363  0.793386
- 0.249313  0.0802689  0.298697  0.46432   0.78807
- 0.765832  0.272857   0.461754  0.125465  0.661781
- 0.897061  0.346811   0.745457  0.899775  0.477065
- 0.387096  0.268233   0.533175  0.42922   0.294137
- 0.42065   0.247676   0.641627  0.538728  0.507315
- 0.598049  0.138186   0.659411  0.876095  0.19471
- 0.125968  0.0643853  0.824152  0.601356  0.662842
- 0.57524   0.625373   0.688956  0.57825   0.545043
- 0.96839   0.899199   0.827176  0.544107  0.862751
-```
-
-#### If `copula == "gumbel"` the multiple nesting is supported.
-
-
-To sample `t` realisations of the `n = length(θ)+1` variate data from the Hierarchically nested Gumbel copula: `C_θₙ₋₁(C_θₙ₋₂( ... C_θ₂(C_θ₁(u₁, u₂), u₃) ,..., uₙ₋₁)uₙ)` run:
-
-```julia
-
-julia>  nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
-
-```
-
-The nesting sufficient condition requires `1 ≤ θ_{i+1} ≤ θᵢ`
-
-```julia
-
-julia> Random.seed!(43);
-
-julia> x = nestedarchcopulagen(5, [4., 3., 2.], "gumbel")
-5×4 Array{Float64,2}:
- 0.832902  0.915821   0.852532  0.903184
- 0.266333  0.293338   0.307899  0.0346497
- 0.152431  0.0432532  0.319465  0.42015  
- 0.812182  0.685689   0.721783  0.554992
- 0.252867  0.521345   0.406719  0.511759
-```
-
-To generate `t` realisations of the `∑ᵢ ∑ⱼ nᵢⱼ` variate data from the double nested gumbel copula:
-`C_θ(C_ϕ₁(C_Ψ₁₁(u,...), ..., C_C_Ψ₁,ₗ₁(u...)), ..., C_ϕₖ(C_Ψₖ₁(u,...), ..., C_Ψₖ,ₗₖ(u,...)))`
- where `lᵢ = length(n[i])` run:
-
-```julia
-
-julia> nestedarchcopulagen::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}}, ϕ::Vector{Float64}, θ₀::Float64, copula::String = "gumbel")
-
 ```
 
 ```julia
-julia> Random.seed!(43);
-
-julia> x = nestedarchcopulagen(5, [[2,2],[2]], [[3., 2.], [4.]], [1.5, 2.1], 1.2, "gumbel")
-5×6 Array{Float64,2}:
-0.464403  0.711722   0.883035   0.896706   0.888614   0.826514
-0.750596  0.768193   0.0659561  0.0252472  0.996014   0.989127
-0.825211  0.712079   0.581356   0.507739   0.882675   0.84959
-0.276326  0.0827071  0.240836   0.434629   0.0184611  0.031363
-0.208422  0.504727   0.27561    0.639089   0.481855   0.573715
-
-```
-
-### The chain of bivariate Archimedean copulas
-
-
-To generate `t` realisations of the `n = length(θ)+1` variate data, using the chain of the bivariate Archimedean copulas parametrised by the vector of parameter `θ` run:
-
-```julia
-
 julia> chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::Vector{String}; rev::Bool = false, cor::String = "")
-
 ```
-The `i`th element of `θ` i.e. `θᵢ` determinsed the cross-correlation between the `i`th and the `i+1`th marginal. Following families are supported: "clayton", "frank" and the "amh" -  Ali-Mikhail-Haq.
-
-```julia
-
-julia> Random.seed!(43);
-
-julia> chaincopulagen(10, [4., 11.], ["frank", "frank"])
-10×3 Array{Float64,2}:
- 0.180975  0.386303   0.879254
- 0.775377  0.247895   0.144803
- 0.888934  0.426854   0.772457
- 0.924876  0.395564   0.223155
- 0.408278  0.139002   0.142997
- 0.912603  0.901252   0.949828
- 0.828727  0.0295759  0.0897796
- 0.400537  0.0337673  0.27872  
- 0.429437  0.462771   0.425435
- 0.955881  0.953623   0.969038
-```
-
-
-## The Marshall-Olkin copula
-
-To generate `t` realisations of `n`-variate data from Marshall-Olkin copula with parameter series `λ` with non-negative elements `λₛ`, run:
 
 ```julia
 julia> marshallolkincopulagen(t::Int, λ::Vector{Float64})
 ```
-
-Number of marginals is `n = ceil(Int, log(2, length(λ)-1))`.
-Parameters are ordered as follow: `λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]`
-
-
-```julia
-
-julia> Random.seed!(43);
-
-julia> marshallolkincopulagen(10, [0.2, 1.2, 1.6])
-10×2 Array{Float64,2}:
- 0.99636   0.994344
- 0.167268  0.0619408
- 0.977418  0.965093
- 0.495167  0.0247053
- 0.410336  0.250159
- 0.778989  0.678064
- 0.50927   0.350059
- 0.925875  0.887095
- 0.353646  0.219006
- 0.782477  0.686799
-```
-
-To generate data from the Marshall-Olkin copula we use algorithm presented P. Embrechts, F. Lindskog, A McNeil 'modeling Dependence with Copulas and Applications to Risk Management', 2001
-∗∗
-
-
-## Frechet family copulas
-
-To generate `t` realisation of `n` variate one parameter Frechet copula `Cf = α C_{max} + (1-α) C_{⟂}`, where `0 ≤ α ≤ 1` run:
-
 
 ```julia
 julia> frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
 ```
 
 ```julia
-
-julia> Random.seed!(43);
-
-julia> frechetcopulagen(10, 2, 0.5)
-10×2 Array{Float64,2}:
- 0.180975  0.661781  
- 0.775377  0.775377  
- 0.888934  0.125437  
- 0.924876  0.924876  
- 0.408278  0.408278  
- 0.912603  0.740184  
- 0.828727  0.00463791
- 0.400537  0.0288987
- 0.429437  0.429437  
- 0.955881  0.851275  
-```
-
-Two parameters Frechet copula, `C = α C_{max} + β C_{min} + (1- α - β) C_{⟂}`
-is supported only for `n == 2`:
-
-```julia
 julia> frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
 ```
 
-Here where `0 ≤ α` , where `0 ≤ β` and `α + β ≤ 1`
-
-``` julia
-
-julia> Random.seed!(43);
-
-julia> frechetcopulagen(10, 2, 0.4, 0.2)
-10×2 Array{Float64,2}:
- 0.180975  0.661781
- 0.775377  0.775377
- 0.888934  0.125437
- 0.924876  0.924876
- 0.408278  0.591722
- 0.912603  0.740184
- 0.828727  0.171273
- 0.400537  0.0288987
- 0.429437  0.429437
- 0.955881  0.851275
- ```
-
-### Chain of bivariate Frechet copulas
-
-
-To generate `t` realisations of `n = length(α)+1` multivariate data using a chain two parameter bivariate Frechet copulas with parameter `αᵢ` and `βᵢ` for each neighbour (i'th and i+1'th) marginals run:
-
-
 ```julia
-
 julia> chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
-
 ```
-In other words `∀i∈[1, length(θ)]` data are generated from the Frechet copula `C_{αᵢ,βᵢ}(uᵢ, u_{i+1})`. Due to features of bivariate copulas, each marginal `uᵢ` is uniformly
-distributed on `[0,1]`, hence we got a multivariate copula, defined by subsequent bivariate sub-copulas.
-The relation between marginals `i` and `j`: `i ≠ j+1` are defined by a sequence of bivariate copulas.
 
-
-```julia
-julia> Random.seed!(43)
-
-julia> chainfrechetcopulagen(10, [0.6, 0.4], [0.3, 0.5])
-10×3 Array{Float64,2}:
- 0.996764  0.996764  0.996764
- 0.204033  0.795967  0.204033
- 0.979901  0.979901  0.0200985
- 0.120669  0.879331  0.120669
- 0.453027  0.453027  0.453027
- 0.800909  0.199091  0.800909
- 0.54892   0.54892   0.54892  
- 0.933832  0.933832  0.0661679
- 0.396943  0.396943  0.396943
- 0.804096  0.851275  0.955881
-```
 
 # Citing this work
 

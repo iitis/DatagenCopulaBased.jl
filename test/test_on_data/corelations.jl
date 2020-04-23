@@ -11,6 +11,7 @@ using PyCall
 using JLD2
 using FileIO
 using Distributed
+using HCubature
 
 #using QuadGK
 #using Cubature
@@ -26,7 +27,7 @@ addprocs(3)
 nprocs()
 
 
-function ccl(u::Vector, θ::Union{Int, Float64})
+function ccl(u, θ::Float64)
   q = length(u)
   (1-q+sum(u.^(-θ)))^(-q-1/θ)*prod([u[j]^(-θ-1)*((j-1)*θ+1) for j in 1:q])
 end
@@ -66,15 +67,14 @@ function c4symmarg(θ::Union{Int, Float64}, g::Function, d)
   [a,b,c,e,f]
 end
 
-function c3empirical(θ::Union{Float64, Int}, cop::String, d, rev = false, t::Int = 1_000_000)
-  u = quantile.(d, archcopulagen(t, 3, θ, cop; rev = rev))
+function c3empirical(cop, d, t::Int = 1_000_000)
+  u = quantile.(d, simulate_copula(t, cop))
   c = cumulants(u, 3)[3]
-  println(θ)
   [c[1,1,1], c[1,1,2], c[1,2,3]]
 end
 
-function c4empirical(θ::Union{Float64, Int}, cop::String, d, rev::Bool= false, t::Int = 5000000)
-  u = quantile.(d, archcopulagen(t, 4, θ, cop; rev = rev))
+function c4empirical(cop, d, t::Int = 5000000)
+  u = quantile.(d, simulate_copula(t, cop))
   c = cumulants(u, 4)[4]
   [c[1,1,1,1], c[1,1,1,2], c[1,1,2,2], c[1,1,2,3], c[1,2,3,4]]
 end
@@ -90,8 +90,8 @@ function stats3theoreunifcl()
 end
 
 
-function statstheoreticalclayton(m::Int = 3, d = Normal(0,1))
-  θ = map(i -> ρ2θ(i, "clayton"), 0.05:0.05:.95)
+function statstheoreticalclayton(m::Int = 3, d = Normal(0,1), ρ)
+  θ = map(i -> ρ2θ(i, "clayton"), ρ)
   n = length(θ)
   t = (m == 3) ? zeros(n, 3) : zeros(n, 5)
   for i in 1:n
@@ -103,31 +103,30 @@ end
 
 #save("c3clgmarg.jld2", "emp", e, "theoret", t, "rho", ρ)
 
-function empiricalcums(copula::String, m::Int, ρ::Vector{Float64}, rev = false)
-  θ = map(i -> ρ2θ(i, copula), ρ)
-  println(θ)
-  n = length(θ)
+function empiricalcums(copula, m::Int, ρ::Vector{Float64})
+  println(ρ)
+  n = length(ρ)
   e = (m == 3) ? zeros(n, 3) : zeros(n, 5)
   for i in 1:n
     println(i)
-    e[i,:] = (m == 3) ? c3empirical(θ[i], copula, Normal(0,1), rev) : c4empirical(θ[i], copula, Normal(0,1), rev)
+    e[i,:] = (m == 3) ? c3empirical(copula(3, ρ[i], "Spearman"), Normal(0,1)) : c4empirical(copula(4, ρ[i], "Spearman"), Normal(0,1))
   end
   e
 end
 
 
-function plotc3empth(e,t, ρ)
+function plotc3empth(e,t, ρ, ρ1)
   mpl.rc("font", family="serif", size = 7)
   fig, ax = subplots(figsize = (2.5, 2.))
   fx = matplotlib.ticker.ScalarFormatter()
   fx.set_powerlimits((-1, 4))
   ax.yaxis.set_major_formatter(fx)
   plot(ρ, e[:,3], "o", color = "black", label = "\$ \\mathbf{i} = (1,2,3) \$", markersize = 1.)
-  plot(ρ, t[:,3], color = "black", linewidth = 0.5)
+  plot(ρ1, t[:,3], color = "black", linewidth = 0.5)
   plot(ρ, e[:,2], "o", color = "blue", label = "\$ \\mathbf{i} = (1,1,2) \$", markersize = 1.)
-  plot(ρ, t[:,2], color = "blue", linewidth = 0.5)
+  plot(ρ1, t[:,2], color = "blue", linewidth = 0.5)
   plot(ρ, e[:,1], "o", color = "red", label = "\$ \\mathbf{i} = (1,1,1) \$", markersize = 1.)
-  plot(ρ, t[:,1], color = "red", linewidth = 0.5)
+  plot(ρ1, t[:,1], color = "red", linewidth = 0.5)
   PyPlot.ylabel("cumulant element", labelpad = -1.0)
   PyPlot.xlabel("Spearman \$ \\rho \$ between marginals", labelpad = -1.0)
   ax.legend(fontsize = 6, loc = 3, ncol = 1)
@@ -197,36 +196,48 @@ end
 
 if false
   ρ = collect(0.05:0.05:.95)
-  e4 = empiricalcums("gumbel", 4, ρ, false)
-  save("pics/c4gugmarg.jld2", "emp", e4,"rho", ρ)
-  t = statstheoreticalclayton(4, Normal(0,1));
+  e4 = empiricalcums(Clayton_cop, 4, ρ)
+  save("pics/c4clgmarg.jld2", "emp", e4,"rho", ρ)
+  t = statstheoreticalclayton(4, Normal(0,1), ρ);
   save("pics/teorc4clgmarg.jld2", "theor", t,"rho", ρ)
-
+end
+if false
+  ρ = collect(0.05:0.05:.95)
+  e3 = empiricalcums(Clayton_cop, 3, ρ)
+  save("pics/c3clgmarg.jld2", "emp", e3,"rho", ρ)
+  t = statstheoreticalclayton(3, Normal(0,1), ρ);
+  save("pics/teorc3clgmarg.jld2", "theor", t,"rho", ρ)
+end
+if false
   ρ = [i for i in 0.02:0.02:.85]
-  e = empiricalcums("frank", 3, ρ)
+  e = empiricalcums(Frank_cop, 3, ρ)
   save("pics/c3frgmarg.jld2", "emp", e,"rho", ρ)
-
+end
+if false
   ρ = [i for i in 0.02:0.02:.98]
-  e = empiricalcums("gumbel", 3, ρ)
+  e = empiricalcums(Gumbel_cop, 3, ρ)
   save("pics/c3gugmarg.jld2", "emp", e,"rho", ρ)
-
-  ρ = [i for i in 0.02:0.02:.5]
-  e = empiricalcums("amh", 3, ρ)
+end
+if false
+  ρ = vcat([i for i in 0.02:0.02:.49], [0.499])
+  e = empiricalcums(AMH_cop, 3, ρ)
   save("pics/c3amhgmarg.jld2", "emp", e,"rho", ρ)
 end
 
 
-c3els = load("pics/c3clgmarg.jld2")
-plotc3empth(c3els["emp"],c3els["theoret"], c3els["rho"])
+emp = load("pics/c3clgmarg.jld2")
+t = load("pics/teorc3clgmarg.jld2")
+plotc3empth(emp["emp"], t["theor"], emp["rho"], t["rho"])
 
 c3els = load("pics/c3gugmarg.jld2")
 plotc3emp(c3els["emp"], c3els["rho"], "gu")
 
+c3els = load("pics/c3frgmarg.jld2")
+plotc3emp(c3els["emp"], c3els["rho"], "fr")
+
 c3els = load("pics/c3amhgmarg.jld2")
 plotc3emp(c3els["emp"], c3els["rho"], "amh")
 
-c4els = load("pics/c4clgmarg.jld2")
-plotc4emp(c4els["emp"], c4els["rho"], "cl")
 
 emp = load("pics/c4clgmarg.jld2")
 t = load("pics/teorc4clgmarg.jld2")

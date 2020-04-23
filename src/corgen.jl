@@ -44,12 +44,16 @@ end
   # generates covariance matrix
 
 """
-    cormatgen(n::Int, ρ::Float64 = 0.5, ordered::Bool = false, altersing::Bool = true)
+    cormatgen(n::Int = 20)
 
-Returns symmetric correlation matrix Σ of size n x n, with reference correlation 0 < ρ < 1.
-If ordered = false, Σ elements varies arround ρ, i.e. σᵢⱼ ≈ ρ+δ else they drop
-as indices differences rise, i.e. σᵢⱼ ≳ σᵢₖ as |i-j| < |i-k|.
-If altersing = true, some σ are positive and some negative, else ∀ᵢⱼ σᵢⱼ ≥ 0.
+Returns symmetric correlation matrix Σ of size n x n.
+Method:
+
+    a = rand(n,n)
+    b = a*a'
+    c = b./maximum(b)
+
+Example:
 
 ```jldoctest
 julia> Random.seed!(43);
@@ -68,6 +72,28 @@ function cormatgen(n::Int = 20)
 
 end
 
+"""
+    cormatgen_rand(n::Int = 20)
+
+Returns symmetric correlation matrix Σ of size n x n.
+Method:
+
+    a = rand(n,n)
+    b = a*a'
+    diagb = Matrix(Diagonal(1 ./sqrt.(LinearAlgebra.diag(b))))
+    b = diagb*b*diagb
+
+In general gives higher correlations than the cormatgen(). Example:
+
+```jldoctest
+julia> Random.seed!(43);
+
+julia> cormatgen_rand(2)
+2×2 Array{Float64,2}:
+ 1.0       0.879086
+ 0.879086  1.0
+```
+"""
 function cormatgen_rand(n::Int = 20)
   a = rand(n,n)
   b = a*a'
@@ -76,6 +102,18 @@ function cormatgen_rand(n::Int = 20)
   (b+b')/2
 end
 
+"""
+    cormatgen_constant(n::Int, α::Float64)
+
+Returns the constant correlation matrix with constant correlations equal to 0 <= α <= 1
+
+```julia
+julia> cormatgen_constant(2, 0.5)
+2×2 Array{Float64,2}:
+ 1.0  0.5
+ 0.5  1.0
+```
+"""
 function cormatgen_constant(n::Int, α::Float64)
   @assert 0 <= α <= 1 "α should satisfy 0 <= α <= 1"
   α .*ones(n, n) .+(1-α) .*Matrix(1.0I, n,n)
@@ -86,6 +124,22 @@ function random_unit_vector(dim::Int)
   result /= norm(result)
 end
 
+"""
+    cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1 .-α)/2.)
+
+Returns the constant correlation matrix of size n x n  with constant correlations equal to 0 <= α <= 1
+and additinal noise determinde by ϵ.
+
+```julia
+julia> Random.seed!(43);
+
+julia> cormatgen_constant_noised(3, 0.5)
+3×3 Array{Float64,2}:
+ 1.0       0.506271  0.285793
+ 0.506271  1.0       0.475609
+ 0.285793  0.475609  1.0
+```
+"""
 function cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1 .-α)/2.)
   @assert 0 <= ϵ <= 1-α "ϵ must satisfy 0 <= ϵ <= 1-α"
   result = cormatgen_constant(n, α)
@@ -94,6 +148,30 @@ function cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1 .-α)/2
   result - ϵ .*Matrix(1.0I, size(result)...)
 end
 
+"""
+    cormatgen_two_constant(n::Int, α::Float64, β::Float64)
+
+Returns the correlation matrix of size n x n of correlations determined by two constants, first must be greater than the second.
+
+```julia
+julia> cormatgen_two_constant(6, 0.5, 0.1)
+6×6 Array{Float64,2}:
+ 1.0  0.5  0.5  0.1  0.1  0.1
+ 0.5  1.0  0.5  0.1  0.1  0.1
+ 0.5  0.5  1.0  0.1  0.1  0.1
+ 0.1  0.1  0.1  1.0  0.1  0.1
+ 0.1  0.1  0.1  0.1  1.0  0.1
+ 0.1  0.1  0.1  0.1  0.1  1.0
+
+
+ julia> cormatgen_two_constant(4, 0.5, 0.1)
+ 4×4 Array{Float64,2}:
+  1.0  0.5  0.1  0.1
+  0.5  1.0  0.1  0.1
+  0.1  0.1  1.0  0.1
+  0.1  0.1  0.1  1.0
+```
+"""
 function cormatgen_two_constant(n::Int, α::Float64, β::Float64)
   @assert α > β "First argument must be greater"
   result = fill(β, (n,n))
@@ -102,6 +180,23 @@ function cormatgen_two_constant(n::Int, α::Float64, β::Float64)
   result
 end
 
+"""
+    cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Float64= (1-α)/2)
+
+Returns the correlation matrix of size n x n  of correlations determined by two constants, first must be greater than the second.
+Additional noise is introduced by the parameter ϵ.
+
+```julia
+julia> Random.seed!(43);
+
+julia> cormatgen_two_constant_noised(4, 0.5, 0.1)
+4×4 Array{Float64,2}:
+  1.0         0.314724   0.190368  -0.0530078
+  0.314724    1.0       -0.085744   0.112183
+  0.190368   -0.085744   1.0        0.138089
+ -0.0530078   0.112183   0.138089   1.0
+```
+"""
 function cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Float64= (1-α)/2)
   @assert ϵ <= 1-α
   result = cormatgen_two_constant(n, α, β)
@@ -110,11 +205,53 @@ function cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Flo
   result - ϵ .*Matrix(1.0I, size(result)...)
 end
 
+"""
+    cormatgen_toeplitz(n::Int, ρ::Float64)
+
+Returns the correlation matrix of size n x n of the Toeplitz structure with
+maximal correlation equal to ρ.
+
+```julia
+julia> cormatgen_toeplitz(5, 0.9)
+5×5 Array{Float64,2}:
+ 1.0     0.9    0.81  0.729  0.6561
+ 0.9     1.0    0.9   0.81   0.729
+ 0.81    0.9    1.0   0.9    0.81
+ 0.729   0.81   0.9   1.0    0.9
+ 0.6561  0.729  0.81  0.9    1.0
+
+julia> cormatgen_toeplitz(5, 0.6)
+5×5 Array{Float64,2}:
+ 1.0     0.6    0.36  0.216  0.1296
+ 0.6     1.0    0.6   0.36   0.216
+ 0.36    0.6    1.0   0.6    0.36
+ 0.216   0.36   0.6   1.0    0.6
+ 0.1296  0.216  0.36  0.6    1.0
+```
+"""
 function cormatgen_toeplitz(n::Int, ρ::Float64)
   @assert 0 <= ρ <= 1 "ρ needs to satisfy 0 <= ρ <= 1"
   [ρ^(abs(i-j)) for i=0:n-1, j=0:n-1]
 end
 
+"""
+    cormatgen_toeplitz_noised(n::Int, ρ::Float64; ϵ=(1-ρ)/(1+ρ)/2)
+
+Returns the correlation matrix of size n x n of the Toeplitz structure with
+maximal correlation equal to ρ. Additiona noise id added by the ϵ parameter.
+
+```julia
+julia> Random.seed!(43);
+
+julia> cormatgen_toeplitz_noised(5, 0.9)
+5×5 Array{Float64,2}:
+ 1.0       0.89656   0.812152  0.720547  0.64318
+ 0.89656   1.0       0.918136  0.832571  0.734564
+ 0.812152  0.918136  1.0       0.915888  0.822804
+ 0.720547  0.832571  0.915888  1.0       0.903819
+ 0.64318   0.734564  0.822804  0.903819  1.0
+```
+"""
 function cormatgen_toeplitz_noised(n::Int, ρ::Float64; ϵ=(1-ρ)/(1+ρ)/2)
   @assert 0 <= ϵ <= (1-ρ)/(1+ρ) "ϵ must satisfy 0 <= ϵ <= (1-ρ)/(1+ρ)"
 
