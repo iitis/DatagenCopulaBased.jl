@@ -12,7 +12,6 @@ module DatagenCopulaBased
   using Distributed
   using SharedArrays
 
-
   include("sampleunivdists.jl")
 
   # dispatching of the generator

@@ -32,7 +32,7 @@ struct Gaussian_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Gaussian_cop)
+    simulate_copula(t::Int, copula::Gaussian_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations of the Gaussian copula
 
@@ -99,7 +99,7 @@ struct Student_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Student _cop)
+    simulate_copula(t::Int, copula::Student _cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations of the t-Student Copula
 
@@ -187,7 +187,7 @@ struct Frechet_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Frechet_cop)
+    simulate_copula(t::Int, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizatioins of data from the Frechet copula
 
@@ -337,7 +337,7 @@ struct Marshall_Olkin_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Marshall_Olkin_cop(λ))
+    simulate_copula(t::Int, copula::Marshall_Olkin_cop(λ); rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations of the n-variate Marshall-Olkin copula:
 
