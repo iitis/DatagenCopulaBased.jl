@@ -103,7 +103,7 @@ end
     @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
     @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
 
-    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.115
+    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.118
     @test maximum(abs.(cor(y)-cor(x1))) < 0.24
   end
 
