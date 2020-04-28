@@ -12,15 +12,14 @@
 ### parameter `θᵢ`, the only condition for `θᵢ`
 ### is such as for a corresponding bivariate copula.
 
-
+#=
 """
-  rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
+  rand2cop(u1::Vector{Float64}, θ::Float64, copula::String)
 
 Returns vector of data generated using copula::String given vector of uniformly
 distributed u1 and copula parameter θ.
 """
-function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
-  w = rand(length(u1))
+function rand2cop(u1::Vector{Float64}, θ::Float64, copula::String, w::Vector{Float64})
   copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
   if copula == "clayton"
     return (u1.^(-θ).*(w.^(-θ/(1+θ)) .-1) .+1).^(-1/θ)
@@ -33,7 +32,26 @@ function rand2cop(u1::Vector{Float64}, θ::Union{Int, Float64}, copula::String)
     return 2*w .*(a .*θ .-1).^2 ./(b+sqrt.(c))
   end
 end
+=#
+"""
+  rand2cop(u1::Float64, θ::Float64, copula::String, w::Float64)
 
+Returns Float64  generated using copula::String given u1 and w from uniform distribution
+and copula parameter θ.
+"""
+function rand2cop(u1::Float64, θ::Float64, copula::String, w::Float64)
+  copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
+  if copula == "clayton"
+    return (u1^(-θ)*(w^(-θ/(1+θ)) -1) +1)^(-1/θ)
+  elseif copula == "frank"
+    return -1/θ*log(1 +(w*(1-exp(-θ)))/(w*(exp(-θ*u1) -1) -exp(-θ*u1)))
+  elseif copula == "amh"
+    a = 1 -u1
+    b = 1 -θ *(1 +2 *a *w)+2*θ^2*a^2 *w
+    c = 1 -θ *(2 -4*w +4 *a *w)+θ^2 *(1 -4 *a *w+4 *a^2 *w)
+    return 2*w *(a *θ -1)^2 /(b+sqrt(c))
+  end
+end
 """
     Chain_of_Archimedeans
 
@@ -115,7 +133,7 @@ struct Chain_of_Archimedeans
 end
 
 """
-    simulate_copula(t::Int, copula::Chain_of_Archimedeans)
+    simulate_copula(t::Int, copula::Chain_of_Archimedeans; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations of multivariate data modeled by the chain of bivariate
 Archimedean copulas, i.e.
@@ -130,7 +148,7 @@ Chain_of_Archimedeans(3, [4.0, 11.0], ["frank", "frank"])
 
 julia> simulate_copula(1, c)
 1×3 Array{Float64,2}:
-0.180975  0.492923  0.679345
+ 0.180975  0.492923  0.679345
 
 julia> c = Chain_of_Archimedeans([.5, .7], ["frank", "clayton"], "Kendall")
 Chain_of_Archimedeans(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
@@ -139,17 +157,23 @@ julia> Random.seed!(43);
 
 julia> simulate_copula(1, c)
 1×3 Array{Float64,2}:
-0.180975  0.408582  0.646887
+ 0.180975  0.408582  0.646887
 ```
 """
-function simulate_copula(t::Int, copula::Chain_of_Archimedeans)
+function simulate_copula(t::Int, copula::Chain_of_Archimedeans; rng::AbstractRNG = Random.GLOBAL_RNG)
   θ = copula.θ
   copulas = copula.copulas
-  u = rand(t,1)
-  for i in 1:copula.n-1
-    u = hcat(u, rand2cop(u[:, i], θ[i], copulas[i]))
+  U = zeros(t, copula.n)
+
+  for j in 1:t
+    u = rand(rng)
+    w = rand(rng, copula.n-1)
+    for i in 1:copula.n-1
+      u = hcat(u, rand2cop(u[i], θ[i], copulas[i], w[i]))
+    end
+    U[j,:] = u
   end
-  return u
+  return U
 end
 
 """
@@ -243,7 +267,7 @@ struct Chain_of_Frechet
 end
 
 """
-    simulate_copula(t::Int, copula::Chain_of_Frechet)
+    simulate_copula(t::Int, copula::Chain_of_Frechet; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations modeled by the chain of bivariate two parameter Frechet copulas
 
@@ -264,11 +288,11 @@ julia> simulate_copula(10, Chain_of_Frechet([0.6, 0.4], [0.3, 0.5]))
   0.804096  0.851275  0.955881
 ```
 """
-function simulate_copula(t::Int, copula::Chain_of_Frechet)
+function simulate_copula(t::Int, copula::Chain_of_Frechet; rng::AbstractRNG = Random.GLOBAL_RNG)
   α = copula.α
   β = copula.β
   n = copula.n
-  fncopulagen(α, β, rand(t, n))
+  fncopulagen(α, β, rand(rng, t, n))
 end
 
 """

@@ -64,14 +64,20 @@ end
     @test_throws DomainError Frechet_cop(2, 0.8, -0.5)
   end
   @testset "small example" begin
+    u = [0.3, 0.5, 0.7]
+    frechet_el!(u, 0.3, 0.5)
+    @test u == [0.3, 0.5, 0.7]
+    frechet_el!(u, 0.7, 0.5)
+    @test u == [0.7, 0.7, 0.7]
+    u = [0.1, 0.8]
+    frechet_el2!(u, 0.2, 0.6, 0.6)
+    @test u ≈ [0.2, 0.8]
     Random.seed!(43)
     @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
     Random.seed!(43)
     @test frechet(1., rand(1,4)) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
     Random.seed!(43)
     @test simulate_copula(1, Frechet_cop(2, 0.4, 0.4)) ≈ [0.1809752 0.7753771] atol=1.0e-5
-    Random.seed!(43)
-    @test frechet(0.4, 0.4, rand(1,2)) ≈ [0.1809752 0.7753771] atol=1.0e-5
   end
   @testset "examples on larger data" begin
     Random.seed!(43)
@@ -123,6 +129,9 @@ end
 
     m = [0.252982 0.201189;  0.464758 0.409039; 0.585662 0.5357]
     @test mocopula([0.2 0.3 0.4; 0.3 0.4 0.6; 0.4 0.5 0.7], 2, [1., 1.5, 2.]) ≈ m atol=1.0e-4
+
+    s = collect(combinations(1:2))
+    mocopula_el([0.1, 0.2, 0.3], 2, [1., 2., 3.], s) ≈ [0.20082988502465082, 0.1344421423967149]
   end
   @testset "example on larger data" begin
     Random.seed!(43)

@@ -46,27 +46,84 @@ end
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   y = rand(MvNormal(Σ), 100000)'
   y = y.*S'
-  d=["clayton" => [1,2,3,4,9]]
-  x = gcop2arch(y, d)
-  @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(0,S[1]))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(0,S[3]))) > α
-  @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(0,S[4]))) > α
-  @test norm(cor(y)-cor(x))/norm(cor(y)) < 0.045
-  @test norm(cov(y)-cov(x))/norm(cov(y)) < 0.045
-  @test maximum(abs.(cor(y)-cor(x))) < 0.11
-  x1 = gcop2arch(y, d; notnested = true)
-  @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
-  @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
-  @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
-  @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.045
-  @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.045
-  @test maximum(abs.(cor(y)-cor(x1))) < 0.11
-  x2 = gcop2arch(y, d; naive = true)
-  @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(0,S[1]))) > α
-  @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(0,S[3]))) > α
-  @test pvalue(ExactOneSampleKSTest(x2[:,4], Normal(0,S[4]))) > α
-  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.05
-  @test_throws AssertionError gcop2arch(y, ["clayton" => [1,1,3,4]])
+
+  @testset "Clayton nested, not nested and naive" begin
+    d=["clayton" => [1,2,3,4,9]]
+    x = gcop2arch(y, d)
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(0,S[1]))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(0,S[3]))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,4], Normal(0,S[4]))) > α
+    @test norm(cor(y)-cor(x))/norm(cor(y)) < 0.045
+    @test norm(cov(y)-cov(x))/norm(cov(y)) < 0.045
+    @test maximum(abs.(cor(y)-cor(x))) < 0.11
+
+    x1 = gcop2arch(y, d; notnested = true)
+    @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
+    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.045
+    @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.045
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.11
+
+    x2 = gcop2arch(y, d; naive = true)
+    @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(0,S[1]))) > α
+    @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(0,S[3]))) > α
+    @test pvalue(ExactOneSampleKSTest(x2[:,4], Normal(0,S[4]))) > α
+    @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.05
+    @test_throws AssertionError gcop2arch(y, ["clayton" => [1,1,3,4]])
+  end
+
+  @testset "Gumbel not nested" begin
+    x1 = gcop2arch(y, ["gumbel" => [1,2,3,4,9]]; notnested = true)
+    @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
+    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.045
+    @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.045
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.11
+
+    x1 = gcop2arch(y, ["gumbel" => [1,2,3,4,9]])
+    @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
+    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.04
+    @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.04
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.1
+  end
+
+  @testset "AMH" begin
+    x1 = gcop2arch(y, ["amh" => [1,2,3]]; notnested = true)
+    @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
+
+    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.115
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.24
+
+    x1 = gcop2arch(y, ["amh" => [1,2,3]])
+    @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
+
+    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.115
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.24
+  end
+
+  @testset "Frank" begin
+    x1 = gcop2arch(y, ["frank" => [1,2,3,4,9]]; notnested = true)
+    @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
+    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.06
+    @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.06
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.11
+
+    x1 = gcop2arch(y, ["frank" => [1,2,3,4,9]])
+    @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
+    @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
+    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.06
+    @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.06
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.115
+  end
 end
 
 @testset "convert sub-copula to t-Student" begin

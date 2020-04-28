@@ -1,4 +1,7 @@
 # Archimedean copulas
+
+
+#=
 """
   getV0(θ::Float64, v::Vector{Float64}, copula::String)
 
@@ -16,7 +19,7 @@ julia> getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton")
  1.64237
 ```
 """
-function getV0(θ::Float64, v::Vector{Float64}, copula::String)
+function getV0(θ::Float64, v::Union{Float64, Vector{Float64}, Matrix{Float64}}, copula::String)
   if copula == "clayton"
     return quantile.(Gamma(1/θ, 1), v)
   elseif copula == "amh"
@@ -24,7 +27,7 @@ function getV0(θ::Float64, v::Vector{Float64}, copula::String)
   elseif copula == "frank"
     return logseriesquantile(1-exp(-θ), v)
   elseif copula == "gumbel"
-    return levygen(θ, v)
+    return levyel(θ, v[1], v[2])
   end
   throw(AssertionError("$(copula) not supported"))
 end
@@ -44,7 +47,7 @@ julia> phi([0.2 0.6; 0.4 0.8], 2., "clayton")
  0.745356  0.620174
 ```
 """
-function phi(u::Matrix{Float64}, θ::Float64, copula::String)
+function phi(u::Union{Vector{Float64}, Matrix{Float64}}, θ::Float64, copula::String)
   if copula == "clayton"
     return (1 .+ u).^(-1/θ)
   elseif copula == "amh"
@@ -56,6 +59,7 @@ function phi(u::Matrix{Float64}, θ::Float64, copula::String)
   end
   throw(AssertionError("$(copula) not supported"))
 end
+=#
 
 """
   arch_gen(copula::String, r::Matrix{Float}, θ::Float64)
@@ -71,9 +75,73 @@ random vectors.
    0.687482  0.736394
 ```
 """
-function arch_gen(copula::String, r::Matrix{T}, θ::Float64) where T <:AbstractFloat
-  u = -log.(r[:,1:end-1])./getV0(θ, r[:,end], copula)
-  phi(u, θ, copula)
+
+function arch_gen(copula::String, r::Matrix{Float64}, θ::Float64)
+  rng = Random.GLOBAL_RNG
+  t = size(r,1)
+  if copula == "clayton"
+    U = zeros(t, size(r,2)-1)
+    for j in 1:t
+      U[j,:] = clayton_gen(r[j,:], θ)
+    end
+    return U
+  elseif copula == "amh"
+    U = zeros(t, size(r,2)-1)
+    for j in 1:t
+      U[j,:] = amh_gen(r[j,:], θ)
+    end
+    return U
+  elseif copula == "frank"
+    U = zeros(t, size(r,2)-1)
+    w = logseriescdf(1-exp(-θ))
+    for j in 1:t
+      U[j,:] = frank_gen(r[j,:], θ, w)
+    end
+    return U
+  else
+    U = zeros(t, size(r,2)-1)
+    u = r[:,end]
+    p = invperm(sortperm(u))
+    v = [levyel(θ, rand(rng), rand(rng)) for i in 1:length(u)]
+    v = sort(v)[p]
+    for j in 1:t
+      U[j,:] = -log.(r[j,1:end-1])./v[j]
+    end
+    return exp.(-U.^(1/θ))
+  end
+end
+
+"""
+    gumbel_gen(r::Vector{Float64}, θ::Float64)
+"""
+function gumbel_gen(r::Vector{Float64}, θ::Float64)
+    u = -log.(r[1:end-2])./levyel(θ, r[end-1], r[end])
+    return exp.(-u.^(1/θ))
+end
+
+"""
+    clayton_gen(r::Vector{Float64}, θ::Float64)
+"""
+function clayton_gen(r::Vector{Float64}, θ::Float64)
+    u = -log.(r[1:end-1])./quantile.(Gamma(1/θ, 1), r[end])
+    return (1 .+ u).^(-1/θ)
+end
+
+"""
+    amh_gen(r::Vector{Float64}, θ::Float64)
+"""
+function amh_gen(r::Vector{Float64}, θ::Float64)
+    u = -log.(r[1:end-1])./(1 .+quantile.(Geometric(1-θ), r[end]))
+    return (1-θ) ./(exp.(u) .-θ)
+end
+
+"""
+    frank_gen(r::Vector{Float64}, θ::Float64, logseries::Vector{Float64})
+"""
+function frank_gen(r::Vector{Float64}, θ::Float64, logseries::Vector{Float64})
+    logseriesquantile = findlast(logseries .< r[end])
+    u = -log.(r[1:end-1])./logseriesquantile
+    return -log.(1 .+exp.(-u) .*(exp(-θ)-1)) ./θ
 end
 
 """
@@ -120,7 +188,7 @@ struct Gumbel_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Gumbel_cop)
+    simulate_copula(t::Int, copula::Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations from the Gumbel copula -  Gumbel_cop(n, θ)
 
@@ -129,14 +197,19 @@ julia> Random.seed!(43);
 
 julia> simulate_copula(2, Gumbel_cop(3, 1.5))
 2×3 Array{Float64,2}:
- 0.535534  0.900389  0.666363
- 0.410877  0.667139  0.637826
+ 0.740038  0.918928  0.950674
+ 0.637826  0.483514  0.123949
 ```
 """
-function simulate_copula(t::Int, copula::Gumbel_cop)
+function simulate_copula(t::Int, copula::Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
     θ = copula.θ
     n = copula.n
-    return arch_gen("gumbel", rand(t,n+1), θ)
+    U = zeros(t, n)
+    for j in 1:t
+      u = rand(rng, n+2)
+      U[j,:] = gumbel_gen(u, θ)
+    end
+    U
 end
 
 """
@@ -160,6 +233,7 @@ Constructor
 where cor == "Spearman", "Kendall", uses these correlations to compute θ,
 correlations must be greater than zero.
 
+TODO correct
 ```jldoctest
 julia> Gumbel_cop_rev(4, .75, "Kendall")
 Gumbel_cop_rev(4, 4.0)
@@ -185,7 +259,7 @@ struct Gumbel_cop_rev
 end
 
 """
-    simulate_copula(t::Int, copula::Gumbel_cop_rev)
+    simulate_copula(t::Int, copula::Gumbel_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations from the Gumbel _cop _rev(n, θ) - the reversed Gumbel copula (reversed means u → 1 .- u).
 
@@ -194,14 +268,14 @@ julia> Random.seed!(43);
 
 julia> simulate_copula(2, Gumbel_cop_rev(3, 1.5))
 2×3 Array{Float64,2}:
- 0.464466  0.0996114  0.333637
- 0.589123  0.332861   0.362174
+ 0.259962  0.081072  0.0493259
+ 0.362174  0.516486  0.876051
 ```
 """
-function simulate_copula(t::Int, copula::Gumbel_cop_rev)
+function simulate_copula(t::Int, copula::Gumbel_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
     θ = copula.θ
     n = copula.n
-    return 1 .- arch_gen("gumbel", rand(t,n+1), θ)
+    return 1 .- simulate_copula(t, Gumbel_cop(n, θ); rng = rng)
 end
 
 """
@@ -216,7 +290,7 @@ Constructor
     Clayton_cop(n::Int, θ::Float64)
 
 The Clayton n variate copula parameterized by θ::Float64, such that θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
-supported for n::Int ≧ 2.
+supported for n::Int ≥ 2.
 
 Constructor
 
@@ -252,7 +326,7 @@ struct Clayton_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Clayton_cop)
+    simulate_copula(t::Int, copula::Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 
 Returns t realizations from the Clayton copula - Clayton_cop(n, θ)
@@ -281,13 +355,18 @@ julia> simulate_copula(10, Clayton_cop(2, 1))
   0.775377  0.872074
 ```
 """
-function simulate_copula(t::Int, copula::Clayton_cop)
+function simulate_copula(t::Int, copula::Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
     θ = copula.θ
     n = copula.n
   if (n == 2) & (θ < 0)
-    return chaincopulagen(t, [θ], "clayton")
+    return simulate_copula(t, Chain_of_Archimedeans([θ], "clayton"); rng = rng)
   else
-    return arch_gen("clayton", rand(t,n+1), θ)
+    U = zeros(t, n)
+    for j in 1:t
+      u = rand(rng, n+1)
+      U[j,:] = clayton_gen(u, θ)
+    end
+    return U
   end
 end
 
@@ -342,7 +421,7 @@ struct Clayton_cop_rev
 end
 
 """
-    simulate_copula(t::Int, copula::Clayton_cop_rev)
+    simulate_copula(t::Int, copula::Clayton_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations form the Clayton _cop _rev(n, θ) - the reversed Clayton copula (reversed means u → 1 .- u)
 
@@ -356,10 +435,10 @@ Returns t realizations form the Clayton _cop _rev(n, θ) - the reversed Clayton 
    0.224623  0.127926
 ```
 """
-function simulate_copula(t::Int, copula::Clayton_cop_rev)
+function simulate_copula(t::Int, copula::Clayton_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
   n = copula.n
   θ = copula.θ
-  1 .- simulate_copula(t, Clayton_cop(n, θ))
+  1 .- simulate_copula(t, Clayton_cop(n, θ); rng = rng)
 end
 
 """
@@ -413,7 +492,7 @@ struct AMH_cop
 end
 
 """
-    simulate_copula(t::Int, copula::AMH_cop)
+    simulate_copula(t::Int, copula::AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations from the Ali-Mikhail-Haq - copulaAMH_cop(n, θ)
 
@@ -428,13 +507,18 @@ julia> simulate_copula(4, AMH_cop(2, -0.5))
  0.924876  0.313789
 ```
 """
-function simulate_copula(t::Int, copula::AMH_cop)
+function simulate_copula(t::Int, copula::AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   n = copula.n
   θ = copula.θ
   if (θ in [0,1]) | (n == 2)*(θ < 0)
-    return chaincopulagen(t, [θ], "amh")
+    return simulate_copula(t, Chain_of_Archimedeans([θ], "amh"); rng = rng)
   else
-    return arch_gen("amh", rand(t,n+1), θ)
+    U = zeros(t, n)
+    for j in 1:t
+      u = rand(rng, n+1)
+      U[j,:] = amh_gen(u, θ)
+    end
+    return U
   end
 end
 
@@ -487,7 +571,7 @@ struct AMH_cop_rev
 end
 
 """
-    simulate_copula(t::Int, copula::AMH_cop_rev)
+    simulate_copula(t::Int, copula::AMH_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations from the reversed Ali-Mikhail-Haq copulaAMH _cop _rev(n, θ), reversed means u → 1 .- u.
 
@@ -502,10 +586,10 @@ julia> simulate_copula(4, rev_amh(2, -0.5))
 0.075124  0.686211
 ```
 """
-function simulate_copula(t::Int, copula::AMH_cop_rev)
+function simulate_copula(t::Int, copula::AMH_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
   n = copula.n
   θ = copula.θ
-  1 .- simulate_copula(t, AMH_cop(n, θ))
+  1 .- simulate_copula(t, AMH_cop(n, θ); rng = rng)
 end
 
 """
@@ -556,7 +640,7 @@ struct Frank_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Frank_cop)
+    simulate_copula(t::Int, copula::Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations from the n-variate Frank copula - Frank _cop(n, θ)
 
@@ -580,13 +664,19 @@ julia> simulate_copula(4, Frank_cop(2, 0.2, "Spearman"))
   0.864546  0.271543
 ```
 """
-function simulate_copula(t::Int, copula::Frank_cop)
+function simulate_copula(t::Int, copula::Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   n = copula.n
   θ = copula.θ
   if (n == 2) & (θ < 0)
-    return chaincopulagen(t, [θ], "frank")
+    return simulate_copula(t, Chain_of_Archimedeans([θ], "frank"); rng = rng)
   else
-    return arch_gen("frank", rand(t,n+1), θ)
+    w = logseriescdf(1-exp(-θ))
+    U = zeros(t, n)
+    for j in 1:t
+      u = rand(rng, n+1)
+      U[j,:] = frank_gen(u, θ, w)
+    end
+    return U
   end
 end
 

@@ -220,10 +220,93 @@ struct Nested_Gumbel_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Union{Nested_Clayton_cop, Nested_AMH_cop, Nested_Frank_cop, Nested_Gumbel_cop})
+    simulate_copula(t::Int, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations of data generated using:
-Nested Clayton copula, Nested AMH copula, Nested Frank copula or Nested Gumbel copula
+Returns t realizations of data generated using Nested Frank copula
+```jldoctest
+
+julia> c1 = Frank_cop(2, 4.)
+Frank_cop(2, 4.0)
+
+julia> c2 = Frank_cop(2, 5.)
+Frank_cop(2, 5.0)
+
+julia> c = Nested_Frank_cop([c1, c2],1, 2.0)
+Nested_Frank_cop(Frank_cop[Frank_cop(2, 4.0), Frank_cop(2, 5.0)], 1, 2.0)
+
+julia> Random.seed!(43);
+
+julia> simulate_copula(1, c)
+1×5 Array{Float64,2}:
+ 0.642765  0.901183  0.969422  0.9792  0.74155
+
+```
+"""
+function simulate_copula(t::Int, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    m = copula.m
+    θ = copula.θ
+    children = copula.children
+    ϕ = [ch.θ for ch in children]
+    n = [ch.n for ch in children]
+
+    ws = [logseriescdf(1-exp(theta)) for theta in ϕ]
+    n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+    n2 = sum(n)+m
+    w = logseriescdf(1-exp(-θ))
+    U = zeros(t, n2)
+    for j in 1:t
+       rand_vec = rand(rng, n2+1)
+       U[j,:] = nested_frank_gen(n1, ϕ, θ, rand_vec, w, ws; rng=rng)
+   end
+   return U
+ end
+
+"""
+     simulate_copula(t::Int, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Returns t realizations of data generated using Nested AMH copula
+
+```jldoctest
+
+julia> c1 = AMH_cop(2, .7)
+AMH_cop(2, 0.7)
+
+julia> c2 = AMH_cop(2, .8)
+AMH_cop(2, 0.8)
+
+julia> cp = Nested_AMH_cop([c1, c2], 1, 0.2)
+Nested_AMH_cop(AMH_cop[AMH_cop(2, 0.7), AMH_cop(2, 0.8)], 1, 0.2)
+
+julia> Random.seed!(43);
+
+julia> simulate_copula(4, cp)
+4×5 Array{Float64,2}:
+ 0.557393  0.902767  0.909853  0.938522  0.586068
+ 0.184204  0.866664  0.699134  0.226744  0.102932
+ 0.268634  0.383355  0.179023  0.533749  0.995958
+ 0.578143  0.840169  0.743728  0.963226  0.576695
+```
+"""
+function simulate_copula(t::Int, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+     m = copula.m
+     θ = copula.θ
+     children = copula.children
+     ϕ = [ch.θ for ch in children]
+     n = [ch.n for ch in children]
+     n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+     n2 = sum(n)+m
+     U = zeros(t, n2)
+     for j in 1:t
+        rand_vec = rand(rng, n2+1)
+        U[j,:] = nested_amh_gen(n1, ϕ, θ, rand_vec; rng=rng)
+    end
+    return U
+ end
+
+"""
+    simulate_copula(t::Int, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Returns t realizations of data generated using Nested Clayton copula
 
 ```jldoctest
 
@@ -240,47 +323,72 @@ Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 2.0), Clayton_cop(2, 3.0)], 1, 1.1
 
 julia> simulate_copula(4, cp)
 4×5 Array{Float64,2}:
- 0.80125   0.879693  0.849878  0.73245   0.538354
- 0.25902   0.408295  0.729322  0.228969  0.064877
- 0.967594  0.949726  0.887957  0.684867  0.863298
- 0.537306  0.182984  0.399726  0.718501  0.415321
+0.514118  0.84089   0.870106  0.906233  0.739349
+0.588245  0.85816   0.935308  0.944444  0.709009
+0.59625   0.665947  0.483649  0.603074  0.153501
+0.200051  0.304099  0.242572  0.177836  0.0851603
+```
+"""
+function simulate_copula(t::Int, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+     m = copula.m
+     θ = copula.θ
+     children = copula.children
+     ϕ = [ch.θ for ch in children]
+     n = [ch.n for ch in children]
+     n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+     n2 = sum(n)+m
+     U = zeros(t, n2)
+     for j in 1:t
+        rand_vec = rand(rng, n2+1)
+        U[j,:] = nested_clayton_gen(n1, ϕ, θ, rand_vec; rng=rng)
+    end
+    return U
+ end
 
-julia> c1 = AMH_cop(2, .7)
-AMH_cop(2, 0.7)
+"""
+    simulate_copula(t::Int, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-julia> c2 = AMH_cop(2, .8)
-AMH_cop(2, 0.8)
+Returns t realizations of data generated using  Nested Gumbel copula
 
-julia> cp = Nested_AMH_cop([c1, c2], 1, 0.2)
-Nested_AMH_cop(AMH_cop[AMH_cop(2, 0.7), AMH_cop(2, 0.8)], 1, 0.2)
+```jldoctest
 
 julia> Random.seed!(43);
 
+julia> c1 = Gumbel_cop(2, 2.)
+Gumbel_cop(2, 2.0)
+
+julia> c2 = Gumbel_cop(2, 3.)
+Gumbel_cop(2, 3.0)
+
+julia> cp = Nested_Gumbel_cop([c1, c2], 1, 1.1)
+
+julia> simulate_copula(4, cp)
+Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 2.0), Gumbel_cop(2, 3.0)], 1, 1.1)
+
 julia> simulate_copula(4, cp)
 4×5 Array{Float64,2}:
- 0.589196  0.74137   0.748553  0.535984  0.220268
- 0.820417  0.928427  0.96363   0.293954  0.0232534
- 0.952909  0.926609  0.825948  0.469617  0.767546
- 0.958157  0.645533  0.17928   0.719127  0.820758
+ 0.387085   0.693399   0.94718   0.953776  0.583379
+ 0.0646972  0.0865914  0.990691  0.991127  0.718803
+ 0.966896   0.709233   0.788019  0.855622  0.755476
+ 0.272487   0.106996   0.756052  0.834068  0.661432
+
 ```
 """
-function simulate_copula(t::Int, copula::Union{Nested_Clayton_cop, Nested_AMH_cop, Nested_Frank_cop, Nested_Gumbel_cop})
-    m = copula.m
-    θ = copula.θ
-    children = copula.children
-    ϕ = [ch.θ for ch in children]
-    n = [ch.n for ch in children]
-    n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
-    n2 = sum(n)+m
-    if typeof(copula) == Nested_Clayton_cop
-      return nestedcopulag("clayton", n1, ϕ, θ, rand(t, n2+1))
-    elseif typeof(copula) == Nested_AMH_cop
-      return nestedcopulag("amh", n1, ϕ, θ, rand(t, n2+1))
-    elseif typeof(copula) == Nested_Frank_cop
-      return nestedcopulag("frank", n1, ϕ, θ, rand(t, n2+1))
-    else
-      return nestedcopulag("gumbel", n1, ϕ, θ, rand(t, n2+1))
+function simulate_copula(t::Int, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+     m = copula.m
+     θ = copula.θ
+     children = copula.children
+     ϕ = [ch.θ for ch in children]
+     n = [ch.n for ch in children]
+     n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+     n2 = sum(n)+m
+
+     U = zeros(t, n2)
+     for j in 1:t
+        rand_vec = rand(rng, n2)
+        U[j,:] = nested_gumbel_gen(n1, ϕ, θ, rand_vec; rng=rng)
     end
+return U
 end
 
 """
@@ -339,7 +447,7 @@ struct Double_Nested_Gumbel_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop)
+    simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Simulate t realization of the Double Nested Gumbel copula i.e.
 
@@ -368,27 +476,36 @@ julia> Random.seed!(43);
 
 julia> simulate_copula(5, copula)
 5×9 Array{Float64,2}:
- 0.0768392  0.17611   0.0259283  0.0294148  0.850943  0.171069  0.298843  0.418619  0.197708
- 0.900125   0.903886  0.847397   0.835692   0.683295  0.778774  0.84763   0.683397  0.728654
- 0.814389   0.763476  0.631223   0.613689   0.9205    0.709534  0.698452  0.452066  0.502085
- 0.415851   0.299575  0.528795   0.575597   0.135624  0.220517  0.168473  0.439829  0.48506
- 0.497682   0.625958  0.820213   0.86114    0.570219  0.639045  0.695407  0.980733  0.35248
+ 0.598555   0.671584   0.8403     0.846844  0.634609  0.686927  0.693906  0.651968    0.670812
+ 0.0518892  0.191236   0.0803859  0.104325  0.410727  0.529354  0.557387  0.370518    0.592302
+ 0.367914   0.276196   0.382616   0.470171  0.264135  0.144503  0.13097   0.00687015  0.01417
+ 0.632727   0.596879   0.244176   0.338809  0.58771   0.147539  0.219099  0.287937    0.0569943
+ 0.310365   0.0483216  0.119312   0.107155  0.336619  0.279602  0.262756  0.438432    0.403061
 ```
 """
-function simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop)
+function simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
     θ = copula.θ
     v = copula.children
-    n = [ch.n for ch in v[1].children]
-    Ψ = [ch.θ for ch in v[1].children]
-    X = nested_gumbel(t, n, Ψ, v[1].θ./θ, v[1].m)
-    for i in 2:length(v)
-        n = [ch.n for ch in v[i].children]
-        Ψ = [ch.θ for ch in v[i].children]
-        X = hcat(X, nested_gumbel(t, n, Ψ, v[i].θ./θ, v[i].m))
+    ns = [[ch.n for ch in vs.children] for vs in v]
+    Ψs = [[ch.θ for ch in vs.children] for vs in v]
+    dims = sum([sum(ns[i])+v[i].m for i in 1:length(v)])
+    U = zeros(t, dims)
+    for j in 1:t
+        X = Float64[]
+        for k in 1:length(v)
+            n = ns[k]
+            n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+            n2 = sum(n)+v[k].m
+            rand_vec = rand(rng, n2)
+            X = vcat(X, nested_gumbel_gen(n1, Ψs[k], v[k].θ./θ, rand_vec; rng = rng))
+        end
+        X = -log.(X)./levyel(θ, rand(rng), rand(rng))
+        U[j,:] = exp.(-X.^(1/θ))
     end
-    phi(-log.(X)./levygen(θ, rand(t)), θ, "gumbel")
+    return U
 end
 
+#=
 """
     nested_gumbel(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
 
@@ -399,6 +516,7 @@ function nested_gumbel(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64,
   n2 = sum(n)+m
   return nestedcopulag("gumbel", n1, ϕ, θ, rand(t, n2+1))
 end
+=#
 
 """
     Hierarchical_Gumbel_cop
@@ -444,7 +562,7 @@ struct Hierarchical_Gumbel_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop)
+    simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Returns t realizations of multivariate data from hierarchically nested Gumbel copula, i.e.
 
@@ -460,50 +578,178 @@ Hierarchical_Gumbel_cop(4, [5.0, 4.0, 3.0])
 
 julia> simulate_copula(3, c)
 3×4 Array{Float64,2}:
- 0.63944   0.785665  0.646324  0.834632
- 0.794524  0.743891  0.638179  0.779129
- 0.355646  0.374227  0.119397  0.341991
-
+ 0.100353  0.207903  0.0988337  0.0431565
+ 0.347417  0.217052  0.223734   0.042903
+ 0.73617   0.347349  0.168348   0.410963
 ```
 """
-function simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop)
+function simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   θ = copula.θ
   n = copula.n
   θ = vcat(θ, [1.])
-  X = rand(t,1)
-  for i in 1:(n-1)
-    X = nestedstep("gumbel", hcat(X, rand(t)), ones(t), θ[i], θ[i+1])
-  end
-  X
+  U = zeros(t, n)
+  for j in 1:t
+      X = rand(rng)
+      for i in 1:(n-1)
+          X = gumbel_step(vcat(X, rand(rng)), θ[i], θ[i+1] ; rng = rng)
+      end
+     U[j,:] = X
+    end
+    U
 end
 
 """
-  nestedcopulag(copula::String, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, r::Matrix{Float64})
+    nested_gumbel_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
+                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
 
-Given [0,1]ᵗˣˡ ∋ r , returns t realizations of l-1 variate data from nested archimedean copula
+"""
+function nested_gumbel_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
+                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
+    V0 = levyel(θ, rand(rng), rand(rng))
+    u = copy(rand_vec)
+    for i in 1:length(n)
+      u[n[i]] = gumbel_step(rand_vec[n[i]], ϕ[i], θ; rng = rng)
+    end
+    u = -log.(u)./V0
+    return exp.(-u.^(1/θ))
+end
+
+"""
+    nested_amh_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
+                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
+"""
+function nested_amh_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
+                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
+    V0 = 1 .+ quantile.(Geometric(1-θ), rand_vec[end])
+    u = copy(rand_vec[1:end-1])
+    for i in 1:length(n)
+      u[n[i]] = amh_step(rand_vec[n[i]], V0, ϕ[i], θ; rng = rng)
+    end
+    u = -log.(u)./V0
+    return (1-θ) ./(exp.(u) .-θ)
+end
+
+"""
+    nested_frank_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64, rand_vec::Vector{Float64}, logseries::Vector{Float64},
+                         logseries_children::Vector{Vector{Float64}};
+                         rng::AbstractRNG)
+"""
+function nested_frank_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
+                         θ::Float64, rand_vec::Vector{Float64}, logseries::Vector{Float64},
+                         logseries_children::Vector{Vector{Float64}};
+                         rng::AbstractRNG)
+    V0 = findlast(logseries .< rand_vec[end])
+    u = copy(rand_vec[1:end-1])
+    for i in 1:length(n)
+      u[n[i]] = frank_step(rand_vec[n[i]], V0, ϕ[i], θ, logseries_children[i]; rng = rng)
+    end
+    u = -log.(u)./V0
+    return -log.(1 .+exp.(-u) .*(exp(-θ)-1)) ./θ
+end
+
+"""
+    nested_clayton_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG = Random.GLOBAL_RNG)
+"""
+function nested_clayton_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
+                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
+    V0 = quantile.(Gamma(1/θ, 1), rand_vec[end])
+    u = copy(rand_vec[1:end-1])
+    for i in 1:length(n)
+      u[n[i]] = clayton_step(rand_vec[n[i]], V0, ϕ[i], θ; rng = rng)
+    end
+    u = -log.(u)./V0
+    return (1 .+ u).^(-1/θ)
+end
+
+"""
+    gumbel_step(u::Vector{Float64}, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+"""
+function gumbel_step(u::Vector{Float64}, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+    u = -log.(u)./levyel(ϕ/θ, rand(rng), rand(rng))
+    return exp.(-u.^(θ/ϕ))
+end
+
+"""
+    clayton_step(u::Vector{Float64}, V0::Float64, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+"""
+function clayton_step(u::Vector{Float64}, V0::Float64, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+    u = -log.(u)./tiltedlevygen(V0, ϕ/θ; rng = rng)
+    return exp.(V0.-V0.*(1 .+u).^(θ/ϕ))
+end
+
+"""
+    frank_step(u::Vector{Float64}, V0::Int, ϕ::Float64, θ::Float64, logseries_child::Vector{Float64}; rng::AbstractRNG)
+"""
+function frank_step(u::Vector{Float64}, V0::Int, ϕ::Float64, θ::Float64, logseries_child::Vector{Float64}; rng::AbstractRNG)
+    u = -log.(u)./nestedfrankgen(ϕ, θ, V0, logseries_child; rng = rng)
+    X = (1 .-(1 .-exp.(-u)*(1-exp(-ϕ))).^(θ/ϕ))./(1-exp(-θ))
+    return X.^V0
+end
+"""
+    amh_step(u::Vector{Float64}, V0::Float64, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+"""
+function amh_step(u::Vector{Float64}, V0::Float64, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+    w = quantile(NegativeBinomial(V0, (1-ϕ)/(1-θ)), rand(rng))
+    u = -log.(u)./(V0 + w)
+    X = ((exp.(u) .-ϕ) .*(1-θ) .+θ*(1-ϕ)) ./(1-ϕ)
+    return X.^(-V0)
+end
+
+"""
+nestedcopulag(copula::String, ns::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64, r::Matrix{Float64})
+
+Given [0,1]ᵗˣˡ ∋ r, returns t realizations of l-1 variate data from nested archimedean copula
 
 
 ```jldoctest
 julia> Random.seed!(43)
 
-julia> nestedcopulag("clayton", [2, 2], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
+julia> nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
+julia> nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
 2×4 Array{Float64,2}:
- 0.193949  0.230553  0.515404  0.557686
- 0.712034  0.761276  0.190189  0.208867
- ```
+ 0.153282  0.182421  0.374228  0.407663
+ 0.69035   0.740927  0.254842  0.279192
+```
 """
-function nestedcopulag(copula::String, n::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64,
+function nestedcopulag(copula::String, ns::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64,
                                                         r::Matrix{Float64})
-  testnestedθϕ(map(length, n), ϕ, θ, copula)
-  V0 = getV0(θ, r[:,end], copula)
-  X = r[:,1:end-1]
-  X[:,n[1]] = nestedstep(copula, r[:,n[1]], V0, ϕ[1], θ)
-  for i in 2:length(n)
-    X[:,n[i]] = nestedstep(copula, r[:,n[i]], V0, ϕ[i], θ)
-  end
-  phi(-log.(X)./V0, θ, copula)
+    rng = Random.GLOBAL_RNG
+    t = size(r,1)
+    n = size(r,2)-1
+    u = zeros(t, n)
+    if copula == "clayton"
+        for j in 1:t
+            u[j,:] = nested_clayton_gen(ns, ϕ, θ, r[j,:]; rng = rng)
+        end
+    elseif copula == "amh"
+        for j in 1:t
+            u[j,:] = nested_amh_gen(ns, ϕ, θ, r[j,:]; rng = rng)
+        end
+    elseif copula == "frank"
+        ws = [logseriescdf(1-exp(theta)) for theta in ϕ]
+        w = logseriescdf(1-exp(-θ))
+        for j in 1:t
+            u[j,:] = nested_frank_gen(ns, ϕ, θ, r[j,:], w, ws; rng = rng)
+        end
+    elseif copula == "gumbel"
+        v = r[:,end]
+        p = invperm(sortperm(v))
+        V0 = [levyel(θ, rand(rng), rand(rng)) for i in 1:t]
+        V0 = sort(V0)[p]
+        for j in 1:t
+            rand_vec = r[j,1:end-1]
+            x = copy(rand_vec)
+            for i in 1:length(ϕ)
+              x[ns[i]] = gumbel_step(rand_vec[ns[i]], ϕ[i], θ; rng = rng)
+            end
+            x = -log.(x)./V0[j]
+            u[j,:] = exp.(-x.^(1/θ))
+        end
+    end
+    return u
 end
 
+#=
 """
   nestedstep(copula::String, u::Matrix{Float64}, V0::Union{Vector{Float64}, Vector{Int}}, ϕ::Float64, θ::Float64)
 
@@ -537,7 +783,10 @@ function nestedstep(copula::String, u::Matrix{Float64}, V0::Union{Vector{Float64
   end
   throw(AssertionError("$(copula) not supported"))
 end
+=#
 
+
+#=
 """
   testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String)
 
@@ -550,3 +799,4 @@ function testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula
   length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
   (copula != "clayton") | (maximum(ϕ) < θ+2*θ^2+750*θ^5) || warn("θ << ϕ for clayton nested copula, marginals may not be uniform")
 end
+=#

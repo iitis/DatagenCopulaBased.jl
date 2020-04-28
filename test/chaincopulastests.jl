@@ -1,14 +1,18 @@
 α = 0.025
 
 @testset "helpers" begin
-  Random.seed!(43)
-  @test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "clayton"), Uniform(0,1))) > α
-  Random.seed!(43)
-  @test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "frank"), Uniform(0,1))) > α
-  Random.seed!(42)
-  @test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "amh"), Uniform(0,1))) > α
-  Random.seed!(43)
-  @test rand2cop([0.815308, 0.894269], 0.5, "clayton") ≈ [0.292041, 0.836167] atol=1.0e-5
+  @test rand2cop(0.5, 2., "clayton", 0.5) ≈ 0.5463906428428872
+  @test rand2cop(0.5, 2., "frank", 0.5) ≈ 0.5
+  @test rand2cop(0.5, -.5, "amh", 0.5) ≈ 0.5061130556252271
+
+  #Random.seed!(43)
+  #@test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "clayton", rand(500000)), Uniform(0,1))) > α
+  #Random.seed!(43)
+  #@test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "frank", rand(500000)), Uniform(0,1))) > α
+  #Random.seed!(42)
+  #@test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "amh", rand(500000)), Uniform(0,1))) > α
+  #Random.seed!(43)
+  #@test rand2cop([0.815308, 0.894269], 0.5, "clayton", rand(2)) ≈ [0.292041, 0.836167] atol=1.0e-5
 end
 
 @testset "exceptions" begin
@@ -48,7 +52,7 @@ end
     @test norm((1 .- x) - x2) ≈ 0.
 
     Random.seed!(43)
-    x = simulate_copula(500000, Chain_of_Archimedeans([-0.9, 3., 2, 4., -0.3, 1.], cops))
+    x = simulate_copula(300000, Chain_of_Archimedeans([-0.9, 3., 2, 4., -0.3, 1.], cops))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α

@@ -56,9 +56,9 @@ julia> simulate_copula(10, Gaussian_cop([1. 0.5; 0.5 1.]))
  0.190283  0.594451
 ```
 """
-function simulate_copula(t::Int, copula::Gaussian_cop)
+function simulate_copula(t::Int, copula::Gaussian_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   Σ = copula.Σ
-  z = transpose(rand(MvNormal(Σ),t))
+  z = transpose(rand(rng, MvNormal(Σ),t))
   for i in 1:size(Σ, 1)
     d = Normal(0, sqrt.(Σ[i,i]))
     z[:,i] = cdf.(d, z[:,i])
@@ -124,11 +124,11 @@ julia> simulate_copula(10, Student_cop([1. 0.5; 0.5 1.], 10))
  0.113788  0.633349
 ```
 """
-function simulate_copula(t::Int, copula::Student_cop)
+function simulate_copula(t::Int, copula::Student_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   Σ = copula.Σ
   ν = copula.ν
-  z = transpose(rand(MvNormal(Σ),t))
-  U = rand(Chisq(ν), size(z, 1))
+  z = transpose(rand(rng, MvNormal(Σ),t))
+  U = rand(rng, Chisq(ν), size(z, 1))
   for i in 1:size(Σ, 1)
     x = z[:,i].*sqrt.(ν./U)./sqrt(Σ[i,i])
     z[:,i] = cdf.(TDist(ν), x)
@@ -215,17 +215,26 @@ julia> simulate_copula(1, f)
 0.180975  0.775377
 ```
 """
-function simulate_copula(t::Int, copula::Frechet_cop)
+
+function simulate_copula(t::Int, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   n = copula.n
   α = copula.α
   β = copula.β
+  u = zeros(t,n)
   if (β > 0) & (n == 2)
-    u = rand(t,2)
-    return frechet(α, β, u)
+    for j in 1:t
+      u_el = rand(rng, n)
+      frechet_el2!(u_el, α, β, rand(rng))
+      u[j,:] = u_el
+    end
   else
-    u = rand(t, n)
-    return frechet(α, u)
+    for j in 1:t
+      u_el = rand(rng, n)
+      frechet_el!(u_el, α, rand(rng))
+      u[j,:] = u_el
+    end
   end
+  return u
 end
 
 """
@@ -237,69 +246,58 @@ Returns t realization of n variate data generated from one parameter Frechet_cop
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> u = rand(10, 2)
+julia> u = rand(10, 2);
 
 julia> frechet(0.5, u)
 10×2 Array{Float64,2}:
- 0.180975  0.661781
- 0.775377  0.775377
- 0.888934  0.125437
- 0.924876  0.924876
- 0.408278  0.408278
- 0.912603  0.740184
- 0.828727  0.00463791
- 0.400537  0.0288987
- 0.429437  0.429437
- 0.955881  0.851275
+ 0.180975   0.661781
+ 0.0742681  0.0742681
+ 0.888934   0.125437
+ 0.0950087  0.0950087
+ 0.130474   0.130474
+ 0.912603   0.740184
+ 0.828727   0.00463791
+ 0.400537   0.0288987
+ 0.521601   0.521601
+ 0.955881   0.851275
 ```
 """
-function frechet(α::Float64, u::Matrix{Float64})
+function frechet(α::Float64, u::Matrix{Float64}; rng::AbstractRNG = Random.GLOBAL_RNG)
   for j in 1:size(u, 1)
-    if (α >= rand())
-      for i in 1:size(u, 2)
-        u[j,i] = u[j, end]
-      end
-    end
+    v = rand(rng)
+    el = u[j, :]
+    frechet_el!(el, α, v)
+    u[j,:] = el
   end
   u
 end
 
 """
-  frechet(α::Float64, β::Float64, u::Matrix{Float64})
+  frechet_el!(u::Vector{Float64}, α::Float64, v::Float64 = rand())
 
-Given bivariate random data u ∈ R^{t, 2}
-Returns t realizations of bivariate data generated from two parameters Frechet_cop(n, α, β).
+Given n-variate random vector changes it to such modeled by the two parameters Frechet_cop(n, α, β).
 
-
-```jldoctest
-julia> Random.seed!(43);
-
-julia> u = rand(10,2)
-
-julia> frechet(0.4, 0.2, u)
-10×2 Array{Float64,2}:
- 0.180975  0.661781
- 0.775377  0.775377
- 0.888934  0.125437
- 0.924876  0.924876
- 0.408278  0.591722
- 0.912603  0.740184
- 0.828727  0.171273
- 0.400537  0.0288987
- 0.429437  0.429437
- 0.955881  0.851275
-```
 """
-function frechet(α::Float64, β::Float64, u::Matrix{Float64})
-  for j in 1:size(u, 1)
-    v = rand()
-    if (α >= v)
-      u[j,1] = u[j, 2]
-    elseif (α < v <= α+β)
-      u[j,1] = 1-u[j, 2]
+function frechet_el!(u::Vector{Float64}, α::Float64, v::Float64 = rand())
+  if (α >= v)
+    for i in 1:length(u)-1
+      u[i] = u[end]
     end
   end
-  u
+end
+
+"""
+  function frechet_el2!(u::Vector{Float64}, α::Float64, β::Float64, v::Float64 = rand())
+
+Given bivariate random vector changes it to such modeled by the two parameters Frechet_cop(n, α, β).
+
+"""
+function frechet_el2!(u::Vector{Float64}, α::Float64, β::Float64, v::Float64 = rand())
+  if (α >= v)
+    u[1] = u[2]
+  elseif (α < v <= α+β)
+    u[1] = 1-u[2]
+  end
 end
 
 ### Marshall - Olkin familly
@@ -355,10 +353,16 @@ julia> simulate_copula(1, f)
   0.854724  0.821831
 ```
 """
-function simulate_copula(t::Int, copula::Marshall_Olkin_cop)
+function simulate_copula(t::Int, copula::Marshall_Olkin_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   λ = copula.λ
   n = copula.n
-  mocopula(rand(t,2^n-1), n, λ)
+  U = zeros(t, n)
+  s = collect(combinations(1:n))
+  for j in 1:t
+    u = rand(rng, 2^n-1)
+    U[j,:] = mocopula_el(u, n, λ, s)
+  end
+  U
 end
 
 """
@@ -379,16 +383,34 @@ end
 ```
 """
 function mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
-  s = collect(combinations(1:n))
-  t,l = size(u)
+  t = size(u,1)
   U = zeros(t, n)
-    for j in 1:t
-      for i in 1:n
-        inds = findall([i in s[k] for k in 1:l])
-        x = minimum([-log(u[j,k])./(λ[k]) for k in inds])
-        Λ = sum(λ[inds])
-        U[j,i] = exp.(-Λ*x)
-      end
-    end
+  s = collect(combinations(1:n))
+  for j in 1:t
+      U[j,:] = mocopula_el(u[j,:], n, λ, s)
+  end
+  U
+end
+
+"""
+    mocopula_el(u::Vector{Float64}, n::Int, λ::Vector{Float64}, s::Vector{Vector{Int}})
+
+```jldoctest
+
+julia> mocopula_el([0.1, 0.2, 0.3], 2, [1., 2., 3.], s)
+2-element Array{Float64,1}:
+ 0.20082988502465082
+ 0.1344421423967149
+```
+"""
+function mocopula_el(u::Vector{Float64}, n::Int, λ::Vector{Float64}, s::Vector{Vector{Int}})
+  l = length(u)
+  U = zeros(n)
+  for i in 1:n
+    inds = findall([i in s[k] for k in 1:l])
+    x = minimum([-log(u[k])./(λ[k]) for k in inds])
+    Λ = sum(λ[inds])
+    U[i] = exp.(-Λ*x)
+  end
     U
 end
