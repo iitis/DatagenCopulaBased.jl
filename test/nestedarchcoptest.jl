@@ -19,17 +19,15 @@ end
     @test_throws DomainError Nested_Clayton_cop([a,b], -1, 0.5)
     #@test_warn "θ << ϕ, marginals may not be uniform" Nested_Clayton_cop([c,d], 0, 0.05)
   end
-  @testset "test on data" begin
-    @testset "small example" begin
-
+  @testset "small example" begin
       c1 = Clayton_cop(2, 2.)
       c2 = Clayton_cop(2, 3.)
       cp = Nested_Clayton_cop([c1, c2], 1, 1.1)
 
       Random.seed!(43)
       @test simulate_copula(1, cp) ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
-    end
-    @testset "large example on data" begin
+  end
+  @testset "large example on data" begin
       c1 = Clayton_cop(2, 3.)
       c2 = Clayton_cop(3, 4.)
       cp = Nested_Clayton_cop([c1, c2], 2, 1.5)
@@ -65,7 +63,6 @@ end
       x = simulate_copula(75000, cp)
       @test corkendall(x)[:,1] ≈ [1, 0.7, 0.3] atol=1.0e-2
     end
-  end
 end
 
 @testset "nested Ali-Mikhail-Haq copula" begin
@@ -75,15 +72,14 @@ end
     @test_throws DomainError Nested_AMH_cop([a,b], 0, 0.5)
     @test_throws DomainError Nested_AMH_cop([a,b], -1, 0.1)
   end
-  @testset "test on data" begin
-    @testset "small example" begin
+  @testset "small example" begin
       c1 = AMH_cop(2, .8)
       c2 = AMH_cop(2, .9)
       cp = Nested_AMH_cop([c1, c2], 1, 0.5)
       Random.seed!(43)
       @test simulate_copula(1, cp) ≈ [0.587322  0.910074  0.931225  0.953353  0.665769] atol=1.0e-5
-    end
-    @testset "large example" begin
+  end
+  @testset "large example" begin
       c1 = AMH_cop(3, .8)
       c2 = AMH_cop(2, .7)
       cp = Nested_AMH_cop([c1, c2], 2, 0.5)
@@ -119,17 +115,16 @@ end
       cp = Nested_AMH_cop([c1], 1, 0.1, KendallCorrelation)
       x = simulate_copula(80000, cp)
       @test corkendall(x)[:,1] ≈ [1, 0.2, 0.1] atol=1.0e-2
-    end
   end
 end
 
 @testset "nested Frank copula" begin
+  @testset "exceptions" begin
     a = Frank_cop(2, 2.)
     b = Frank_cop(2, -1.)
     c = Frank_cop(2, 1.)
     @test_throws DomainError Nested_Frank_cop([a,b], 0, 0.5)
     @test_throws DomainError Nested_Frank_cop([a,c], -1, 0.1)
-  @testset "exceptions" begin
   end
   @testset "small data set" begin
     Random.seed!(43)
@@ -139,7 +134,7 @@ end
     @test simulate_copula(1, cp) ≈ [0.599183  0.908848  0.950577  0.966366  0.692735] atol=1.0e-5
   end
   @testset "large data set" begin
-    # dest old dispatching
+    # test old dispatching
     a = Frank_cop(3, 8.)
     b = Frank_cop(2, 10.)
     cp = Nested_Frank_cop([a,b], 2, 2.)
@@ -186,7 +181,6 @@ end
     @test_throws DomainError Nested_Gumbel_cop([a,b], -1, 1.1)
   end
   @testset "test on small data" begin
-
     a = Gumbel_cop(2, 2.)
     b = Gumbel_cop(2, 3.)
     cp = Nested_Gumbel_cop([a,b], 1, 1.1)
