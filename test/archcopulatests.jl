@@ -50,17 +50,12 @@
   end
 end
 @testset "archimedean copulas axiliary functions" begin
-  #@test getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton") ≈ [0.0320924, 0.137498, 0.354163, 0.821187] atol=1.0e-4
-  #@test_throws AssertionError getV0(2., [0.2, 0.4, 0.6, 0.8], "clayto")
-  #@test phi([0.2 0.6; 0.4 0.8], 2., "clayton") ≈ [0.912871  0.790569; 0.845154  0.745356] atol=1.0e-4
-  #@test_throws AssertionError phi([0.2 0.6; 0.4 0.8], 2., "clayto")
-  c = arch_gen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
+    c = arch_gen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
   @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
   @test useτ(0.5, "clayton") == 2.
   @test useρ(0.75, "gumbel") ≈ 2.285220798876495
-  @test getθ4arch(0.5, "gumbel", "Spearman") ≈ 1.541070420842913
-  @test getθ4arch(0.5, "gumbel", "Kendall") ≈ 2.0
-  @test_throws AssertionError getθ4arch(1.5, "gumbel", "Pearson")
+  @test getθ4arch(0.5, "gumbel", SpearmanCorrelation) ≈ 1.541070420842913
+  @test getθ4arch(0.5, "gumbel", KendallCorrelation) ≈ 2.0
 end
 
 @testset "Axiliary function exceptions" begin
@@ -72,29 +67,24 @@ end
 @testset "Gumbel copula" begin
   @testset "exceptions" begin
     @test_throws DomainError Gumbel_cop(3, 0.3)
-    @test_throws DomainError Gumbel_cop(3, 1.1, "Kendall")
-    @test_throws DomainError Gumbel_cop(3, 1.1, "Spearman")
-    @test_throws AssertionError Gumbel_cop(3, 1.1, "Kendoll")
+    @test_throws DomainError Gumbel_cop(3, 1.1, KendallCorrelation)
+    @test_throws DomainError Gumbel_cop(3, 1.1, SpearmanCorrelation)
     @test_throws DomainError Gumbel_cop(1, 1.1)
-    @test_throws DomainError Gumbel_cop(1, 1.1, "Kendall")
+    @test_throws DomainError Gumbel_cop(1, 1.1, KendallCorrelation)
 
     @test_throws DomainError Gumbel_cop_rev(3, 0.3)
-    @test_throws DomainError Gumbel_cop_rev(3, 1.1, "Kendall")
-    @test_throws DomainError Gumbel_cop_rev(3, 1.1, "Spearman")
-    @test_throws AssertionError Gumbel_cop_rev(3, 1.1, "Kendoll")
+    @test_throws DomainError Gumbel_cop_rev(3, 1.1, KendallCorrelation)
+    @test_throws DomainError Gumbel_cop_rev(3, 1.1, SpearmanCorrelation)
     @test_throws DomainError Gumbel_cop_rev(1, 1.1)
-    @test_throws DomainError Gumbel_cop_rev(1, 1.1, "Kendall")
+    @test_throws DomainError Gumbel_cop_rev(1, 1.1, KendallCorrelation)
     @test_throws AssertionError archcopulagen(500000, 3, 2., "gumbol")
   end
 
   @testset "small example" begin
-
     Random.seed!(43)
-    #@test simulate_copula(1, Gumbel_cop(2, 2.)) ≈ [0.800115  0.917567] atol=1.0e-5
-
+    @test simulate_copula(1, Gumbel_cop(2, 2.)) ≈ [0.481781  0.754482] atol=1.0e-5
     Random.seed!(43)
-    #@test simulate_copula(1, Gumbel_cop_rev(2, 2.)) ≈ [0.199885  0.0824326] atol=1.0e-5
-
+    @test simulate_copula(1, Gumbel_cop_rev(2, 2.)) ≈ [0.518219  0.245518] atol=1.0e-5
   end
 
   @testset "tests on larger data" begin
@@ -117,7 +107,16 @@ end
     @test norm(x1 - x2) ≈ 0
 
     Random.seed!(43)
-    x = simulate_copula(350000, Gumbel_cop_rev(2, 1.5))
+    x3 = simulate_copula(1000, Gumbel_cop(3, .5, SpearmanCorrelation))
+    Random.seed!(43)
+    x4 = archcopulagen(1000, 3, .5, "gumbel"; cor = "Spearman")
+    @test norm(x3 - x4) ≈ 0
+
+    Random.seed!(43)
+    x5 = simulate_copula(1000, Gumbel_cop(3, .5, KendallCorrelation))
+    Random.seed!(43)
+    x6 = archcopulagen(1000, 3, .5, "gumbel"; cor = "Kendall")
+    @test norm(x5 - x6) ≈ 0
 
     Random.seed!(43)
     x1 = simulate_copula(1000, Gumbel_cop_rev(2, 1.5))
@@ -125,42 +124,49 @@ end
     x2 = archcopulagen(1000, 2, 1.5, "gumbel"; rev = true)
     @test norm(x2 - x1) ≈ 0
 
+    Random.seed!(43)
+    x3 = simulate_copula(1000, Gumbel_cop_rev(3, .5, SpearmanCorrelation))
+    Random.seed!(43)
+    x4 = archcopulagen(1000, 3, .5, "gumbel"; cor = "Spearman", rev = true)
+    @test norm(x3 - x4) ≈ 0
+
+    Random.seed!(43)
+    x5 = simulate_copula(1000, Gumbel_cop_rev(3, .5, KendallCorrelation))
+    Random.seed!(43)
+    x6 = archcopulagen(1000, 3, .5, "gumbel"; cor = "Kendall", rev = true)
+    @test norm(x5 - x6) ≈ 0
+
+    Random.seed!(43)
+    x = simulate_copula(350000, Gumbel_cop_rev(2, 1.5))
     @test tail(x[:,1], x[:,2], "l") ≈ 2-2^(1/1.5) atol=1.0e-1
     @test tail(x[:,1], x[:,2], "r", 0.00001) ≈ 0.
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     Random.seed!(43)
-    x = simulate_copula(350000, Gumbel_cop(2, 0.5, "Kendall"))
+    x = simulate_copula(350000, Gumbel_cop(2, 0.5, KendallCorrelation))
     @test corkendall(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
     Random.seed!(43)
-    x = simulate_copula(350000, Gumbel_cop(2, 0.5, "Spearman"))
+    x = simulate_copula(350000, Gumbel_cop(2, 0.5, SpearmanCorrelation))
     @test corspearman(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
     Random.seed!(43)
-    x = simulate_copula(350000, Gumbel_cop_rev(2, 0.5, "Kendall"))
+    x = simulate_copula(350000, Gumbel_cop_rev(2, 0.5, KendallCorrelation))
     @test corkendall(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
-    Random.seed!(43)
-    x2 = archcopulagen(350000, 2, 0.5, "gumbel"; rev = true, cor = "Kendall")
-    @test norm(x - x2) ≈ 0
   end
 end
 @testset "Clayton copula" begin
-
   @testset "exceptions" begin
-
     @test_throws DomainError Clayton_cop(3, -0.3)
     @test_throws DomainError Clayton_cop(2, -2.3)
-    @test_throws DomainError Clayton_cop(3, 1.1, "Kendall")
-    @test_throws DomainError Clayton_cop(3, 1.1, "Spearman")
-    @test_throws AssertionError Clayton_cop(3, 1.1, "Kendoll")
+    @test_throws DomainError Clayton_cop(3, 1.1, KendallCorrelation)
+    @test_throws DomainError Clayton_cop(3, 1.1, SpearmanCorrelation)
     @test_throws DomainError Clayton_cop(1, 1.1)
-    @test_throws DomainError Clayton_cop(1, 1.1, "Kendall")
+    @test_throws DomainError Clayton_cop(1, 1.1, KendallCorrelation)
 
     @test_throws DomainError Clayton_cop_rev(3, -0.3)
     @test_throws DomainError Clayton_cop_rev(2, -2.3)
-    @test_throws DomainError Clayton_cop_rev(3, 1.1, "Kendall")
-    @test_throws DomainError Clayton_cop_rev(3, 1.1, "Spearman")
-    @test_throws AssertionError Clayton_cop_rev(3, 1.1, "Kendoll")
+    @test_throws DomainError Clayton_cop_rev(3, 1.1, KendallCorrelation)
+    @test_throws DomainError Clayton_cop_rev(3, 1.1, SpearmanCorrelation)
     @test_throws DomainError Clayton_cop_rev(1, 1.1)
-    @test_throws DomainError Clayton_cop_rev(1, 1.1, "Kendall")
+    @test_throws DomainError Clayton_cop_rev(1, 1.1, KendallCorrelation)
   end
   @testset "small example" begin
     Random.seed!(43)
@@ -169,7 +175,6 @@ end
     Random.seed!(43)
     @test simulate_copula(1, Clayton_cop_rev(2, 2.)) ≈ [0.347188  0.087281] atol=1.0e-5
   end
-
   @testset "test on larger data" begin
     Random.seed!(43)
     x1 = archcopulagen(350000, 3, 1., "clayton")
@@ -185,7 +190,7 @@ end
     @test tail(x[:,1], x[:,2], "r", 0.0001) ≈ 0
     @test corkendall(x) ≈ [1. 1/3 1/3; 1/3 1. 1/3; 1/3 1/3 1.] atol=1.0e-2
     Random.seed!(43)
-    x = simulate_copula(350000, Clayton_cop(2, 0.5, "Kendall"))
+    x = simulate_copula(350000, Clayton_cop(2, 0.5, KendallCorrelation))
     @test corkendall(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
     Random.seed!(43)
     x = simulate_copula(350000, Clayton_cop(2, -0.9))
@@ -194,7 +199,7 @@ end
     @test corkendall(x)[1,2] ≈ -0.9/(2-0.9) atol=1.0e-2
 
     Random.seed!(43)
-    x = simulate_copula(350000, Clayton_cop_rev(2, 0.5, "Kendall"))
+    x = simulate_copula(350000, Clayton_cop_rev(2, 0.5, KendallCorrelation))
     @test corkendall(x) ≈ [1. 0.5; 0.5 1.] atol=1.0e-2
 
     Random.seed!(43)
@@ -208,14 +213,13 @@ end
   end
 end
 @testset "Frank copula" begin
+  @testset "exceptions" begin
     @test_throws DomainError Frank_cop(3, -0.3)
     @test_throws DomainError Frank_cop(2, 0.)
-    @test_throws DomainError Frank_cop(3, 1.1, "Kendall")
-    @test_throws DomainError Frank_cop(3, 1.1, "Spearman")
-    @test_throws AssertionError Frank_cop(3, 1.1, "Kendoll")
+    @test_throws DomainError Frank_cop(3, 1.1, KendallCorrelation)
+    @test_throws DomainError Frank_cop(3, 1.1, SpearmanCorrelation)
     @test_throws DomainError Frank_cop(1, 1.1)
-    @test_throws DomainError Frank_cop(1, 1.1, "Kendall")
-  @testset "exceptions" begin
+    @test_throws DomainError Frank_cop(1, 1.1, KendallCorrelation)
   end
   @testset "small example" begin
     Random.seed!(43)
@@ -234,7 +238,7 @@ end
     @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
     @test tail(x[:,2], x[:,3], "r", 0.0001) ≈ 0
     Random.seed!(43)
-    x = simulate_copula(300000, Frank_cop(2, 0.2, "Kendall"))
+    x = simulate_copula(300000, Frank_cop(2, 0.2, KendallCorrelation))
     @test corkendall(x) ≈ [1. 0.2; 0.2 1.] atol=1.0e-2
     Random.seed!(43)
     x = simulate_copula(300000, Frank_cop(2, -2.))
@@ -247,19 +251,17 @@ end
   @testset "exceptions" begin
     @test_throws DomainError AMH_cop(3, -0.3)
     @test_throws DomainError AMH_cop(2, -1.2)
-    @test_throws DomainError AMH_cop(3, 0.5, "Kendall")
-    @test_throws DomainError AMH_cop(3, 0.6, "Spearman")
-    @test_throws AssertionError AMH_cop(3, 1.1, "Kendoll")
+    @test_throws DomainError AMH_cop(3, 0.5, KendallCorrelation)
+    @test_throws DomainError AMH_cop(3, 0.6, SpearmanCorrelation)
     @test_throws DomainError AMH_cop(1, 1.1)
-    @test_throws DomainError AMH_cop(1, 1.1, "Kendall")
+    @test_throws DomainError AMH_cop(1, 1.1, KendallCorrelation)
 
     @test_throws DomainError AMH_cop_rev(3, -0.3)
     @test_throws DomainError AMH_cop_rev(2, -1.2)
-    @test_throws DomainError AMH_cop_rev(3, 0.5, "Kendall")
-    @test_throws DomainError AMH_cop_rev(3, 0.55, "Spearman")
-    @test_throws AssertionError AMH_cop_rev(3, 1.1, "Kendoll")
+    @test_throws DomainError AMH_cop_rev(3, 0.5, KendallCorrelation)
+    @test_throws DomainError AMH_cop_rev(3, 0.55, SpearmanCorrelation)
     @test_throws DomainError AMH_cop_rev(1, 1.1)
-    @test_throws DomainError AMH_cop_rev(1, 1.1, "Kendall")
+    @test_throws DomainError AMH_cop_rev(1, 1.1, KendallCorrelation)
   end
   @testset "small example" begin
     Random.seed!(43)
@@ -282,7 +284,7 @@ end
     @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
     @test tail(x[:,1], x[:,2], "r", 0.0001) ≈ 0
     @test corkendall(x)[1:2, 1:2] ≈ [1. 0.23373; 0.23373 1.] atol=1.0e-3
-    x = simulate_copula(600_000, AMH_cop(2, 0.25, "Kendall"))
+    x = simulate_copula(600_000, AMH_cop(2, 0.25, KendallCorrelation))
     @test corkendall(x) ≈ [1. 0.25; 0.25 1.] atol=1.0e-3
 
     Random.seed!(43)
@@ -304,7 +306,7 @@ end
     @test tail(x[:,1], x[:,2], "r", 0.0001) ≈ 0
 
     Random.seed!(43)
-    x = simulate_copula(400000, AMH_cop_rev(2, 0.2, "Kendall"))
+    x = simulate_copula(400000, AMH_cop_rev(2, 0.2, KendallCorrelation))
     @test corkendall(x) ≈ [1. 0.2; 0.2 1.] atol=1.0e-2
   end
 end

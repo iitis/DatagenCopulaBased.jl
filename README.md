@@ -185,46 +185,49 @@ of Ali-Mikhail-Haq Copula', Applied Mathematical Sciences, Vol. 4, 2010, no. 14,
 
 
 ```julia
-julia> simulate_copula(5, Clayton_cop(3, 3.))
+julia> Random.seed!(43);
+
+julia> c = Clayton_cop(3, 3.)
+Clayton_cop(3, 3.0)
+
+julia> simulate_copula(5, c)
 5×3 Array{Float64,2}:
- 0.565271    0.930131    0.781448  
- 0.00653614  0.00723128  0.00301186
- 0.0526504   0.0265819   0.0202293
- 0.835776    0.485913    0.35429   
- 0.760815    0.979532    0.635902  
+ 0.740919   0.936613  0.968594
+ 0.369025   0.698884  0.586236
+ 0.0701388  0.185901  0.0890538
+ 0.535579   0.516761  0.538476
+ 0.487668   0.549494  0.804122  
 ```
 
-The optional third `String` parameter is used to compute `θ` from the expected `Kendall` or `Speraman` cross-correlation. Here only positive correlations are supported, and there are some limitations are for the Ali-Mikhail-Haq copula due to limitations on `θ` there.
+The optional third empty type `<: CorrelationType` parameter is used to compute `θ` from the expected Kendall - `KendallCorrelation` or Speraman
+`SpearmanCorrelation` cross-correlation.
+Here only positive correlations are supported, and there are some limitations are for the Ali-Mikhail-Haq copula due to limitations on `θ` there.
 
 
 ```julia
-julia> Random.seed!(43);
-
-julia> c = Clayton_cop(3, 0.5, "Kendall")
+julia> c = Clayton_cop(3, 0.5, KendallCorrelation)
 Clayton_cop(3, 2.0)
 
 julia> x = simulate_copula(500_000, c);
 
 julia> corkendall(x)
 3×3 Array{Float64,2}:
- 1.0       0.49955   0.499212
- 0.49955   1.0       0.499466
- 0.499212  0.499466  1.0   
+ 1.0       0.500576  0.499986
+ 0.500576  1.0       0.501574
+ 0.499986  0.501574  1.0      
 ```
 
 ```julia
-julia> Random.seed!(43);
-
-julia> c = Clayton_cop(3, 0.5, "Spearman")
+julia> c = Clayton_cop(3, 0.5, SpearmanCorrelation)
 Clayton_cop(3, 1.0760904048732394)
 
 julia> x = simulate_copula(500_000, c);
 
 julia> corspearman(x)
 3×3 Array{Float64,2}:
- 1.0       0.499801  0.498785
- 0.499801  1.0       0.498891
- 0.498785  0.498891  1.0  
+ 1.0       0.499662  0.499637
+ 0.499662  1.0       0.500228
+ 0.499637  0.500228  1.0   
 ```
 The reversed Gumbel, Clayton and Ali-Mikhail-Haq copulas are supported as well:
 
@@ -250,16 +253,16 @@ julia> Random.seed!(43);
 
 julia> simulate_copula(10, c)
 10×2 Array{Float64,2}:
- 0.0838518  0.0246107
- 0.753705   0.845248
- 0.0135262  0.149148
- 0.815509   0.906639
- 0.575087   0.63889  
- 0.0574951  0.140628
- 0.314763   0.638385
- 0.135894   0.279956
- 0.623248   0.603208
- 0.0302191  0.0887757
+ 0.246822   0.0735546
+ 0.0214448  0.154414
+ 0.453721   0.598829
+ 0.87328    0.91861  
+ 0.896485   0.899053
+ 0.966261   0.981044
+ 0.0372783  0.0100412
+ 0.899013   0.758491
+ 0.473352   0.334147
+ 0.0438898  0.256301
 ```
 
 ### The nested Archimedean copulas
@@ -285,10 +288,10 @@ Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 3.0), Clayton_cop(2, 4.0)], 0, 1.0
 Only the nesting within the same family is supported. The sufficient nesting condition requires parameters of the children copulas to be larger than the parameter of the parent copula. For sampling one uses the algorithm form  McNeil, A.J., 'Sampling nested Archimedean copulas', Journal of Statistical Computation and Simulation 78, 567–581 (2008).
 
 ```julia
-julia> a = Clayton_cop(2, 0.9, "Kendall")
+julia> a = Clayton_cop(2, 0.9, KendallCorrelation)
 Clayton_cop(2, 18.000000000000004)
 
-julia> b = Nested_Clayton_cop([a], 1, .2, "Kendall")
+julia> b = Nested_Clayton_cop([a], 1, .2, KendallCorrelation)
 Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 18.000000000000004)], 1, 0.5)
 
 julia> x = simulate_copula(500000, b);
@@ -337,19 +340,19 @@ julia> simulate_copula(2, gp)
 More straight forward example
 
 ```julia
-julia> a = Gumbel_cop(2, .9, "Kendall")
+julia> a = Gumbel_cop(2, .9, KendallCorrelation)
 Gumbel_cop(2, 10.000000000000002)
 
-julia> b = Gumbel_cop(2, 0.8, "Kendall")
+julia> b = Gumbel_cop(2, 0.8, KendallCorrelation)
 Gumbel_cop(2, 5.000000000000001)
 
-julia> p = Nested_Gumbel_cop([a], 1, 0.6, "Kendall")
+julia> p = Nested_Gumbel_cop([a], 1, 0.6, KendallCorrelation)
 Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 10.000000000000002)], 1, 2.5)
 
-julia> p1 = Nested_Gumbel_cop([b], 1, 0.5, "Kendall")
+julia> p1 = Nested_Gumbel_cop([b], 1, 0.5, KendallCorrelation)
 Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.000000000000001)], 1, 2.0)
 
-julia> pp = Double_Nested_Gumbel_cop([p,p1], 0.1, "Kendall")
+julia> pp = Double_Nested_Gumbel_cop([p,p1], 0.1, KendallCorrelation)
 Double_Nested_Gumbel_cop(Nested_Gumbel_cop[Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 10.000000000000002)], 1, 2.5), Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.000000000000001)], 1, 2.0)], 1.1111111111111112)
 
 julia> x = simulate_copula(750_000, pp);
@@ -386,7 +389,7 @@ julia> simulate_copula(3, c)
 ```
 
 ```julia
-julia> c = Hierarchical_Gumbel_cop([.9, 0.7, 0.5, 0.1], "Kendall")
+julia> c = Hierarchical_Gumbel_cop([.9, 0.7, 0.5, 0.1], KendallCorrelation)
 Hierarchical_Gumbel_cop(5, [10.000000000000002, 3.333333333333333, 2.0, 1.1111111111111112])
 
 julia> x = simulate_copula(750_000, c);
@@ -431,7 +434,7 @@ Chain_of_Archimedeans(3, [2.0, 3.0], ["frank", "frank"])
 ```
 
 ```julia
-julia> c = Chain_of_Archimedeans([0.7, 0.5, 0.7], "clayton", "Kendall")
+julia> c = Chain_of_Archimedeans([0.7, 0.5, 0.7], "clayton", KendallCorrelation)
 Chain_of_Archimedeans(4, [4.666666666666666, 2.0, 4.666666666666666], ["clayton", "clayton", "clayton"])
 
 julia> x = simulate_copula(750_000, c);
@@ -447,7 +450,7 @@ julia> corkendall(x)
 Negative correlations are supported here as well:
 
 ```julia
-julia> c = Chain_of_Archimedeans([0.7, 0.5, -0.7], "clayton", "Kendall")
+julia> c = Chain_of_Archimedeans([0.7, 0.5, -0.7], "clayton", KendallCorrelation)
 Chain_of_Archimedeans(4, [4.666666666666666, 2.0, -0.8235294117647058], ["clayton", "clayton", "clayton"])
 
 julia> x = simulate_copula(750_000, c);
@@ -689,6 +692,27 @@ julia> gcop2arch(x, ["clayton" => [1,2]])
   0.157683   1.47768    0.966819
   0.154893   0.893253   0.989712
  -0.657297  -0.339814  -1.54419
+
+
+julia> Random.seed!(42);
+
+julia> x = Array(rand(MvNormal(Σ), 6)')
+6×3 Array{Float64,2}:
+-0.556027  -0.662861   -0.384124
+-0.299484   1.38993    -0.571326
+-0.468606  -0.0990787  -2.3464  
+1.00331    1.43902     0.966819
+0.518149   1.55065     0.989712
+-0.886205   0.149748   -1.54419
+
+julia> gcop2arch(x, ["gumbel" => [1,2]])
+6×3 Array{Float64,2}:
+0.178913   1.60797    -0.384124
+0.579476   0.880272   -0.571326
+-0.986662  -0.0180474  -2.3464  
+1.20299    2.55397     0.966819
+0.857086   1.86212     0.989712
+-0.548206  -0.439289   -1.54419
 
 ```
 

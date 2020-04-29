@@ -7,11 +7,7 @@
   Random.seed!(42)
   x = nestedcopulag("gumbel", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
   @test x ≈ [0.624812  0.674897  0.451637  0.483973 ;  0.800605  0.825022  0.907411  0.915277] atol=1.0e-5
-  #n = nestedstep("clayton", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5)
-  #@test n ≈ [0.0504023 0.545041; 0.0736747 0.58235] atol=1.0e-5
-  #@test_throws AssertionError nestedstep("clayto", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5)
 end
-
 
 @testset "nested Clayton copula" begin
   @testset "exceptions" begin
@@ -64,8 +60,8 @@ end
       @test tail(x[:,6], x[:,7], "l", 0.01) ≈ 2^(-1/(1.5)) atol=1.0e-1
 
       #test on correlations
-      c1 = Clayton_cop(2, .7, "Kendall")
-      cp = Nested_Clayton_cop([c1], 1, 0.3, "Kendall")
+      c1 = Clayton_cop(2, .7, KendallCorrelation)
+      cp = Nested_Clayton_cop([c1], 1, 0.3, KendallCorrelation)
       x = simulate_copula(75000, cp)
       @test corkendall(x)[:,1] ≈ [1, 0.7, 0.3] atol=1.0e-2
     end
@@ -119,8 +115,8 @@ end
       @test tail(x[:,1], x[:,2], "r", 0.0001) ≈ 0
 
       #test on correlations
-      c1 = AMH_cop(2, .2, "Kendall")
-      cp = Nested_AMH_cop([c1], 1, 0.1, "Kendall")
+      c1 = AMH_cop(2, .2, KendallCorrelation)
+      cp = Nested_AMH_cop([c1], 1, 0.1, KendallCorrelation)
       x = simulate_copula(80000, cp)
       @test corkendall(x)[:,1] ≈ [1, 0.2, 0.1] atol=1.0e-2
     end
@@ -175,8 +171,8 @@ end
     @test tail(x[:,1], x[:,2], "r", 0.0001) ≈ 0
 
     # correlation tests
-    c1 = Frank_cop(2, .6, "Kendall")
-    cp = Nested_Frank_cop([c1], 1, 0.2, "Kendall")
+    c1 = Frank_cop(2, .6, KendallCorrelation)
+    cp = Nested_Frank_cop([c1], 1, 0.2, KendallCorrelation)
     x = simulate_copula(80000, cp)
     @test corkendall(x)[:,1] ≈ [1, 0.6, 0.2] atol=1.0e-2
   end
@@ -195,9 +191,10 @@ end
     b = Gumbel_cop(2, 3.)
     cp = Nested_Gumbel_cop([a,b], 1, 1.1)
     Random.seed!(43)
-    #@test simulate_copula(1, cp) ≈ [0.841862  0.935749  0.83778  0.856959  0.502151] atol=1.0e-5
+    @test simulate_copula(1, cp) ≈ [0.387085  0.693399  0.94718  0.953776  0.583379] atol=1.0e-5
     Random.seed!(43)
-    #@test nested_gumbel(1, [2,2], [2., 3.], 1.1, 1) ≈ [0.841862  0.935749  0.83778  0.856959  0.502151] atol=1.0e-5
+    n = nestedcopulag("gumbel", [[1,2], [3,4]], [2., 3.], 1.1,  [0.1 0.2 0.3 0.4 0.5; 0.1 0.2 0.3 0.4 0.5])
+    @test n ≈ [0.00963842 0.0206319 0.556597 0.585703; 0.0772418 0.117543 0.838879 0.8518] atol=1.0e-5
   end
   @testset "test on larger data" begin
     a = Gumbel_cop(2, 4.2)
@@ -230,8 +227,8 @@ end
     @test tail(x[:,1], x[:,5], "l", 0.00001) ≈ 0
 
     # correlation tests
-    c1 = Gumbel_cop(2, .8, "Kendall")
-    cp = Nested_Gumbel_cop([c1], 1, 0.2, "Kendall")
+    c1 = Gumbel_cop(2, .8, KendallCorrelation)
+    cp = Nested_Gumbel_cop([c1], 1, 0.2, KendallCorrelation)
     x = simulate_copula(80000, cp)
     @test corkendall(x)[:,1] ≈ [1, 0.8, 0.2] atol=1.0e-2
   end
@@ -248,7 +245,7 @@ end
     cp1 = Nested_Gumbel_cop([a1,b1], 0, 3.1)
 
     @test_throws DomainError Double_Nested_Gumbel_cop([cp, cp1], 2.2)
-    @test_throws DomainError Double_Nested_Gumbel_cop([cp, cp1], 0.9, "Kendall")
+    @test_throws DomainError Double_Nested_Gumbel_cop([cp, cp1], 0.9, KendallCorrelation)
 
   end
   @testset "small data" begin
@@ -295,12 +292,12 @@ end
     @test tail(x[:,1], x[:,3], "l", 0.00001) ≈ 0
 
     # correlation tests
-    a = Gumbel_cop(2, 0.8, "Kendall")
-    cp = Nested_Gumbel_cop([a], 1, 0.5, "Kendall")
+    a = Gumbel_cop(2, 0.8, KendallCorrelation)
+    cp = Nested_Gumbel_cop([a], 1, 0.5, KendallCorrelation)
 
-    a1 = Gumbel_cop(2, 0.7, "Kendall")
-    cp1 = Nested_Gumbel_cop([a1], 1, 0.4, "Kendall")
-    cgp = Double_Nested_Gumbel_cop([cp, cp1], 0.2, "Kendall")
+    a1 = Gumbel_cop(2, 0.7, KendallCorrelation)
+    cp1 = Nested_Gumbel_cop([a1], 1, 0.4, KendallCorrelation)
+    cgp = Double_Nested_Gumbel_cop([cp, cp1], 0.2, KendallCorrelation)
 
     x = simulate_copula(250000, cgp)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -329,9 +326,8 @@ end
   @testset "exceptions" begin
     @test_throws DomainError Hierarchical_Gumbel_cop([5., 6., 7.])
     @test_throws DomainError Hierarchical_Gumbel_cop([1.5, 1., 0.5])
-    @test_throws DomainError Hierarchical_Gumbel_cop([0.6, 0.4, 0.6], "Kendall")
-    @test_throws DomainError Hierarchical_Gumbel_cop([0.6, 0.4, -0.6], "Kendall")
-    @test_throws AssertionError Hierarchical_Gumbel_cop([0.6, 0.4, -0.6], "Kendoll")
+    @test_throws DomainError Hierarchical_Gumbel_cop([0.6, 0.4, 0.6], KendallCorrelation)
+    @test_throws DomainError Hierarchical_Gumbel_cop([0.6, 0.4, -0.6], KendallCorrelation)
   end
   @testset "simple example" begin
     Random.seed!(43)
@@ -358,7 +354,7 @@ end
 
     # correlations
     Random.seed!(42)
-    x = simulate_copula(500000, Hierarchical_Gumbel_cop([0.9, 0.2], "Kendall"))
+    x = simulate_copula(500000, Hierarchical_Gumbel_cop([0.9, 0.2], KendallCorrelation))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α

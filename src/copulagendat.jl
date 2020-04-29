@@ -16,8 +16,10 @@ function archcopulagen(t::Int, n::Int, θ::Float64, copula::String;
                                                               cor::String = "")
 
     args = (n, θ)
-    if cor != ""
-        args = (n, θ, cor)
+    if cor == "Kendall"
+        args = (n, θ, KendallCorrelation)
+    elseif cor == "Spearman"
+        args = (n, θ, SpearmanCorrelation)
     end
     if copula == "gumbel"
         if !rev

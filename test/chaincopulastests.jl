@@ -4,31 +4,21 @@
   @test rand2cop(0.5, 2., "clayton", 0.5) ≈ 0.5463906428428872
   @test rand2cop(0.5, 2., "frank", 0.5) ≈ 0.5
   @test rand2cop(0.5, -.5, "amh", 0.5) ≈ 0.5061130556252271
-
-  #Random.seed!(43)
-  #@test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "clayton", rand(500000)), Uniform(0,1))) > α
-  #Random.seed!(43)
-  #@test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "frank", rand(500000)), Uniform(0,1))) > α
-  #Random.seed!(42)
-  #@test pvalue(ExactOneSampleKSTest(rand2cop(rand(500000), 0.5, "amh", rand(500000)), Uniform(0,1))) > α
-  #Random.seed!(43)
-  #@test rand2cop([0.815308, 0.894269], 0.5, "clayton", rand(2)) ≈ [0.292041, 0.836167] atol=1.0e-5
 end
 
 @testset "exceptions" begin
   @test_throws DomainError testbivθ(-2., "clayton")
-  @test_throws DomainError usebivρ(-.9, "amh", "Spearman")
-  @test_throws DomainError usebivρ(-.25, "amh", "Kendall")
+  @test_throws DomainError usebivρ(-.9, "amh", SpearmanCorrelation)
+  @test_throws DomainError usebivρ(-.25, "amh", KendallCorrelation)
   @test_throws AssertionError Chain_of_Archimedeans([2., 3.], ["frank", "gumbel"])
   @test_throws BoundsError Chain_of_Archimedeans([2., 3., 4.], ["frank", "frank"])
   @test_throws DomainError Chain_of_Archimedeans([2., -3.], ["frank", "clayton"])
   @test_throws AssertionError Chain_of_Archimedeans([2., 3., 4.], "gumbel")
   @test_throws DomainError Chain_of_Archimedeans([2., -3.], "clayton")
-  @test_throws DomainError Chain_of_Archimedeans([2., -.3], "clayton", "Kendall")
-  @test_throws DomainError Chain_of_Archimedeans([.2, -1.3], ["frank", "clayton"], "Kendall")
-  @test_throws AssertionError Chain_of_Archimedeans([0.2, 0.2], "gumbel", "Kendall")
-  @test_throws AssertionError Chain_of_Archimedeans([.2, .3], ["gumbel", "clayton"], "Kendall")
-  @test_throws AssertionError Chain_of_Archimedeans([.2, -.3], "clayton", "Kendoll")
+  @test_throws DomainError Chain_of_Archimedeans([2., -.3], "clayton", KendallCorrelation)
+  @test_throws DomainError Chain_of_Archimedeans([.2, -1.3], ["frank", "clayton"], KendallCorrelation)
+  @test_throws AssertionError Chain_of_Archimedeans([0.2, 0.2], "gumbel", KendallCorrelation)
+  @test_throws AssertionError Chain_of_Archimedeans([.2, .3], ["gumbel", "clayton"], KendallCorrelation)
 end
 
 @testset "chain of Archimedean copulas" begin
@@ -79,13 +69,13 @@ end
 end
 @testset "correlations" begin
   Random.seed!(43)
-  c = Chain_of_Archimedeans([0.6, -0.2], "clayton", "Spearman")
+  c = Chain_of_Archimedeans([0.6, -0.2], "clayton", SpearmanCorrelation)
   x = simulate_copula(500000, c)
   @test corspearman(x[:,1], x[:,2]) ≈ 0.6 atol=1.0e-2
   @test corspearman(x[:,2], x[:,3]) ≈ -0.2 atol=1.0e-2
 
   Random.seed!(43)
-  c = Chain_of_Archimedeans([0.6, -0.2], ["clayton", "clayton"], "Kendall")
+  c = Chain_of_Archimedeans([0.6, -0.2], ["clayton", "clayton"], KendallCorrelation)
   x = simulate_copula(500000, c)
   @test corkendall(x[:,1], x[:,2]) ≈ 0.6 atol=1.0e-3
   @test corkendall(x[:,2], x[:,3]) ≈ -0.2 atol=1.0e-3

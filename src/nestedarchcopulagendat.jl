@@ -27,8 +27,11 @@ Let ϕ be the vector of parameter of children copula, sufficient nesting conditi
 
 Constructor
 
-    Nested_Clayton_cop(children::Vector{Clayton_cop}, m::Int, θ::Float64, cor::String)
-uses "Spearman" or "Kendall" correlation to compute θ.
+    Nested_Clayton_cop(children::Vector{Clayton_cop}, m::Int, θ::Float64, cor::Type{<:CorrelationType})
+
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
 
 ```jldoctest
 julia> a = Clayton_cop(2, 2.)
@@ -54,7 +57,7 @@ struct Nested_Clayton_cop
       maximum(ϕ) < θ+2*θ^2+750*θ^5 || @warn("θ << ϕ, marginals may not be uniform")
       new(children, m, θ)
   end
-  function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop}, m::Int, ρ::Float64, cor::String)
+  function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop}, m::Int, ρ::Float64, cor::Type{<:CorrelationType})
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "clayton", cor)
       ϕ = [ch.θ for ch in children]
@@ -84,8 +87,12 @@ Let ϕ be the vector of parameter of children copula, sufficient nesting conditi
 
 Constructor
 
-    Nested_AMH_cop(children::Vector{AMH_cop}, m::Int, θ::Float64, cor::String)
-uses "Spearman" or "Kendall" correlation to compute θ.
+    Nested_AMH_cop(children::Vector{AMH_cop}, m::Int, θ::Float64, cor::Type{<:CorrelationType})
+
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
+
 ```jldoctest
 
 julia> a = AMH_cop(2, .2)
@@ -107,7 +114,7 @@ struct Nested_AMH_cop
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       new(children, m, θ)
   end
-  function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop}, m::Int, ρ::Float64, cor::String)
+  function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop}, m::Int, ρ::Float64, cor::Type{<:CorrelationType})
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "amh", cor)
       ϕ = [ch.θ for ch in children]
@@ -136,8 +143,11 @@ Let ϕ be the vector of parameter of children copula, sufficient nesting conditi
 
 Constructor
 
-    Nested_Frank_cop(children::Vector{Frank_ cop}, m::Int, θ::Float64, cor::String)
-uses "Spearman" or "Kendall" correlation to compute θ.
+    Nested_Frank_cop(children::Vector{Frank_ cop}, m::Int, θ::Float64, cor::Type{<:CorrelationType})
+
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
 
 ```jldoctests
 
@@ -159,7 +169,7 @@ struct Nested_Frank_cop
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       new(children, m, θ)
   end
-  function(::Type{Nested_Frank_cop})(children::Vector{Frank_cop}, m::Int, ρ::Float64, cor::String)
+  function(::Type{Nested_Frank_cop})(children::Vector{Frank_cop}, m::Int, ρ::Float64, cor::Type{<:CorrelationType})
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "frank", cor)
       ϕ = [ch.θ for ch in children]
@@ -188,8 +198,12 @@ Let ϕ be the vector of parameter of children copula, sufficient nesting conditi
 
 Constructor
 
-    Nested_Gumbel_cop(children::Vector{Gumbel_cop}, m::Int, θ::Float64, cor::String)
-uses "Spearman" or "Kendall" correlation to compute θ.
+    Nested_Gumbel_cop(children::Vector{Gumbel_cop}, m::Int, θ::Float64, cor::Type{<:CorrelationType})
+
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
+
 ```jldoctest
 
 julia> a = Gumbel_cop(2, 5.)
@@ -210,7 +224,7 @@ struct Nested_Gumbel_cop
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       new(children, m, θ)
   end
-  function(::Type{Nested_Gumbel_cop})(children::Vector{Gumbel_cop}, m::Int, ρ::Float64, cor::String)
+  function(::Type{Nested_Gumbel_cop})(children::Vector{Gumbel_cop}, m::Int, ρ::Float64, cor::Type{<:CorrelationType})
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "gumbel", cor)
       ϕ = [ch.θ for ch in children]
@@ -405,8 +419,12 @@ requires sufficient nesting condition for θ and child copulas.
 
 Constructor
 
-    Doulbe_Nested_Gumbel_cop(children::Vector{Nested_Gumbel_cop}, θ::Float64, cor::String)
-uses "Spearman" or "Kendall" correlation to compute θ.
+    Doulbe_Nested_Gumbel_cop(children::Vector{Nested_Gumbel_cop}, θ::Float64, cor::Type{<:CorrelationType})
+
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
+
 
 ```jldoctest
 
@@ -438,7 +456,7 @@ struct Double_Nested_Gumbel_cop
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       new(children, θ)
   end
-  function(::Type{Double_Nested_Gumbel_cop})(children::Vector{Nested_Gumbel_cop}, ρ::Float64, cor::String)
+  function(::Type{Double_Nested_Gumbel_cop})(children::Vector{Nested_Gumbel_cop}, ρ::Float64, cor::Type{<:CorrelationType})
       θ = getθ4arch(ρ, "gumbel", cor)
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
@@ -505,19 +523,6 @@ function simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop; rng::Abstract
     return U
 end
 
-#=
-"""
-    nested_gumbel(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
-
-Sample nested Gumbel copula, axiliary function for simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop)
-"""
-function nested_gumbel(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, m::Int = 0)
-  n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
-  n2 = sum(n)+m
-  return nestedcopulag("gumbel", n1, ϕ, θ, rand(t, n2+1))
-end
-=#
-
 """
     Hierarchical_Gumbel_cop
 
@@ -534,15 +539,19 @@ Constructor
 
 Constructor
 
-    Hierarchical_Gumbel_cop(ρ::Vector{Float64}, cor::String)
-uses cor = "Kendall" or "Spearman" correlation to compute θ
+    Hierarchical_Gumbel_cop(ρ::Vector{Float64}, cor::Type{<:CorrelationType})
+
+For computing copula parameters from expected correlations use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlations in the place of θ  in the constructor.
+The copula parameters will be computed then. The correlation must be greater than zero.
+
 
 ```jldoctest
 
 julia> c = Hierarchical_Gumbel_cop([5., 4., 3.])
 Hierarchical_Gumbel_cop(4, [5.0, 4.0, 3.0])
 
-julia> c = Hierarchical_Gumbel_cop([0.95, 0.5, 0.05], "Kendall")
+julia> c = Hierarchical_Gumbel_cop([0.95, 0.5, 0.05], KendallCorrelation)
 Hierarchical_Gumbel_cop(4, [19.999999999999982, 2.0, 1.0526315789473684])
 ```
 """
@@ -554,7 +563,7 @@ struct Hierarchical_Gumbel_cop
       issorted(θ; rev=true) || throw(DomainError("violated sufficient nesting condition, parameters must be descending"))
       new(length(θ)+1, θ)
   end
-  function(::Type{Hierarchical_Gumbel_cop})(ρ::Vector{Float64}, cor::String)
+  function(::Type{Hierarchical_Gumbel_cop})(ρ::Vector{Float64}, cor::Type{<:CorrelationType})
       θ = map(i -> getθ4arch(ρ[i], "gumbel", cor), 1:length(ρ))
       issorted(θ; rev=true) || throw(DomainError("violated sufficient nesting condition, parameters must be descending"))
       new(length(θ)+1, θ)
@@ -748,55 +757,3 @@ function nestedcopulag(copula::String, ns::Vector{Vector{Int}}, ϕ::Vector{Float
     end
     return u
 end
-
-#=
-"""
-  nestedstep(copula::String, u::Matrix{Float64}, V0::Union{Vector{Float64}, Vector{Int}}, ϕ::Float64, θ::Float64)
-
-Given u ∈ [0,1]ᵗⁿ and V0 ∈ ℜᵗ returns u ∈ [0,1]ᵗⁿ for a given archimedean nested copula with
-inner copulas parameters ϕ anu auter copula parameter θ
-
-```jldoctest
-julia> nestedstep("clayton", [0.2 0.8; 0.1 0.7], [0.2, 0.4], 2., 1.5)
-2×2 Array{Float64,2}:
- 0.283555  0.789899
- 0.322614  0.806915
-```
-"""
-function nestedstep(copula::String, u::Matrix{Float64}, V0::Union{Vector{Float64}, Vector{Int}},
-                                                        ϕ::Float64, θ::Float64)
-  if copula == "amh"
-    w = [quantile(NegativeBinomial(v, (1-ϕ)/(1-θ)), rand()) for v in V0]
-    u = -log.(u)./(V0 + w)
-    X = ((exp.(u) .-ϕ) .*(1-θ) .+θ*(1-ϕ)) ./(1-ϕ)
-    return X.^(-V0)
-  elseif copula == "frank"
-    u = -log.(u)./nestedfrankgen(ϕ, θ, V0)
-    X = (1 .-(1 .-exp.(-u)*(1-exp(-ϕ))).^(θ/ϕ))./(1-exp(-θ))
-    return X.^V0
-  elseif copula == "clayton"
-    u = -log.(u)./tiltedlevygen(V0, ϕ/θ)
-    return exp.(V0.-V0.*(1 .+u).^(θ/ϕ))
-  elseif copula == "gumbel"
-    u = -log.(u)./levygen(ϕ/θ, rand(length(V0)))
-    return exp.(-u.^(θ/ϕ))
-  end
-  throw(AssertionError("$(copula) not supported"))
-end
-=#
-
-
-#=
-"""
-  testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String)
-
-Tests parameters, its hierarchy and size of parametes vector for nested archimedean copulas.
-"""
-function testnestedθϕ(n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String)
-  testθ(θ, copula)
-  map(p -> testθ(p, copula), ϕ)
-  θ <= minimum(ϕ) || throw(DomainError("wrong heirarchy of parameters"))
-  length(n) == length(ϕ) || throw(AssertionError("number of subcopulas ≠ number of parameters"))
-  (copula != "clayton") | (maximum(ϕ) < θ+2*θ^2+750*θ^5) || warn("θ << ϕ for clayton nested copula, marginals may not be uniform")
-end
-=#

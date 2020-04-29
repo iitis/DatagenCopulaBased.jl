@@ -12,27 +12,6 @@
 ### parameter `θᵢ`, the only condition for `θᵢ`
 ### is such as for a corresponding bivariate copula.
 
-#=
-"""
-  rand2cop(u1::Vector{Float64}, θ::Float64, copula::String)
-
-Returns vector of data generated using copula::String given vector of uniformly
-distributed u1 and copula parameter θ.
-"""
-function rand2cop(u1::Vector{Float64}, θ::Float64, copula::String, w::Vector{Float64})
-  copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
-  if copula == "clayton"
-    return (u1.^(-θ).*(w.^(-θ/(1+θ)) .-1) .+1).^(-1/θ)
-  elseif copula == "frank"
-    return -1/θ*log.(1 .+(w*(1-exp(-θ)))./(w.*(exp.(-θ*u1) .-1) .-exp.(-θ*u1)))
-  elseif copula == "amh"
-    a = 1 .-u1
-    b = 1 .-θ .*(1 .+2 .*a .*w)+2*θ^2*a.^2 .*w
-    c = 1 .-θ .*(2 .-4*w .+4 .*a .*w)+θ.^2 .*(1 .-4 .*a .*w+4 .*a.^2 .*w)
-    return 2*w .*(a .*θ .-1).^2 ./(b+sqrt.(c))
-  end
-end
-=#
 """
   rand2cop(u1::Float64, θ::Float64, copula::String, w::Float64)
 
@@ -78,10 +57,13 @@ one copula family for all subsequent pairs of marginals.
 
 Constructors
 
-    Chain_of_Archimedeans(θ::Vector{Float64}, copulas::Vector{String}, cor::String)
+    Chain_of_Archimedeans(θ::Vector{Float64}, copulas::Vector{String}, cor::Type{<:CorrelationType})
 
-    Chain_of_Archimedeans(θ::Vector{Float64}, copulas::String, cor::String)
-use cor = "Kendall", "Spearman" to compute parameters of the copula.
+    Chain_of_Archimedeans(θ::Vector{Float64}, copulas::String, cor::Type{<:CorrelationType})
+
+For computing copula parameters from expected correlation use empty type cor::Type{<:CorrelationType}.
+cor ∈ {SpearmanCorrelation, KendallCorrelation} uses these correlations in the place of θ  in the constructor
+to compute θ.
 
 In all cases n = length(θ)+1.
 
@@ -108,7 +90,7 @@ struct Chain_of_Archimedeans
       end
       new(n, θ, copulas)
   end
-  function(::Type{Chain_of_Archimedeans})(θ::Vector{Float64}, copulas::Vector{String}, cor::String)
+  function(::Type{Chain_of_Archimedeans})(θ::Vector{Float64}, copulas::Vector{String}, cor::Type{<:CorrelationType})
       n = length(θ)+1
       n - 1 == length(copulas) || throw(BoundsError("length(θ) ≠ length(copulas)"))
       for copula in copulas
@@ -123,7 +105,7 @@ struct Chain_of_Archimedeans
       copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
       new(n, θ, [copula for i in 1:n-1])
   end
-  function(::Type{Chain_of_Archimedeans})(θ::Vector{Float64}, copula::String, cor::String)
+  function(::Type{Chain_of_Archimedeans})(θ::Vector{Float64}, copula::String, cor::Type{<:CorrelationType})
       n = length(θ)+1
       map(i -> testbivθ(θ[i], copula), 1:n-1)
       copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
@@ -150,7 +132,7 @@ julia> simulate_copula(1, c)
 1×3 Array{Float64,2}:
  0.180975  0.492923  0.679345
 
-julia> c = Chain_of_Archimedeans([.5, .7], ["frank", "clayton"], "Kendall")
+julia> c = Chain_of_Archimedeans([.5, .7], ["frank", "clayton"], KendallCorrelation)
 Chain_of_Archimedeans(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
 
 julia> Random.seed!(43);
@@ -196,23 +178,28 @@ function testbivθ(θ::Union{Float64, Int}, copula::String)
 end
 
 """
+    usebivρ(ρ::Float64, copula::String, cor::Type{<:CorrelationType})
+
 Returns Float64, a copula parameter given the Spearman or the Kendall correlation
 
 For Clayton or Frank copula the correlation must fulfill (-1 > ρᵢ > 1) ∧ (ρᵢ ≠ 0)
 For the AMH copula Spearman must fulfill -0.2816 > ρᵢ >= .5, while Kendall -0.18 < τ < 1/3
 """
-function usebivρ(ρ::Float64, copula::String, cor::String)
-  cor in["Kendall", "Spearman"] || throw(AssertionError("$(cor) correlation is not supported, use Kendall or Spearman"))
+function usebivρ(ρ::Float64, copula::String, cor::Type{<:CorrelationType})
   if copula == "amh"
       -0.2816 < ρ <= 0.5 || throw(DomainError("correlation coeficiant must fulfill -0.2816 < ρ <= 0.5"))
-    if cor == "Kendall"
+    if cor == KendallCorrelation
       -0.18 < ρ < 1/3 || throw(DomainError("correlation coeficiant must fulfill -0.2816 < ρ <= 1/3"))
     end
   else
     -1 < ρ < 1 || throw(DomainError("correlation coeficiant must fulfill -1 < ρ < 1"))
     !(0. in ρ) || throw(DomainError("not supported for ρ = 0"))
   end
-  (cor == "Kendall") ? τ2θ(ρ, copula) : ρ2θ(ρ, copula)
+  if cor == KendallCorrelation
+      return τ2θ(ρ, copula)
+  elseif cor == SpearmanCorrelation
+      return ρ2θ(ρ, copula)
+  end
 end
 
 

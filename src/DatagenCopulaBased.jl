@@ -37,7 +37,7 @@ module DatagenCopulaBased
   export Nested_Clayton_cop, Nested_AMH_cop, Nested_Frank_cop, Nested_Gumbel_cop
   export Double_Nested_Gumbel_cop, Hierarchical_Gumbel_cop
   export Chain_of_Archimedeans, Chain_of_Frechet
-
+  export SpearmanCorrelation, KendallCorrelation, CorrelationType
   export cormatgen, cormatgen_constant, cormatgen_toeplitz, convertmarg!
   export cormatgen_constant_noised, cormatgen_toeplitz_noised, cormatgen_rand
   export cormatgen_two_constant, cormatgen_two_constant_noised

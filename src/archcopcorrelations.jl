@@ -1,3 +1,11 @@
+# empty types for correlations
+
+abstract type CorrelationType end
+
+struct KendallCorrelation <: CorrelationType end
+struct SpearmanCorrelation <: CorrelationType end
+
+
 """
   Debye(x::Float64, k::Int)
 
@@ -63,13 +71,13 @@ end
 # Spearman ρ to copulas parameter
 
 """
- ρ2θ(ρ::Union{Float64, Int}, copula::String)
+ ρ2θ(ρ::Float64, copula::String)
 
- Returns a Float, an archimedean copula parameter given expected Spermann correlation
+ Returns a Float, an Archimedean copula parameter given expected Spermann correlation
  ρ and a copula.
 
 """
-function ρ2θ(ρ::Union{Float64, Int}, copula::String)
+function ρ2θ(ρ::Float64, copula::String)
   if copula == "gumbel"
     return gumbelρ2θ(ρ)
   elseif copula == "clayton"
@@ -84,7 +92,7 @@ end
 
 ### Clayton and gumbel copulas
 
-function Ccl(x, θ::Union{Int, Float64})
+function Ccl(x, θ::Float64)
   if θ > 0
     return (x[1]^(-θ)+x[2]^(-θ)-1)^(-1/θ)
   else
@@ -92,7 +100,7 @@ function Ccl(x, θ::Union{Int, Float64})
   end
 end
 
-Cg(x, θ::Union{Int, Float64}) = exp(-((-log(x[1]))^θ+(-log(x[2]))^θ)^(1/θ))
+Cg(x, θ::Float64) = exp(-((-log(x[1]))^θ+(-log(x[2]))^θ)^(1/θ))
 
 dilog(x) = quadgk(t -> log(t)/(1-t), 1, x)[1]
 

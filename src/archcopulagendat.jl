@@ -1,66 +1,6 @@
 # Archimedean copulas
 
 
-#=
-"""
-  getV0(θ::Float64, v::Vector{Float64}, copula::String)
-
-Returns Vector{Float} or Vector{Int} of realizations of axiliary variable V0
-used to ganarate data from 1d archimedean copula with parameter Θ, given v:
-realizations of 1d variable uniformly distributed on [0,1]
-
-```jldoctest
-
-julia> getV0(2., [0.2, 0.4, 0.6, 0.8], "clayton")
-4-element Array{Float64,1}:
- 0.0641848
- 0.274996
- 0.708326
- 1.64237
-```
-"""
-function getV0(θ::Float64, v::Union{Float64, Vector{Float64}, Matrix{Float64}}, copula::String)
-  if copula == "clayton"
-    return quantile.(Gamma(1/θ, 1), v)
-  elseif copula == "amh"
-    return 1 .+quantile.(Geometric(1-θ), v)
-  elseif copula == "frank"
-    return logseriesquantile(1-exp(-θ), v)
-  elseif copula == "gumbel"
-    return levyel(θ, v[1], v[2])
-  end
-  throw(AssertionError("$(copula) not supported"))
-end
-
-"""
-  phi(u::Matrix{Float64}, θ::Float64, copula::String)
-
-Given a matrix t realizations of n variate data R^{t x n} ∋ u = -log(rand(t,n))./V0
-returns it transformed through an inverse generator of archimedean copula. Output
-is distributed uniformly on [0,1]ⁿ.
-
-```jldoctest
-
-julia> phi([0.2 0.6; 0.4 0.8], 2., "clayton")
-2×2 Array{Float64,2}:
- 0.845154  0.6742
- 0.745356  0.620174
-```
-"""
-function phi(u::Union{Vector{Float64}, Matrix{Float64}}, θ::Float64, copula::String)
-  if copula == "clayton"
-    return (1 .+ u).^(-1/θ)
-  elseif copula == "amh"
-    return (1-θ) ./(exp.(u) .-θ)
-  elseif copula == "frank"
-    return -log.(1 .+exp.(-u) .*(exp(-θ)-1)) ./θ
-  elseif copula == "gumbel"
-    return exp.(-u.^(1/θ))
-  end
-  throw(AssertionError("$(copula) not supported"))
-end
-=#
-
 """
   arch_gen(copula::String, r::Matrix{Float}, θ::Float64)
 
@@ -112,7 +52,10 @@ function arch_gen(copula::String, r::Matrix{Float64}, θ::Float64)
 end
 
 """
-    gumbel_gen(r::Vector{Float64}, θ::Float64)
+      gumbel_gen(r::Vector{Float64}, θ::Float64)
+
+Given a vector of random numbers r of size n+2, return the sample from the Gumbel
+copula parametrised by θ of the size n.
 """
 function gumbel_gen(r::Vector{Float64}, θ::Float64)
     u = -log.(r[1:end-2])./levyel(θ, r[end-1], r[end])
@@ -121,6 +64,9 @@ end
 
 """
     clayton_gen(r::Vector{Float64}, θ::Float64)
+
+Given a vector of random numbers r of size n+1, return the sample from the Clayton
+copula parametrised by θ of the size n.
 """
 function clayton_gen(r::Vector{Float64}, θ::Float64)
     u = -log.(r[1:end-1])./quantile.(Gamma(1/θ, 1), r[end])
@@ -129,6 +75,9 @@ end
 
 """
     amh_gen(r::Vector{Float64}, θ::Float64)
+
+Given a vector of random numbers r of size n+1, return the sample from the AMH
+copula parametrised by θ of the size n.
 """
 function amh_gen(r::Vector{Float64}, θ::Float64)
     u = -log.(r[1:end-1])./(1 .+quantile.(Geometric(1-θ), r[end]))
@@ -137,6 +86,10 @@ end
 
 """
     frank_gen(r::Vector{Float64}, θ::Float64, logseries::Vector{Float64})
+
+Given a vector of random numbers r of size n+1, return the sample from the Frank
+copula parametrised by θ of the size n. Axiliary logseries is a vector of the
+logseries sequence priorly computed.
 """
 function frank_gen(r::Vector{Float64}, θ::Float64, logseries::Vector{Float64})
     logseriesquantile = findlast(logseries .< r[end])
@@ -159,16 +112,18 @@ The Gumbel n variate copula is parameterized by θ::Float64 ∈ [1, ∞), suppor
 
 Constructor
 
-    Gumbel_cop(n::Int, θ::Float64, cor::String)
+    Gumbel_cop(n::Int, θ::Float64, cor::Type{<:CorrelationType})
 
-where cor == "Spearman", "Kendall" uses these correlations to compute θ, correlations must be greater than zero.
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
 
 ```jldoctest
 
 julia> Gumbel_cop(4, 3.)
 Gumbel_cop(4, 3.0)
 
-julia> Gumbel_cop(4, .75, "Kendall")
+julia> Gumbel_cop(4, .75, KendallCorrelation)
 Gumbel_cop(4, 4.0)
 ```
 """
@@ -180,7 +135,7 @@ struct Gumbel_cop
       testθ(θ, "gumbel")
       new(n, θ)
   end
-  function(::Type{Gumbel_cop})(n::Int, ρ::Float64, cor::String)
+  function(::Type{Gumbel_cop})(n::Int, ρ::Float64, cor::Type{<:CorrelationType})
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "gumbel", cor)
       new(n, θ)
@@ -228,19 +183,22 @@ parameterized by θ::Float64 ∈ [1, ∞), supported for n::Int ≧ 2.
 
 Constructor
 
-    Gumbel_cop_rev(n::Int, θ::Float64, cor::String)
+    Gumbel_cop_rev(n::Int, θ::Float64, cor::Type{<:CorrelationType})
 
-where cor == "Spearman", "Kendall", uses these correlations to compute θ,
-correlations must be greater than zero.
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
 
-TODO correct
 ```jldoctest
-julia> Gumbel_cop_rev(4, .75, "Kendall")
+julia> c = Gumbel_cop_rev(4, .75, KendallCorrelation)
 Gumbel_cop_rev(4, 4.0)
 
-julia> Gumbel_cop_rev(4, 3.)
-Gumbel_cop_rev(4, 3.0)
+julia> Random.seed!(43);
 
+julia> simulate_copula(2, c)
+2×4 Array{Float64,2}:
+ 0.963524   0.872108  0.816626  0.783637
+ 0.0954475  0.138451  0.13593   0.0678172
 ```
 """
 struct Gumbel_cop_rev
@@ -251,7 +209,7 @@ struct Gumbel_cop_rev
       testθ(θ, "gumbel")
       new(n, θ)
   end
-  function(::Type{Gumbel_cop_rev})(n::Int, ρ::Float64, cor::String)
+  function(::Type{Gumbel_cop_rev})(n::Int, ρ::Float64, cor::Type{<:CorrelationType})
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "gumbel", cor)
       new(n, θ)
@@ -294,15 +252,17 @@ supported for n::Int ≥ 2.
 
 Constructor
 
-    Clayton_cop(n::Int, θ::Float64, cor::String)
+    Clayton_cop(n::Int, θ::Float64, cor::Type{<:CorrelationType})
 
-uses cor == "Spearman", "Kendall" to compute θ, correlations must be greater than zero.
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
 
 ```jldoctest
 julia> Clayton_cop(4, 3.)
 Clayton_cop(4, 3.0)
 
-julia> Clayton_cop(4, 0.9, "Spearman")
+julia> Clayton_cop(4, 0.9, SpearmanCorrelation)
 Clayton_cop(4, 5.5595567742323775)
 ```
 """
@@ -318,7 +278,7 @@ struct Clayton_cop
       end
       new(n, θ)
   end
-  function(::Type{Clayton_cop})(n::Int, ρ::Float64, cor::String)
+  function(::Type{Clayton_cop})(n::Int, ρ::Float64, cor::Type{<:CorrelationType})
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "clayton", cor)
       new(n, θ)
@@ -347,10 +307,10 @@ julia> simulate_copula(10, Clayton_cop(2, 1))
  0.374341  0.437269
  0.973066  0.910103
 
- julia> Random.seed!(43);
+julia> Random.seed!(43);
 
- julia> simulate_copula(2, Clayton_cop(2, -0.5))
- 2×2 Array{Float64,2}:
+julia> simulate_copula(2, Clayton_cop(2, -0.5))
+2×2 Array{Float64,2}:
   0.180975  0.907735
   0.775377  0.872074
 ```
@@ -387,16 +347,18 @@ supported for n::Int ≧ 2.
 
 Constructor
 
-    Clayton_cop_rev(n::Int, θ::Float64, cor::String)
+    Clayton_cop_rev(n::Int, θ::Float64, cor::Type{<:CorrelationType})
 
-uses cor == "Spearman", "Kendall"  to compute θ, correlations must be greater than zero.
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
 
 ```jldoctest
 
 julia> Clayton_cop_rev(4, 3.)
 Clayton_cop_rev(4, 3.0)
 
-julia> Clayton_cop_rev(4, 0.9, "Spearman")
+julia> Clayton_cop_rev(4, 0.9, SpearmanCorrelation)
 Clayton_cop_rev(4, 5.5595567742323775)
 
 ```
@@ -413,7 +375,7 @@ struct Clayton_cop_rev
       end
       new(n, θ)
   end
-  function(::Type{Clayton_cop_rev})(n::Int, ρ::Float64, cor::String)
+  function(::Type{Clayton_cop_rev})(n::Int, ρ::Float64, cor::Type{<:CorrelationType})
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "clayton", cor)
       new(n, θ)
@@ -456,10 +418,12 @@ The Ali-Mikhail-Haq copula parameterized by θ, domain: θ ∈ (0, 1) for n > 2 
 
 Constructor
 
-    AMH_cop(n::Int, θ::Float64, cor::String)
+    AMH_cop(n::Int, θ::Float64, cor::Type{<:CorrelationType})
 
-uses cor == "Spearman", "Kendall" to compute θ. Such correlations must be grater than zero and limited from above
-due to the θ domain.
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
+Such correlation must be grater than zero and limited from above due to the θ domain.
             - Spearman correlation must be in range (0, 0.5)
             - Kendall correlation must be in range (0, 1/3)
 
@@ -467,7 +431,7 @@ due to the θ domain.
 julia> AMH_cop(4, .3)
 AMH_cop(4, 0.3)
 
-julia> AMH_cop(4, .3, "Kendall")
+julia> AMH_cop(4, .3, KendallCorrelation)
 AMH_cop(4, 0.9999)
 
 ```
@@ -484,7 +448,7 @@ struct AMH_cop
       end
       new(n, θ)
   end
-  function(::Type{AMH_cop})(n::Int, ρ::Float64, cor::String)
+  function(::Type{AMH_cop})(n::Int, ρ::Float64, cor::Type{<:CorrelationType})
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "amh", cor)
       new(n, θ)
@@ -539,10 +503,12 @@ Domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
 
 Constructor
 
-    AMH_cop_rev(n::Int, θ::Float64, cor::String)
+    AMH_cop_rev(n::Int, θ::Float64, cor::Type{<:CorrelationType})
 
-uses cor == "Spearman", "Kendall" to compute θ. Such correlations must be grater than zero and limited from above
-due to the θ domain.
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
+Such correlation must be grater than zero and limited from above due to the θ domain.
               - Spearman correlation must be in range (0, 0.5)
               -  Kendall correlation must be in range (0, 1/3)
 
@@ -563,7 +529,7 @@ struct AMH_cop_rev
       end
       new(n, θ)
   end
-  function(::Type{AMH_cop_rev})(n::Int, ρ::Float64, cor::String)
+  function(::Type{AMH_cop_rev})(n::Int, ρ::Float64, cor::Type{<:CorrelationType})
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "amh", cor)
       new(n, θ)
@@ -609,8 +575,11 @@ supported for n::Int ≧ 2.
 
 Constructor
 
-    Frank_cop(n::Int, θ::Float64, cor::String)
-uses cor == "Spearman", "Kendall" to compute θ, correlations must be greater than zero.
+    Frank_cop(n::Int, θ::Float64, cor::Type{<:CorrelationType})
+
+For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
+SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
+The copula parameter will be computed then. The correlation must be greater than zero.
 
 ```jldoctest
 julia> Frank_cop(2, -5.)
@@ -632,7 +601,7 @@ struct Frank_cop
       end
       new(n, θ)
   end
-  function(::Type{Frank_cop})(n::Int, ρ::Float64, cor::String)
+  function(::Type{Frank_cop})(n::Int, ρ::Float64, cor::Type{<:CorrelationType})
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "frank", cor)
       new(n, θ)
@@ -656,7 +625,7 @@ julia> simulate_copula(4, Frank_cop(2, 3.5))
 
 julia> Random.seed!(43);
 
-julia> simulate_copula(4, Frank_cop(2, 0.2, "Spearman"))
+julia> simulate_copula(4, Frank_cop(2, 0.2, SpearmanCorrelation))
   4×2 Array{Float64,2}:
   0.111685  0.277792
   0.92239   0.97086
@@ -738,34 +707,25 @@ function useτ(τ::Float64, copula::String)
 end
 
 """
-  getθ4arch(ρ::Float64, copula::String, cor::String)
 
-  get the copula parameter given the correlation, test if the parameter is in range
+    getθ4archgetθ4arch(ρ::Float64, copula::String, cor::Type{SpearmanCorrelation})
+
+    getθ4archgetθ4arch(ρ::Float64, copula::String, cor::Type{KendallCorrelation})
+
+Compute the copula parameter given the correlation, test if the parameter is in range.
+Following types are supported: SpearmanCorrelation, KendallCorrelation
 
 
 ```jldoctest
 
-julia> getθ4arch(0.5, "gumbel", "Spearman")
+julia> getθ4arch(0.5, "gumbel", SpearmanCorrelation)
 1.541070420842913
 
 
-julia> getθ4arch(0.5, "gumbel", "Kendall")
+julia> getθ4arch(0.5, "gumbel", KendallCorrelation)
 2.0
-
-
-
-julia> getθ4arch(1.5, "gumbel", "Pearson")
-ERROR: AssertionError: Pearson correlation not supported use Kendall or Spearman
-
 ```
 """
-function getθ4arch(ρ::Float64, copula::String, cor::String)
-  if cor == "Spearman"
-    θ = useρ(ρ , copula)
-  elseif cor == "Kendall"
-    θ = useτ(ρ , copula)
-  else
-    throw(AssertionError("$(cor) correlation not supported use Kendall or Spearman"))
-  end
-  return θ
-end
+getθ4arch(ρ::Float64, copula::String, cor::Type{SpearmanCorrelation}) = useρ(ρ , copula)
+
+getθ4arch(ρ::Float64, copula::String, cor::Type{KendallCorrelation}) = useτ(ρ , copula)
