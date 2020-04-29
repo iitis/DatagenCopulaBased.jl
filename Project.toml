@@ -1,7 +1,7 @@
 name = "DatagenCopulaBased"
 uuid = "b9879e35-cdd4-53a9-a12a-bc41659e9769"
 authors = ["Krzysztof Domino <kdomino@iitis.pl>", "Adam Glos <aglos@iitis.pl>"]
-version = "1.1.0"
+version = "1.2.0"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
