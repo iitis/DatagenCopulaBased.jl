@@ -600,7 +600,7 @@ function simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop; rng::AbstractR
   for j in 1:t
       X = rand(rng)
       for i in 1:(n-1)
-          X = gumbel_step(vcat(X, rand(rng)), θ[i], θ[i+1] ; rng = rng)
+          X = gumbel_step(vcat(X, rand(rng)), θ[i], θ[i+1]; rng = rng)
       end
      U[j,:] = X
     end
