@@ -902,7 +902,6 @@ julia> frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, 
 julia> chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
 ```
 
-
 # Citing this work
 
 This project was partially financed by the National Science Centre, Poland – project number 2014/15/B/ST6/05204.
