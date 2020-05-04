@@ -721,8 +721,7 @@ julia> nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0
 ```
 """
 function nestedcopulag(copula::String, ns::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64,
-                                                        r::Matrix{Float64})
-    rng = Random.GLOBAL_RNG
+                                                        r::Matrix{Float64}; rng::AbstractRNG)
     t = size(r,1)
     n = size(r,2)-1
     u = zeros(t, n)

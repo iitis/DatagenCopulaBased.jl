@@ -9,6 +9,7 @@ using LinearAlgebra
 using SharedArrays
 using Combinatorics
 using SpecialFunctions
+using StableRNGs
 
 
 import DatagenCopulaBased: rand2cop, fncopulagen, chainfrechetcopulagen

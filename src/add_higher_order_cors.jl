@@ -36,7 +36,7 @@ julia> gcop2tstudent(x, [1,2], 6)
  -0.710786   0.239012   -1.54419
 ```
 """
-function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false)
+function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false, rng = Random.GLOBAL_RNG)
   unique(ind) == ind || throw(AssertionError("indices must not repeat"))
   y = copy(x)
   Σ = cov(x)
@@ -47,7 +47,7 @@ function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Boo
     z = simulate_copula(size(x,1), Student_cop(cor(x[:,ind]), ν))
     y[:,ind] = quantile.(Normal(0,1), z)
   else
-    U = rand(Chisq(ν), size(x, 1))
+    U = rand(rng, Chisq(ν), size(x, 1))
     for i in ind
       z = y[:,i].*sqrt.(ν./U)
       z = cdf.(TDist(ν), z)
@@ -58,7 +58,7 @@ function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Boo
 end
 
 """
-    gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}}; naive::Bool = false, notnested::Bool = false)
+    gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}}; naive::Bool = false, notnested::Bool = false, rng = Random.GLOBAL_RNG)
 
 
 Takes x the matrix of t realizations of data from Gaussian n-variate distribution.
@@ -97,7 +97,7 @@ julia> gcop2arch(x, ["clayton" => [1,2]]; naive::Bool = false, notnested::Bool =
  -0.657297  -0.339814  -1.54419
 ```
 """
-function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested::Bool = false)
+function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested::Bool = false, rng = Random.GLOBAL_RNG)
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
   μ = mean(x, dims=1)
@@ -106,16 +106,16 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested:
   x = cdf.(Normal(0,1), x)
   for p in inds
     ind = p[2]
-    v = naive ? rand(size(xgauss, 1), length(ind)+1) : norm2unifind(xgauss, ind)
+    v = naive ? rand(rng, size(xgauss, 1), length(ind)+1) : norm2unifind(xgauss, ind)
     if notnested | (length(ind) == 2) | naive
       θ = ρ2θ(meanΣ(corspearman(xgauss)[ind, ind]), p[1])
-      x[:,ind] = arch_gen(p[1], v, θ)
+      x[:,ind] = arch_gen(p[1], v, θ; rng = rng)
     else
       part, ρslocal, ρglobal = getcors_advanced(xgauss[:,ind])
       ϕ = [ρ2θ(abs(ρ), p[1]) for ρ=ρslocal]
       θ = ρ2θ(abs(ρglobal), p[1])
       ind_adjusted = [ind[p] for p=part]
-      x[:,ind] = nestedcopulag(p[1], part, ϕ, θ, v)
+      x[:,ind] = nestedcopulag(p[1], part, ϕ, θ, v; rng = rng)
     end
   end
   quantile.(Normal(0,1), x).*S.+μ
@@ -154,21 +154,21 @@ julia> gcop2frechet(x, [1,2])
  -0.7223     -0.172507   -1.54419
 ```
 """
-function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false)
+function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false, rng = Random.GLOBAL_RNG)
   unique(inds) == inds || throw(AssertionError("indices must not repeat"))
   S = transpose(sqrt.(diag(cov(x))))
   μ = mean(x, dims = 1)
   x = (x.-μ)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
-  v = naive ? rand(size(xgauss, 1), length(inds)) : norm2unifind(xgauss, inds, "frechet")
+  v = naive ? rand(rng, size(xgauss, 1), length(inds)) : norm2unifind(xgauss, inds, "frechet")
   α = meanΣ(corspearman(xgauss)[inds, inds])
-  x[:,inds] = frechet(α, v)
+  x[:,inds] = frechet(α, v; rng = rng)
   quantile.(Normal(0,1), x).*S.+μ
 end
 
 """
-    gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
+    gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false, rng = Random.GLOBAL_RNG)
 
 Takes x the matrix of t realizations of data from Gaussian n-variate distribution.
 
@@ -202,7 +202,7 @@ julia> gcop2marshallolkin(x, [1,2], 1., 1.5; naive = false)
  -0.867606  -0.589929  -1.54419
 ```
 """
-function gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
+function gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false, rng = Random.GLOBAL_RNG)
   unique(inds) == inds || throw(AssertionError("indices must not repeat"))
   length(inds) == 2 || throw(AssertionError("not supported for |inds| > 2"))
   λ1 >= 0 || throw(DomainError("not supported for λ1 < 0"))
@@ -212,7 +212,7 @@ function gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 
   x = (x.-μ)./S
   xgauss = copy(x)
   x = cdf.(Normal(0,1), x)
-  v = naive ? rand(size(xgauss, 1), 3) : norm2unifind(xgauss, inds)
+  v = naive ? rand(rng, size(xgauss, 1), 3) : norm2unifind(xgauss, inds)
   ρ = corspearman(xgauss)[inds[1], inds[2]]
   x[:,inds] = mocopula(v, 2, τ2λ([moρ2τ(ρ)], [λ1, λ2]))
   quantile.(Normal(0,1), x).*S.+μ

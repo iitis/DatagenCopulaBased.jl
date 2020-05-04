@@ -2,10 +2,10 @@
 
 @testset "nested archimedean copulas helpers 4 higher correlations" begin
   Random.seed!(43)
-  u = nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
+  u = nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6]; rng = Random.GLOBAL_RNG)
   @test u ≈ [0.1532819 0.1824212 0.3742276 0.4076627; 0.690350 0.740927 0.254841 0.279192] atol=1.0e-5
   Random.seed!(42)
-  x = nestedcopulag("gumbel", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6])
+  x = nestedcopulag("gumbel", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6]; rng = Random.GLOBAL_RNG)
   @test x ≈ [0.624812  0.674897  0.451637  0.483973 ;  0.800605  0.825022  0.907411  0.915277] atol=1.0e-5
 end
 
@@ -26,6 +26,10 @@ end
 
       Random.seed!(43)
       @test simulate_copula(1, cp) ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
+
+      Random.seed!(43)
+      rng = StableRNG(123)
+      @test simulate_copula(1, cp; rng = rng) ≈ [0.274511 0.349494 0.8443515 0.5447064 0.44514597] atol=1.0e-5
   end
   @testset "large example on data" begin
       c1 = Clayton_cop(2, 3.)
@@ -187,7 +191,7 @@ end
     Random.seed!(43)
     @test simulate_copula(1, cp) ≈ [0.387085  0.693399  0.94718  0.953776  0.583379] atol=1.0e-5
     Random.seed!(43)
-    n = nestedcopulag("gumbel", [[1,2], [3,4]], [2., 3.], 1.1,  [0.1 0.2 0.3 0.4 0.5; 0.1 0.2 0.3 0.4 0.5])
+    n = nestedcopulag("gumbel", [[1,2], [3,4]], [2., 3.], 1.1,  [0.1 0.2 0.3 0.4 0.5; 0.1 0.2 0.3 0.4 0.5]; rng = Random.GLOBAL_RNG)
     @test n ≈ [0.00963842 0.0206319 0.556597 0.585703; 0.0772418 0.117543 0.838879 0.8518] atol=1.0e-5
   end
   @testset "test on larger data" begin

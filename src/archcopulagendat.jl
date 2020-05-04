@@ -16,8 +16,7 @@ random vectors.
 ```
 """
 
-function arch_gen(copula::String, r::Matrix{Float64}, θ::Float64)
-  rng = Random.GLOBAL_RNG
+function arch_gen(copula::String, r::Matrix{Float64}, θ::Float64; rng::AbstractRNG)
   t = size(r,1)
   if copula == "clayton"
     U = zeros(t, size(r,2)-1)

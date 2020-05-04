@@ -75,7 +75,7 @@ end
     Random.seed!(43)
     @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
     Random.seed!(43)
-    @test frechet(1., rand(1,4)) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
+    @test frechet(1., rand(1,4); rng = Random.GLOBAL_RNG) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
     Random.seed!(43)
     @test simulate_copula(1, Frechet_cop(2, 0.4, 0.4)) ≈ [0.1809752 0.7753771] atol=1.0e-5
   end

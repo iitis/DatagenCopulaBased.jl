@@ -238,7 +238,7 @@ function simulate_copula(t::Int, copula::Frechet_cop; rng::AbstractRNG = Random.
 end
 
 """
-  frechet(t::Int, n::Int, α::Float64)
+  frechet(t::Int, n::Int, α::Float64; rng::AbstractRNG)
 
 Given n-variate random data u ∈ R^{t, n}
 Returns t realization of n variate data generated from one parameter Frechet_cop(n, α).
@@ -262,7 +262,7 @@ julia> frechet(0.5, u)
  0.955881   0.851275
 ```
 """
-function frechet(α::Float64, u::Matrix{Float64}; rng::AbstractRNG = Random.GLOBAL_RNG)
+function frechet(α::Float64, u::Matrix{Float64}; rng::AbstractRNG)
   for j in 1:size(u, 1)
     v = rand(rng)
     el = u[j, :]
@@ -273,12 +273,12 @@ function frechet(α::Float64, u::Matrix{Float64}; rng::AbstractRNG = Random.GLOB
 end
 
 """
-  frechet_el!(u::Vector{Float64}, α::Float64, v::Float64 = rand())
+  frechet_el!(u::Vector{Float64}, α::Float64, v::Float64)
 
 Given n-variate random vector changes it to such modeled by the two parameters Frechet_cop(n, α, β).
-
+v is the random number form [0,1].
 """
-function frechet_el!(u::Vector{Float64}, α::Float64, v::Float64 = rand())
+function frechet_el!(u::Vector{Float64}, α::Float64, v::Float64)
   if (α >= v)
     for i in 1:length(u)-1
       u[i] = u[end]
@@ -287,12 +287,13 @@ function frechet_el!(u::Vector{Float64}, α::Float64, v::Float64 = rand())
 end
 
 """
-  function frechet_el2!(u::Vector{Float64}, α::Float64, β::Float64, v::Float64 = rand())
+  function frechet_el2!(u::Vector{Float64}, α::Float64, β::Float64, v::Float64)
 
 Given bivariate random vector changes it to such modeled by the two parameters Frechet_cop(n, α, β).
+v is the random number form [0,1]
 
 """
-function frechet_el2!(u::Vector{Float64}, α::Float64, β::Float64, v::Float64 = rand())
+function frechet_el2!(u::Vector{Float64}, α::Float64, β::Float64, v::Float64)
   if (α >= v)
     u[1] = u[2]
   elseif (α < v <= α+β)

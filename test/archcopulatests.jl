@@ -50,7 +50,7 @@
   end
 end
 @testset "archimedean copulas axiliary functions" begin
-    c = arch_gen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.)
+  c = arch_gen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.; rng = Random.GLOBAL_RNG)
   @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
   @test useτ(0.5, "clayton") == 2.
   @test useρ(0.75, "gumbel") ≈ 2.285220798876495
@@ -85,6 +85,9 @@ end
     @test simulate_copula(1, Gumbel_cop(2, 2.)) ≈ [0.481781  0.754482] atol=1.0e-5
     Random.seed!(43)
     @test simulate_copula(1, Gumbel_cop_rev(2, 2.)) ≈ [0.518219  0.245518] atol=1.0e-5
+    Random.seed!(43)
+    rng = StableRNG(123)
+    @test simulate_copula(1, Gumbel_cop(2, 2.); rng = rng) ≈ [0.7622966 0.8124318] atol=1.0e-5
   end
 
   @testset "tests on larger data" begin

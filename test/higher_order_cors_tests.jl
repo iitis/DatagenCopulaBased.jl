@@ -21,14 +21,14 @@
   @test are_parameters_good(p...) == true
   @test Σ_theor([0.5], 0.3, [[1,2], [4]]) == [1.0  0.5  0.3; 0.5  1.0  0.3; 0.3  0.3  1.0]
   Random.seed!(42)
-  @test frechet(0.5, [1. 0.2; 0.4 .6]) == [1.0  0.2; 0.6 0.6]
+  @test frechet(0.5, [1. 0.2; 0.4 .6]; rng = Random.GLOBAL_RNG) == [1.0  0.2; 0.6 0.6]
   Random.seed!(42)
   x = rand(1000, 5)
   c = getcors_advanced(x)
   @test c[1] == [[1, 4], [2, 3, 5]]
   @test c[2] ≈ [0.04729, 0.0195683] atol=1.0e-4
   @test c[3] ≈ -0.021774209774209772
-  x = frechet(0.6, rand(100000, 4))
+  x = frechet(0.6, rand(100000, 4); rng = Random.GLOBAL_RNG)
   Σ = cor(x)
   @test Σ[1,2] ≈ 0.6 atol=1.0e-2
   @test Σ[3,2] ≈ 0.6 atol=1.0e-2
@@ -44,11 +44,12 @@ end
   Σ1 =0.8*ones(25,25) + 0.2*Matrix(1.0I, 25, 25)
   Σ = 0.3*Σ + 0.7*Σ1
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
-  y = rand(MvNormal(Σ), 100000)'
+  y = rand(MvNormal(Σ), 75000)'
   y = y.*S'
 
   @testset "Clayton nested, not nested and naive" begin
     d=["clayton" => [1,2,3,4,9]]
+    Random.seed!(42)
     x = gcop2arch(y, d)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(0,S[1]))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(0,S[3]))) > α
@@ -69,11 +70,12 @@ end
     @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(0,S[1]))) > α
     @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(0,S[3]))) > α
     @test pvalue(ExactOneSampleKSTest(x2[:,4], Normal(0,S[4]))) > α
-    @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.05
+    @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.06
     @test_throws AssertionError gcop2arch(y, ["clayton" => [1,1,3,4]])
   end
 
   @testset "Gumbel not nested" begin
+    Random.seed!(42)
     x1 = gcop2arch(y, ["gumbel" => [1,2,3,4,9]]; notnested = true)
     @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
     @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
@@ -92,22 +94,24 @@ end
   end
 
   @testset "AMH" begin
+    Random.seed!(42)
     x1 = gcop2arch(y, ["amh" => [1,2,3]]; notnested = true)
     @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
     @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
 
     @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.118
-    @test maximum(abs.(cor(y)-cor(x1))) < 0.24
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.25
 
     x1 = gcop2arch(y, ["amh" => [1,2,3]])
     @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
     @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
 
     @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.118
-    @test maximum(abs.(cor(y)-cor(x1))) < 0.24
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.25
   end
 
   @testset "Frank" begin
+    Random.seed!(42)
     x1 = gcop2arch(y, ["frank" => [1,2,3,4,9]]; notnested = true)
     @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
     @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
