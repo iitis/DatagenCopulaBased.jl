@@ -870,7 +870,6 @@ julia> quantile.(Levy(0, 1), U)
 
 ## Old dispatching, will be removed in future
 
-
 ```julia
 julia> gausscopulagen(t::Int, Σ::Matrix{Float64})
 ```
