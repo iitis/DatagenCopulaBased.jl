@@ -143,19 +143,61 @@ julia> simulate_copula(1, c)
 ```
 """
 function simulate_copula(t::Int, copula::Chain_of_Archimedeans; rng::AbstractRNG = Random.GLOBAL_RNG)
-  θ = copula.θ
-  copulas = copula.copulas
-  U = zeros(t, copula.n)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    U
+end
 
-  for j in 1:t
-    u = rand(rng)
-    w = rand(rng, copula.n-1)
-    for i in 1:copula.n-1
-      u = hcat(u, rand2cop(u[i], θ[i], copulas[i], w[i]))
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Chain_of_Archimedeans; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, returns size(U,1) realizations of data modeled by the chain
+of bivariate Archimedean copulas. N.o. marginals is size(U,2), requires size(U,2) == copula.n
+
+```jldoctest
+julia> c = Chain_of_Archimedeans([4., 11.], "frank")
+Chain_of_Archimedeans(3, [4.0, 11.0], ["frank", "frank"])
+
+julia> u = zeros(1,3)
+1×3 Array{Float64,2}:
+ 0.0  0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> simulate_copula!(u,c)
+
+julia> u
+1×3 Array{Float64,2}:
+ 0.180975  0.492923  0.679345
+
+ julia> u = zeros(1,3)
+1×3 Array{Float64,2}:
+ 0.0  0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> c = Chain_of_Archimedeans([.5, .7], ["frank", "clayton"], KendallCorrelation)
+Chain_of_Archimedeans(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
+
+julia> simulate_copula!(u,c)
+
+julia> u
+1×3 Array{Float64,2}:
+ 0.180975  0.408582  0.646887
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Chain_of_Archimedeans; rng::AbstractRNG = Random.GLOBAL_RNG)
+    θ = copula.θ
+    copulas = copula.copulas
+    size(U, 2) == copula.n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+    for j in 1:size(U,1)
+      u = rand(rng)
+      w = rand(rng, copula.n-1)
+      for i in 1:copula.n-1
+        u = hcat(u, rand2cop(u[i], θ[i], copulas[i], w[i]))
+      end
+      U[j,:] = u
     end
-    U[j,:] = u
-  end
-  return U
 end
 
 """

@@ -191,8 +191,8 @@ end
 
 Returns t realizatioins of data from the Frechet copula
 
-    Frechet(n, α)
-    Frechet(n, α, β)
+    Frechet_cop(n, α)
+    Frechet_cop(n, α, β)
 
 ```jldoctest
 
@@ -217,24 +217,52 @@ julia> simulate_copula(1, f)
 """
 
 function simulate_copula(t::Int, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the Frechet copula - Frechet_cop
+N.o. marginals is size(U,2), requires size(U,2) == copula.n
+
+```jldoctest
+julia> f = Frechet_cop(3, 0.5)
+Frechet_cop(3, 0.5, 0.0)
+
+julia> u = zeros(1,3)
+1×3 Array{Float64,2}:
+ 0.0  0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> simulate_copula!(u,f)
+
+julia> u
+1×3 Array{Float64,2}:
+ 0.180975  0.775377  0.888934
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   n = copula.n
   α = copula.α
   β = copula.β
-  u = zeros(t,n)
+  size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
   if (β > 0) & (n == 2)
-    for j in 1:t
+    for j in 1:size(U,1)
       u_el = rand(rng, n)
       frechet_el2!(u_el, α, β, rand(rng))
-      u[j,:] = u_el
+      U[j,:] = u_el
     end
   else
-    for j in 1:t
+    for j in 1:size(U,1)
       u_el = rand(rng, n)
       frechet_el!(u_el, α, rand(rng))
-      u[j,:] = u_el
+      U[j,:] = u_el
     end
   end
-  return u
 end
 
 """
@@ -344,26 +372,56 @@ Returns t realizations of the n-variate Marshall-Olkin copula:
 
     Marshall_Olkin_cop(λ)
 
-```julia> Random.seed!(43);
+```jldoctest
 
-julia> f = Marshall_Olkin_cop([1.,2.,3.])
+julia> Random.seed!(43);
+
+julia> cop = Marshall_Olkin_cop([1.,2.,3.])
 Marshall_Olkin_cop(2, [1.0, 2.0, 3.0])
 
-julia> simulate_copula(1, f)
+julia> simulate_copula(1, cop)
 1×2 Array{Float64,2}:
   0.854724  0.821831
 ```
 """
 function simulate_copula(t::Int, copula::Marshall_Olkin_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Marshall_Olkin_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the Marshall  Olkin copula - Marshall_Olkin_cop
+N.o. marginals is size(U,2), requires size(U,2) == copula.n
+
+```jldoctest
+julia> u = zeros(1,2)
+1×2 Array{Float64,2}:
+ 0.0  0.0
+
+julia> cop = Marshall_Olkin_cop([1.,2.,3.])
+Marshall_Olkin_cop(2, [1.0, 2.0, 3.0])
+
+julia> Random.seed!(43);
+
+julia> simulate_copula!(u,cop)
+
+julia> u
+1×2 Array{Float64,2}:
+ 0.854724  0.821831
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Marshall_Olkin_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   λ = copula.λ
   n = copula.n
-  U = zeros(t, n)
+  size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
   s = collect(combinations(1:n))
-  for j in 1:t
+  for j in 1:size(U,1)
     u = rand(rng, 2^n-1)
     U[j,:] = mocopula_el(u, n, λ, s)
   end
-  U
 end
 
 """

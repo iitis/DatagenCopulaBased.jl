@@ -15,8 +15,13 @@ end
     b = Clayton_cop(2, 2.)
     c = Clayton_cop(2, 10.)
     d = Clayton_cop(2, 20.)
+
     @test_throws DomainError Nested_Clayton_cop([a,b], 0, 1.5)
     @test_throws DomainError Nested_Clayton_cop([a,b], -1, 0.5)
+
+    u = zeros(3,5)
+    cp = Nested_Clayton_cop([a,b], 0, 0.5)
+    @test_throws AssertionError simulate_copula!(u, cp)
     #@test_warn "θ << ϕ, marginals may not be uniform" Nested_Clayton_cop([c,d], 0, 0.05)
   end
   @testset "small example" begin
@@ -27,9 +32,20 @@ end
       Random.seed!(43)
       @test simulate_copula(1, cp) ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
 
+      u = zeros(1,5)
+      Random.seed!(43)
+      simulate_copula!(u, cp)
+      @test u ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
+
       Random.seed!(43)
       rng = StableRNG(123)
       @test simulate_copula(1, cp; rng = rng) ≈ [0.274511 0.349494 0.8443515 0.5447064 0.44514597] atol=1.0e-5
+
+      u = zeros(1,5)
+      Random.seed!(43)
+      rng = StableRNG(123)
+      simulate_copula!(u, cp; rng = rng)
+      @test u ≈ [0.274511 0.349494 0.8443515 0.5447064 0.44514597] atol=1.0e-5
   end
   @testset "large example on data" begin
       c1 = Clayton_cop(2, 3.)
@@ -75,6 +91,10 @@ end
     b = AMH_cop(2, .3)
     @test_throws DomainError Nested_AMH_cop([a,b], 0, 0.5)
     @test_throws DomainError Nested_AMH_cop([a,b], -1, 0.1)
+
+    u = zeros(5, 3)
+    cp = Nested_AMH_cop([a,b], 0, 0.1)
+    @test_throws AssertionError simulate_copula!(u, cp)
   end
   @testset "small example" begin
       c1 = AMH_cop(2, .8)
@@ -82,6 +102,11 @@ end
       cp = Nested_AMH_cop([c1, c2], 1, 0.5)
       Random.seed!(43)
       @test simulate_copula(1, cp) ≈ [0.587322  0.910074  0.931225  0.953353  0.665769] atol=1.0e-5
+
+      u = zeros(1,5)
+      Random.seed!(43)
+      simulate_copula!(u, cp)
+      @test u ≈ [0.587322  0.910074  0.931225  0.953353  0.665769] atol=1.0e-5
   end
   @testset "large example" begin
       c1 = AMH_cop(3, .8)
@@ -129,13 +154,23 @@ end
     c = Frank_cop(2, 1.)
     @test_throws DomainError Nested_Frank_cop([a,b], 0, 0.5)
     @test_throws DomainError Nested_Frank_cop([a,c], -1, 0.1)
+
+    u = zeros(5, 7)
+    cp = Nested_Frank_cop([a,c], 0, 0.1)
+    @test_throws AssertionError simulate_copula!(u, cp)
   end
   @testset "small data set" begin
-    Random.seed!(43)
     a = Frank_cop(2, 2.)
     b = Frank_cop(2, 3.)
     cp = Nested_Frank_cop([a,b], 1, 1.1)
+
+    Random.seed!(43)
     @test simulate_copula(1, cp) ≈ [0.599183  0.908848  0.950577  0.966366  0.692735] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,5)
+    simulate_copula!(u, cp)
+    @test u ≈ [0.599183  0.908848  0.950577  0.966366  0.692735] atol=1.0e-5
   end
   @testset "large data set" begin
     # test old dispatching
@@ -183,6 +218,10 @@ end
     b = Gumbel_cop(2, 1.5)
     @test_throws DomainError Nested_Gumbel_cop([a,b], 0, 1.7)
     @test_throws DomainError Nested_Gumbel_cop([a,b], -1, 1.1)
+
+    u = zeros(5, 7)
+    cp = Nested_Gumbel_cop([a,b], 1, 1.1)
+    @test_throws AssertionError simulate_copula!(u, cp)
   end
   @testset "test on small data" begin
     a = Gumbel_cop(2, 2.)
@@ -190,6 +229,12 @@ end
     cp = Nested_Gumbel_cop([a,b], 1, 1.1)
     Random.seed!(43)
     @test simulate_copula(1, cp) ≈ [0.387085  0.693399  0.94718  0.953776  0.583379] atol=1.0e-5
+
+    u = zeros(1,5)
+    Random.seed!(43)
+    simulate_copula!(u, cp)
+    @test u ≈ [0.387085  0.693399  0.94718  0.953776  0.583379] atol=1.0e-5
+
     Random.seed!(43)
     n = nestedcopulag("gumbel", [[1,2], [3,4]], [2., 3.], 1.1,  [0.1 0.2 0.3 0.4 0.5; 0.1 0.2 0.3 0.4 0.5]; rng = Random.GLOBAL_RNG)
     @test n ≈ [0.00963842 0.0206319 0.556597 0.585703; 0.0772418 0.117543 0.838879 0.8518] atol=1.0e-5
@@ -244,7 +289,9 @@ end
 
     @test_throws DomainError Double_Nested_Gumbel_cop([cp, cp1], 2.2)
     @test_throws DomainError Double_Nested_Gumbel_cop([cp, cp1], 0.9, KendallCorrelation)
-
+    copula = Double_Nested_Gumbel_cop([cp, cp1], 1.2)
+    u = rand(3,20)
+    @test_throws AssertionError simulate_copula!(u, copula)
   end
   @testset "small data" begin
     Random.seed!(43)
@@ -258,6 +305,11 @@ end
     copula = Double_Nested_Gumbel_cop([p1, p2], 1.5)
     Random.seed!(43)
     @test simulate_copula(1, copula) ≈ [0.598555  0.671584  0.8403  0.846844  0.634609  0.686927  0.693906  0.651968  0.670812] atol=1.0e-5
+
+    u = zeros(1,9)
+    Random.seed!(43)
+    simulate_copula!(u, copula)
+    @test u ≈ [0.598555  0.671584  0.8403  0.846844  0.634609  0.686927  0.693906  0.651968  0.670812] atol=1.0e-5
   end
   @testset "large data" begin
     a = Gumbel_cop(2, 4.1)
@@ -326,10 +378,20 @@ end
     @test_throws DomainError Hierarchical_Gumbel_cop([1.5, 1., 0.5])
     @test_throws DomainError Hierarchical_Gumbel_cop([0.6, 0.4, 0.6], KendallCorrelation)
     @test_throws DomainError Hierarchical_Gumbel_cop([0.6, 0.4, -0.6], KendallCorrelation)
+
+    u = zeros(3,10)
+    c = Hierarchical_Gumbel_cop([4., 3., 2.])
+    @test_throws AssertionError simulate_copula!(u, c)
   end
   @testset "simple example" begin
     Random.seed!(43)
     @test simulate_copula(1, Hierarchical_Gumbel_cop([2., 1.8, 1.7])) ≈ [0.117637  0.437958  0.150743  0.0954366] atol=1.0e-5
+
+    u = zeros(1,4)
+    Random.seed!(43)
+    simulate_copula!(u, Hierarchical_Gumbel_cop([2., 1.8, 1.7]))
+    @test u ≈ [0.117637  0.437958  0.150743  0.0954366] atol=1.0e-5
+
   end
   @testset "larger example" begin
     # test old dispatching

@@ -49,7 +49,7 @@
     @test ρ2θ(-0.4668, "clayton") ≈ -.5 atol=1.0e-3
   end
 end
-@testset "archimedean copulas axiliary functions" begin
+@testset "Archimedean copulas axiliary functions" begin
   c = arch_gen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.; rng = Random.GLOBAL_RNG)
   @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
   @test useτ(0.5, "clayton") == 2.
@@ -77,6 +77,11 @@ end
     @test_throws DomainError Gumbel_cop_rev(3, 1.1, SpearmanCorrelation)
     @test_throws DomainError Gumbel_cop_rev(1, 1.1)
     @test_throws DomainError Gumbel_cop_rev(1, 1.1, KendallCorrelation)
+
+    u = zeros(3,3)
+    @test_throws AssertionError simulate_copula!(u, Gumbel_cop(2, 2.))
+    @test_throws AssertionError simulate_copula!(u, Gumbel_cop_rev(2, 2.))
+
     @test_throws AssertionError archcopulagen(500000, 3, 2., "gumbol")
   end
 
@@ -85,9 +90,26 @@ end
     @test simulate_copula(1, Gumbel_cop(2, 2.)) ≈ [0.481781  0.754482] atol=1.0e-5
     Random.seed!(43)
     @test simulate_copula(1, Gumbel_cop_rev(2, 2.)) ≈ [0.518219  0.245518] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,2)
+    simulate_copula!(u, Gumbel_cop(2, 2.))
+    @test u ≈ [0.481781  0.754482] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,2)
+    simulate_copula!(u, Gumbel_cop_rev(2, 2.))
+    @test u ≈ [0.518219  0.245518] atol=1.0e-5
+
     Random.seed!(43)
     rng = StableRNG(123)
     @test simulate_copula(1, Gumbel_cop(2, 2.); rng = rng) ≈ [0.7622966 0.8124318] atol=1.0e-5
+
+    Random.seed!(43)
+    rng = StableRNG(123)
+    u = zeros(1,2)
+    simulate_copula!(u, Gumbel_cop(2, 2.); rng = rng)
+    @test u ≈ [0.7622966 0.8124318] atol=1.0e-5
   end
 
   @testset "tests on larger data" begin
@@ -170,6 +192,10 @@ end
     @test_throws DomainError Clayton_cop_rev(3, 1.1, SpearmanCorrelation)
     @test_throws DomainError Clayton_cop_rev(1, 1.1)
     @test_throws DomainError Clayton_cop_rev(1, 1.1, KendallCorrelation)
+
+    u = zeros(3,3)
+    @test_throws AssertionError simulate_copula!(u, Clayton_cop(2, 2.))
+    @test_throws AssertionError simulate_copula!(u, Clayton_cop_rev(2, 2.))
   end
   @testset "small example" begin
     Random.seed!(43)
@@ -177,6 +203,23 @@ end
     @test simulate_copula(1, Clayton_cop(2, -0.5)) ≈ [0.924876  0.185707] atol=1.0e-5
     Random.seed!(43)
     @test simulate_copula(1, Clayton_cop_rev(2, 2.)) ≈ [0.347188  0.087281] atol=1.0e-5
+    @test simulate_copula(1, Clayton_cop_rev(2, -.5)) ≈ 1. .- [0.924876  0.185707] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,2)
+    u1 = zeros(1,2)
+    simulate_copula!(u, Clayton_cop(2, 2.))
+    simulate_copula!(u1, Clayton_cop(2, -0.5))
+    @test u ≈ [0.652812  0.912719] atol=1.0e-5
+    @test u1 ≈ [0.924876  0.185707] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,2)
+    u1 = zeros(1,2)
+    simulate_copula!(u, Clayton_cop_rev(2, 2.))
+    simulate_copula!(u1, Clayton_cop_rev(2, -0.5))
+    @test u ≈ 1 .- [0.652812  0.912719] atol=1.0e-5
+    @test u1 ≈ 1 .- [0.924876  0.185707] atol=1.0e-5
   end
   @testset "test on larger data" begin
     Random.seed!(43)
@@ -215,41 +258,7 @@ end
     @test norm(x - x1) ≈ 0
   end
 end
-@testset "Frank copula" begin
-  @testset "exceptions" begin
-    @test_throws DomainError Frank_cop(3, -0.3)
-    @test_throws DomainError Frank_cop(2, 0.)
-    @test_throws DomainError Frank_cop(3, 1.1, KendallCorrelation)
-    @test_throws DomainError Frank_cop(3, 1.1, SpearmanCorrelation)
-    @test_throws DomainError Frank_cop(1, 1.1)
-    @test_throws DomainError Frank_cop(1, 1.1, KendallCorrelation)
-  end
-  @testset "small example" begin
-    Random.seed!(43)
-    @test simulate_copula(1, Frank_cop(2, 2.)) ≈ [0.565546  0.897293] atol=1.0e-5
-    @test simulate_copula(1, Frank_cop(2, -2.)) ≈ [0.924876  0.242893] atol=1.0e-5
-  end
-  @testset "test on larger data" begin
-    Random.seed!(43)
-    x = simulate_copula(300000, Frank_cop(3, 0.8))
-    Random.seed!(43)
-    x2 = archcopulagen(300000, 3, 0.8, "frank")
-    @test norm(x - x2) ≈ 0
-    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-    @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
-    @test tail(x[:,2], x[:,3], "r", 0.0001) ≈ 0
-    Random.seed!(43)
-    x = simulate_copula(300000, Frank_cop(2, 0.2, KendallCorrelation))
-    @test corkendall(x) ≈ [1. 0.2; 0.2 1.] atol=1.0e-2
-    Random.seed!(43)
-    x = simulate_copula(300000, Frank_cop(2, -2.))
-    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-    @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
-  end
-end
+
 @testset "Ali-Mikhail-Haq copula" begin
   @testset "exceptions" begin
     @test_throws DomainError AMH_cop(3, -0.3)
@@ -265,6 +274,10 @@ end
     @test_throws DomainError AMH_cop_rev(3, 0.55, SpearmanCorrelation)
     @test_throws DomainError AMH_cop_rev(1, 1.1)
     @test_throws DomainError AMH_cop_rev(1, 1.1, KendallCorrelation)
+
+    u = zeros(3,3)
+    @test_throws AssertionError simulate_copula!(u, AMH_cop(2, .5))
+    @test_throws AssertionError simulate_copula!(u, AMH_cop_rev(2, .5))
   end
   @testset "small example" begin
     Random.seed!(43)
@@ -272,6 +285,23 @@ end
     @test simulate_copula(1, AMH_cop(2, -0.5)) ≈ [0.924876  0.320496] atol=1.0e-5
     Random.seed!(43)
     @test simulate_copula(1, AMH_cop_rev(2, 0.5)) ≈ 1 .- [0.483939  0.883911] atol=1.0e-5
+    @test simulate_copula(1, AMH_cop_rev(2, -0.5)) ≈ 1 .- [0.924876  0.320496] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,2)
+    u1 = zeros(1,2)
+    simulate_copula!(u, AMH_cop(2, 0.5))
+    simulate_copula!(u1, AMH_cop(2, -0.5))
+    @test u ≈ [0.483939  0.883911] atol=1.0e-5
+    @test u1 ≈ [0.924876  0.320496] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,2)
+    u1 = zeros(1,2)
+    simulate_copula!(u, AMH_cop_rev(2, 0.5))
+    simulate_copula!(u1, AMH_cop_rev(2, -0.5))
+    @test u ≈ 1 .- [0.483939  0.883911] atol=1.0e-5
+    @test u1 ≈ 1 .- [0.924876  0.320496] atol=1.0e-5
   end
   @testset "test on larger data" begin
     Random.seed!(43)
@@ -311,5 +341,52 @@ end
     Random.seed!(43)
     x = simulate_copula(400000, AMH_cop_rev(2, 0.2, KendallCorrelation))
     @test corkendall(x) ≈ [1. 0.2; 0.2 1.] atol=1.0e-2
+  end
+end
+
+@testset "Frank copula" begin
+  @testset "exceptions" begin
+    @test_throws DomainError Frank_cop(3, -0.3)
+    @test_throws DomainError Frank_cop(2, 0.)
+    @test_throws DomainError Frank_cop(3, 1.1, KendallCorrelation)
+    @test_throws DomainError Frank_cop(3, 1.1, SpearmanCorrelation)
+    @test_throws DomainError Frank_cop(1, 1.1)
+    @test_throws DomainError Frank_cop(1, 1.1, KendallCorrelation)
+
+    u = zeros(3,3)
+    @test_throws AssertionError simulate_copula!(u, Frank_cop(2, .5))
+  end
+  @testset "small example" begin
+    Random.seed!(43)
+    @test simulate_copula(1, Frank_cop(2, 2.)) ≈ [0.565546  0.897293] atol=1.0e-5
+    @test simulate_copula(1, Frank_cop(2, -2.)) ≈ [0.924876  0.242893] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,2)
+    u1 = zeros(1,2)
+    simulate_copula!(u, Frank_cop(2, 2.))
+    simulate_copula!(u1, Frank_cop(2, -2.))
+    @test u ≈ [0.565546  0.897293] atol=1.0e-5
+    @test u1 ≈ [0.924876  0.242893] atol=1.0e-5
+  end
+  @testset "test on larger data" begin
+    Random.seed!(43)
+    x = simulate_copula(300000, Frank_cop(3, 0.8))
+    Random.seed!(43)
+    x2 = archcopulagen(300000, 3, 0.8, "frank")
+    @test norm(x - x2) ≈ 0
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
+    @test tail(x[:,2], x[:,3], "r", 0.0001) ≈ 0
+    Random.seed!(43)
+    x = simulate_copula(300000, Frank_cop(2, 0.2, KendallCorrelation))
+    @test corkendall(x) ≈ [1. 0.2; 0.2 1.] atol=1.0e-2
+    Random.seed!(43)
+    x = simulate_copula(300000, Frank_cop(2, -2.))
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
   end
 end

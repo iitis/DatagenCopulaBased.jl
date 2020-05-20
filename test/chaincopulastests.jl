@@ -19,6 +19,10 @@ end
   @test_throws DomainError Chain_of_Archimedeans([.2, -1.3], ["frank", "clayton"], KendallCorrelation)
   @test_throws AssertionError Chain_of_Archimedeans([0.2, 0.2], "gumbel", KendallCorrelation)
   @test_throws AssertionError Chain_of_Archimedeans([.2, .3], ["gumbel", "clayton"], KendallCorrelation)
+
+  u = zeros(2,3)
+  c = Chain_of_Archimedeans([2.], ["clayton"])
+  @test_throws AssertionError simulate_copula!(u, c)
 end
 
 @testset "chain of Archimedean copulas" begin
@@ -27,6 +31,16 @@ end
     @test simulate_copula(1, Chain_of_Archimedeans([4., 11.], "frank")) ≈ [0.180975  0.492923  0.679345] atol=1.0e-5
     Random.seed!(43)
     @test simulate_copula(1, Chain_of_Archimedeans([4., 11.], ["frank", "clayton"])) ≈ [0.180975  0.492923  0.600322] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,3)
+    simulate_copula!(u, Chain_of_Archimedeans([4., 11.], "frank"))
+    @test u ≈ [0.180975  0.492923  0.679345] atol=1.0e-5
+
+    Random.seed!(43)
+    u = zeros(1,3)
+    simulate_copula!(u, Chain_of_Archimedeans([4., 11.], ["frank", "clayton"]))
+    @test u ≈ [0.180975  0.492923  0.600322] atol=1.0e-5
   end
 
   @testset "larger example" begin

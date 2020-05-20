@@ -156,14 +156,41 @@ julia> simulate_copula(2, Gumbel_cop(3, 1.5))
 ```
 """
 function simulate_copula(t::Int, copula::Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the Gumbel copula -  Gumbel_cop(n, θ)
+N.o. marginals is size(U,2), requires size(U,2) == copula.n
+
+```jldoctest
+julia> Random.seed!(43);
+
+julia> U = zeros(2,3)
+2×3 Array{Float64,2}:
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+
+julia> simulate_copula!(U, Gumbel_cop(3, 1.5))
+
+julia> U
+2×3 Array{Float64,2}:
+ 0.740038  0.918928  0.950674
+ 0.637826  0.483514  0.123949
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
     θ = copula.θ
     n = copula.n
-    U = zeros(t, n)
-    for j in 1:t
+    size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+    for j in 1:size(U,1)
       u = rand(rng, n+2)
       U[j,:] = gumbel_gen(u, θ)
     end
-    U
 end
 
 """
@@ -230,9 +257,41 @@ julia> simulate_copula(2, Gumbel_cop_rev(3, 1.5))
 ```
 """
 function simulate_copula(t::Int, copula::Gumbel_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Gumbel_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the reversed Gumbel copula -  Gumbel_cop_rev(n, θ)
+N.o. marginals is size(U,2), requires size(U,2) == copula.n
+
+```jldoctest
+julia> Random.seed!(43);
+
+julia> U = zeros(2,3)
+2×3 Array{Float64,2}:
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+
+julia> simulate_copula!(U, Gumbel_cop_rev(3, 1.5))
+
+julia> U
+2×3 Array{Float64,2}:
+ 0.259962  0.081072  0.0493259
+ 0.362174  0.516486  0.876051
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Gumbel_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
     θ = copula.θ
     n = copula.n
-    return 1 .- simulate_copula(t, Gumbel_cop(n, θ); rng = rng)
+    size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+    for j in 1:size(U,1)
+      u = rand(rng, n+2)
+      U[j,:] = 1 .- gumbel_gen(u, θ)
+    end
 end
 
 """
@@ -293,40 +352,77 @@ Returns t realizations from the Clayton copula - Clayton_cop(n, θ)
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> simulate_copula(10, Clayton_cop(2, 1))
-10×2 Array{Float64,2}:
- 0.770331  0.932834
- 0.472847  0.0806845
- 0.970749  0.653029
- 0.622159  0.0518025
- 0.402461  0.228549
- 0.946375  0.842883
- 0.809076  0.129038
- 0.747983  0.433829
- 0.374341  0.437269
- 0.973066  0.910103
+julia> simulate_copula(3, Clayton_cop(2, 1.))
+3×2 Array{Float64,2}:
+ 0.562482  0.896247
+ 0.968953  0.731239
+ 0.749178  0.38015
 
-julia> Random.seed!(43);
+ julia> Random.seed!(43);
 
-julia> simulate_copula(2, Clayton_cop(2, -0.5))
-2×2 Array{Float64,2}:
-  0.180975  0.907735
-  0.775377  0.872074
+ julia> simulate_copula(2, Clayton_cop(2, -.5))
+ 2×2 Array{Float64,2}:
+  0.180975  0.818017
+  0.888934  0.863358
 ```
 """
 function simulate_copula(t::Int, copula::Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns t realizations from the Clayton copula - Clayton_cop(n, θ)
+N.o. marginals is size(U,2), requires size(U,2) == copula.n.
+N.o. realisations is size(U,1).
+
+```jldoctest
+julia> Random.seed!(43);
+
+julia> U = zeros(3,2)
+3×2 Array{Float64,2}:
+ 0.0  0.0
+ 0.0  0.0
+ 0.0  0.0
+
+julia> simulate_copula!(U, Clayton_cop(2, 1.))
+
+julia> U
+3×2 Array{Float64,2}:
+ 0.562482  0.896247
+ 0.968953  0.731239
+ 0.749178  0.38015
+
+julia> U = zeros(2,2)
+2×2 Array{Float64,2}:
+ 0.0  0.0
+ 0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> simulate_copula!(U, Clayton_cop(2, -.5))
+
+julia> U
+2×2 Array{Float64,2}:
+ 0.180975  0.818017
+ 0.888934  0.863358
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
     θ = copula.θ
     n = copula.n
-  if (n == 2) & (θ < 0)
-    return simulate_copula(t, Chain_of_Archimedeans([θ], "clayton"); rng = rng)
-  else
-    U = zeros(t, n)
-    for j in 1:t
-      u = rand(rng, n+1)
-      U[j,:] = clayton_gen(u, θ)
+    size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+    if (n == 2) & (θ < 0)
+        simulate_copula!(U, Chain_of_Archimedeans([θ], "clayton"); rng = rng)
+    else
+        for j in 1:size(U,1)
+            u = rand(rng, n+1)
+            U[j,:] = clayton_gen(u, θ)
+        end
     end
-    return U
-  end
 end
 
 """
@@ -390,16 +486,70 @@ Returns t realizations form the Clayton _cop _rev(n, θ) - the reversed Clayton 
 
   julia> Random.seed!(43);
 
-  julia> simulate_copula(2, Clayton_cop_rev(2, -0.5))
-  2×2 Array{Float64,2}:
-   0.819025  0.0922652
-   0.224623  0.127926
+ julia> simulate_copula(2, Clayton_cop_rev(2, -0.5))
+ 2×2 Array{Float64,2}:
+   0.819025  0.181983
+   0.111066  0.136642
 ```
 """
 function simulate_copula(t::Int, copula::Clayton_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
-  n = copula.n
-  θ = copula.θ
-  1 .- simulate_copula(t, Clayton_cop(n, θ); rng = rng)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Clayton_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the reversed Clayton copula - Clayton_cop_rev(n, θ)
+N.o. marginals is size(U,2), requires size(U,2) == copula.n
+
+```jldoctest
+julia> Random.seed!(43);
+
+julia> U = zeros(2,2)
+2×2 Array{Float64,2}:
+ 0.0  0.0
+ 0.0  0.0
+
+julia> simulate_copula!(U, Clayton_cop_rev(2, -0.5))
+
+julia> U
+2×2 Array{Float64,2}:
+ 0.819025  0.181983
+ 0.111066  0.136642
+
+ julia> Random.seed!(43);
+
+julia> U = zeros(2,2)
+2×2 Array{Float64,2}:
+ 0.0  0.0
+ 0.0  0.0
+
+julia> simulate_copula!(U, Clayton_cop_rev(2, 2.))
+
+julia> U
+2×2 Array{Float64,2}:
+ 0.347188   0.087281
+ 0.0257036  0.212676
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Clayton_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
+    θ = copula.θ
+    n = copula.n
+    size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+    if (n == 2) & (θ < 0)
+        for j in 1:size(U,1)
+          u = rand(rng)
+          w = rand(rng)
+          U[j,:] = 1 .- hcat(u, rand2cop(u, θ, "clayton", w))
+        end
+    else
+        for j in 1:size(U,1)
+            u = rand(rng, n+1)
+            U[j,:] = 1 .- clayton_gen(u, θ)
+        end
+    end
 end
 
 """
@@ -457,31 +607,64 @@ end
 """
     simulate_copula(t::Int, copula::AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations from the Ali-Mikhail-Haq - copulaAMH_cop(n, θ)
+Returns t realizations from the Ali-Mikhail-Haq copula- AMH_cop(n, θ)
 
 ```jldoctest
 julia> Random.seed!(43);
 
+julia> simulate_copula(4, AMH_cop(2, 0.5))
+4×2 Array{Float64,2}:
+ 0.483939  0.883911
+ 0.962064  0.665769
+ 0.707543  0.25042
+ 0.915491  0.494523
+
+julia> Random.seed!(43);
+
 julia> simulate_copula(4, AMH_cop(2, -0.5))
 4×2 Array{Float64,2}:
- 0.180975  0.477109
- 0.775377  0.885537
- 0.888934  0.759717
- 0.924876  0.313789
+ 0.180975  0.820073
+ 0.888934  0.886169
+ 0.408278  0.919572
+ 0.828727  0.335864
 ```
 """
 function simulate_copula(t::Int, copula::AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the Ali-Mikhail-Haq copula- AMH_cop(n, θ)
+N.o. marginals is size(U,2), requires size(U,2) == copula.n
+
+```jldoctest
+julia> Random.seed!(43);
+
+julia> simulate_copula!(U, AMH_cop(2, -0.5))
+
+julia> U
+4×2 Array{Float64,2}:
+ 0.180975  0.820073
+ 0.888934  0.886169
+ 0.408278  0.919572
+ 0.828727  0.335864
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   n = copula.n
   θ = copula.θ
+  size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
   if (θ in [0,1]) | (n == 2)*(θ < 0)
-    return simulate_copula(t, Chain_of_Archimedeans([θ], "amh"); rng = rng)
+      simulate_copula!(U, Chain_of_Archimedeans([θ], "amh"); rng = rng)
   else
-    U = zeros(t, n)
-    for j in 1:t
+    for j in 1:size(U,1)
       u = rand(rng, n+1)
       U[j,:] = amh_gen(u, θ)
     end
-    return U
   end
 end
 
@@ -538,23 +721,75 @@ end
 """
     simulate_copula(t::Int, copula::AMH_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations from the reversed Ali-Mikhail-Haq copulaAMH _cop _rev(n, θ), reversed means u → 1 .- u.
+Returns t realizations from the reversed Ali-Mikhail-Haq copula - AMH _cop _rev(n, θ), reversed means u → 1 .- u.
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> simulate_copula(4, rev_amh(2, -0.5))
+julia> simulate_copula(4, AMH_cop_rev(2, 0.5))
 4×2 Array{Float64,2}:
-0.819025  0.522891
-0.224623  0.114463
-0.111066  0.240283
-0.075124  0.686211
+ 0.516061   0.116089
+ 0.0379356  0.334231
+ 0.292457   0.74958
+ 0.0845089  0.505477
+
+
+julia> simulate_copula(4, AMH_cop_rev(2, -0.5))
+4×2 Array{Float64,2}:
+ 0.819025  0.179927
+ 0.111066  0.113831
+ 0.591722  0.0804284
+ 0.171273  0.664136
 ```
 """
 function simulate_copula(t::Int, copula::AMH_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
-  n = copula.n
-  θ = copula.θ
-  1 .- simulate_copula(t, AMH_cop(n, θ); rng = rng)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::AMH_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the reversed Ali-Mikhail-Haq copula a - AMH_cop_rev(n, θ)
+N.o. marginals is size(U,2), requires size(U,2) == copula.n
+
+```jldoctest
+julia> Random.seed!(43);
+
+julia> U = zeros(4,2)
+4×2 Array{Float64,2}:
+ 0.0  0.0
+ 0.0  0.0
+ 0.0  0.0
+ 0.0  0.0
+
+julia> simulate_copula!(U, AMH_cop_rev(2, 0.5))
+
+julia> U
+4×2 Array{Float64,2}:
+ 0.516061   0.116089
+ 0.0379356  0.334231
+ 0.292457   0.74958
+ 0.0845089  0.505477
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::AMH_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
+    θ = copula.θ
+    n = copula.n
+    size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+    if (n == 2) & (θ < 0)
+        for j in 1:size(U,1)
+          u = rand(rng)
+          w = rand(rng)
+          U[j,:] = 1 .- hcat(u, rand2cop(u, θ, "amh", w))
+        end
+    else
+        for j in 1:size(U,1)
+            u = rand(rng, n+1)
+            U[j,:] = 1 .- amh_gen(u, θ)
+        end
+    end
 end
 
 """
@@ -617,34 +852,65 @@ julia> Random.seed!(43);
 
 julia> simulate_copula(4, Frank_cop(2, 3.5))
 4×2 Array{Float64,2}:
-  0.227231  0.363146
-  0.94705   0.979777
-  0.877446  0.824164
-  0.64929   0.140499
+ 0.650276  0.910212
+ 0.973726  0.789701
+ 0.690966  0.358523
+ 0.747862  0.29333
 
 julia> Random.seed!(43);
 
 julia> simulate_copula(4, Frank_cop(2, 0.2, SpearmanCorrelation))
-  4×2 Array{Float64,2}:
-  0.111685  0.277792
-  0.92239   0.97086
-  0.894941  0.840751
-  0.864546  0.271543
+4×2 Array{Float64,2}:
+ 0.504123  0.887296
+ 0.962936  0.678791
+ 0.718628  0.271543
+ 0.917759  0.51439
 ```
 """
 function simulate_copula(t::Int, copula::Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the Frank copula- Frank_cop(n, θ)
+N.o. marginals is size(U,2), requires size(U,2) == copula.n
+
+```jldoctest
+julia> U = zeros(4,2)
+4×2 Array{Float64,2}:
+ 0.0  0.0
+ 0.0  0.0
+ 0.0  0.0
+ 0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> simulate_copula!(U, Frank_cop(2, 3.5))
+
+julia> U
+4×2 Array{Float64,2}:
+ 0.650276  0.910212
+ 0.973726  0.789701
+ 0.690966  0.358523
+ 0.747862  0.29333
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   n = copula.n
   θ = copula.θ
+  size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
   if (n == 2) & (θ < 0)
-    return simulate_copula(t, Chain_of_Archimedeans([θ], "frank"); rng = rng)
+      simulate_copula!(U, Chain_of_Archimedeans([θ], "frank"); rng = rng)
   else
     w = logseriescdf(1-exp(-θ))
-    U = zeros(t, n)
-    for j in 1:t
+    for j in 1:size(U,1)
       u = rand(rng, n+1)
       U[j,:] = frank_gen(u, θ, w)
     end
-    return U
   end
 end
 

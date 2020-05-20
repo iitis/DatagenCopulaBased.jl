@@ -234,46 +234,91 @@ struct Nested_Gumbel_cop
 end
 
 """
-    simulate_copula(t::Int, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula(t::Int, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations of data generated using Nested Frank copula
+Returns t realizations of data generated using Nested Clayton copula
+
 ```jldoctest
-
-julia> c1 = Frank_cop(2, 4.)
-Frank_cop(2, 4.0)
-
-julia> c2 = Frank_cop(2, 5.)
-Frank_cop(2, 5.0)
-
-julia> c = Nested_Frank_cop([c1, c2],1, 2.0)
-Nested_Frank_cop(Frank_cop[Frank_cop(2, 4.0), Frank_cop(2, 5.0)], 1, 2.0)
 
 julia> Random.seed!(43);
 
-julia> simulate_copula(1, c)
-1×5 Array{Float64,2}:
- 0.642765  0.901183  0.969422  0.9792  0.74155
+julia> c1 = Clayton_cop(2, 2.)
+Clayton_cop(2, 2.0)
 
+julia> c2 = Clayton_cop(2, 3.)
+Clayton_cop(2, 3.0)
+
+julia> cp = Nested_Clayton_cop([c1, c2], 1, 1.1)
+Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 2.0), Clayton_cop(2, 3.0)], 1, 1.1)
+
+julia> simulate_copula(4, cp)
+4×5 Array{Float64,2}:
+0.514118  0.84089   0.870106  0.906233  0.739349
+0.588245  0.85816   0.935308  0.944444  0.709009
+0.59625   0.665947  0.483649  0.603074  0.153501
+0.200051  0.304099  0.242572  0.177836  0.0851603
 ```
 """
-function simulate_copula(t::Int, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-    m = copula.m
-    θ = copula.θ
-    children = copula.children
-    ϕ = [ch.θ for ch in children]
-    n = [ch.n for ch in children]
+function simulate_copula(t::Int, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+     n = [ch.n for ch in copula.children]
+     n2 = sum(n)+copula.m
+     U = zeros(t, n2)
+     simulate_copula!(U, copula; rng = rng)
+     return U
+end
 
-    ws = [logseriescdf(1-exp(theta)) for theta in ϕ]
-    n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
-    n2 = sum(n)+m
-    w = logseriescdf(1-exp(-θ))
-    U = zeros(t, n2)
-    for j in 1:t
-       rand_vec = rand(rng, n2+1)
-       U[j,:] = nested_frank_gen(n1, ϕ, θ, rand_vec, w, ws; rng=rng)
-   end
-   return U
- end
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the nested Clayton copula - Nested_Clayton_cop
+N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
+
+```jldoctest
+
+julia> c1 = Clayton_cop(2, 2.)
+Clayton_cop(2, 2.0)
+
+julia> c2 = Clayton_cop(2, 3.)
+Clayton_cop(2, 3.0)
+
+julia> cp = Nested_Clayton_cop([c1, c2], 1, 1.1)
+Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 2.0), Clayton_cop(2, 3.0)], 1, 1.1)
+
+julia> U = zeros(5,5)
+5×5 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> simulate_copula!(U, cp)
+
+julia> U
+5×5 Array{Float64,2}:
+ 0.514118  0.84089    0.870106   0.906233  0.739349
+ 0.588245  0.85816    0.935308   0.944444  0.709009
+ 0.59625   0.665947   0.483649   0.603074  0.153501
+ 0.200051  0.304099   0.242572   0.177836  0.0851603
+ 0.120914  0.0683055  0.0586907  0.126257  0.519241
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+      m = copula.m
+      θ = copula.θ
+      children = copula.children
+      ϕ = [ch.θ for ch in children]
+      n = [ch.n for ch in children]
+      n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+      n2 = sum(n)+m
+      size(U, 2) == n2 || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+      for j in 1:size(U,1)
+         rand_vec = rand(rng, n2+1)
+         U[j,:] = nested_clayton_gen(n1, ϕ, θ, rand_vec; rng=rng)
+     end
+end
 
 """
      simulate_copula(t::Int, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
@@ -302,62 +347,142 @@ julia> simulate_copula(4, cp)
 ```
 """
 function simulate_copula(t::Int, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-     m = copula.m
-     θ = copula.θ
-     children = copula.children
-     ϕ = [ch.θ for ch in children]
-     n = [ch.n for ch in children]
-     n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
-     n2 = sum(n)+m
+     n = [ch.n for ch in copula.children]
+     n2 = sum(n)+copula.m
      U = zeros(t, n2)
-     for j in 1:t
-        rand_vec = rand(rng, n2+1)
-        U[j,:] = nested_amh_gen(n1, ϕ, θ, rand_vec; rng=rng)
-    end
-    return U
- end
+     simulate_copula!(U, copula; rng = rng)
+     return U
+end
 
 """
-    simulate_copula(t::Int, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Float64}, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations of data generated using Nested Clayton copula
+Given the preallocated output U, Returns size(U,1) realizations from the nested AMH copula - Nested_AMH_cop
+N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
 
 ```jldoctest
 
+julia> c1 = AMH_cop(2, .7)
+AMH_cop(2, 0.7)
+
+julia> c2 = AMH_cop(2, .8)
+AMH_cop(2, 0.8)
+
+julia> cp = Nested_AMH_cop([c1, c2], 1, 0.2)
+Nested_AMH_cop(AMH_cop[AMH_cop(2, 0.7), AMH_cop(2, 0.8)], 1, 0.2)
+
 julia> Random.seed!(43);
 
-julia> c1 = Clayton_cop(2, 2.)
-Clayton_cop(2, 2.0)
-
-julia> c2 = Clayton_cop(2, 3.)
-Clayton_cop(2, 3.0)
-
-julia> cp = Nested_Clayton_cop([c1, c2], 1, 1.1)
-Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 2.0), Clayton_cop(2, 3.0)], 1, 1.1)
-
-julia> simulate_copula(4, cp)
+julia> U = zeros(4,5)
 4×5 Array{Float64,2}:
-0.514118  0.84089   0.870106  0.906233  0.739349
-0.588245  0.85816   0.935308  0.944444  0.709009
-0.59625   0.665947  0.483649  0.603074  0.153501
-0.200051  0.304099  0.242572  0.177836  0.0851603
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+
+julia> simulate_copula!(U, cp)
+
+julia> U
+4×5 Array{Float64,2}:
+ 0.557393  0.902767  0.909853  0.938522  0.586068
+ 0.184204  0.866664  0.699134  0.226744  0.102932
+ 0.268634  0.383355  0.179023  0.533749  0.995958
+ 0.578143  0.840169  0.743728  0.963226  0.576695
 ```
 """
-function simulate_copula(t::Int, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-     m = copula.m
-     θ = copula.θ
-     children = copula.children
-     ϕ = [ch.θ for ch in children]
-     n = [ch.n for ch in children]
-     n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
-     n2 = sum(n)+m
+function simulate_copula!(U::Matrix{Float64}, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    m = copula.m
+    θ = copula.θ
+    children = copula.children
+    ϕ = [ch.θ for ch in children]
+    n = [ch.n for ch in children]
+    n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+    n2 = sum(n)+m
+    size(U, 2) == n2 || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+    for j in 1:size(U,1)
+       rand_vec = rand(rng, n2+1)
+       U[j,:] = nested_amh_gen(n1, ϕ, θ, rand_vec; rng=rng)
+   end
+end
+
+"""
+    simulate_copula(t::Int, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Returns t realizations of data generated using Nested Frank copula
+```jldoctest
+
+julia> c1 = Frank_cop(2, 4.)
+Frank_cop(2, 4.0)
+
+julia> c2 = Frank_cop(2, 5.)
+Frank_cop(2, 5.0)
+
+julia> c = Nested_Frank_cop([c1, c2],1, 2.0)
+Nested_Frank_cop(Frank_cop[Frank_cop(2, 4.0), Frank_cop(2, 5.0)], 1, 2.0)
+
+julia> Random.seed!(43);
+
+julia> simulate_copula(1, c)
+1×5 Array{Float64,2}:
+ 0.642765  0.901183  0.969422  0.9792  0.74155
+```
+"""
+function simulate_copula(t::Int, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+     n = [ch.n for ch in copula.children]
+     n2 = sum(n)+copula.m
      U = zeros(t, n2)
-     for j in 1:t
-        rand_vec = rand(rng, n2+1)
-        U[j,:] = nested_clayton_gen(n1, ϕ, θ, rand_vec; rng=rng)
-    end
-    return U
- end
+     simulate_copula!(U, copula; rng = rng)
+     return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the nested Frank copula a - Nested_Frank_cop
+N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
+
+```jldoctest
+
+julia> c1 = Frank_cop(2, 4.)
+Frank_cop(2, 4.0)
+
+julia> c2 = Frank_cop(2, 5.)
+Frank_cop(2, 5.0)
+
+julia> c = Nested_Frank_cop([c1, c2],1, 2.0)
+Nested_Frank_cop(Frank_cop[Frank_cop(2, 4.0), Frank_cop(2, 5.0)], 1, 2.0)
+
+julia> U = zeros(1,5)
+1×5 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> simulate_copula!(U, c)
+
+julia> U
+1×5 Array{Float64,2}:
+ 0.642765  0.901183  0.969422  0.9792  0.74155
+
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    m = copula.m
+    θ = copula.θ
+    children = copula.children
+    ϕ = [ch.θ for ch in children]
+    n = [ch.n for ch in children]
+    n2 = sum(n)+m
+    size(U, 2) == n2 || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+
+    ws = [logseriescdf(1-exp(theta)) for theta in ϕ]
+    n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+    w = logseriescdf(1-exp(-θ))
+    for j in 1:size(U,1)
+       rand_vec = rand(rng, n2+1)
+       U[j,:] = nested_frank_gen(n1, ϕ, θ, rand_vec, w, ws; rng=rng)
+   end
+end
 
 """
     simulate_copula(t::Int, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
@@ -375,8 +500,6 @@ julia> c2 = Gumbel_cop(2, 3.)
 Gumbel_cop(2, 3.0)
 
 julia> cp = Nested_Gumbel_cop([c1, c2], 1, 1.1)
-
-julia> simulate_copula(4, cp)
 Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 2.0), Gumbel_cop(2, 3.0)], 1, 1.1)
 
 julia> simulate_copula(4, cp)
@@ -385,24 +508,65 @@ julia> simulate_copula(4, cp)
  0.0646972  0.0865914  0.990691  0.991127  0.718803
  0.966896   0.709233   0.788019  0.855622  0.755476
  0.272487   0.106996   0.756052  0.834068  0.661432
-
 ```
 """
 function simulate_copula(t::Int, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-     m = copula.m
-     θ = copula.θ
-     children = copula.children
-     ϕ = [ch.θ for ch in children]
-     n = [ch.n for ch in children]
-     n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
-     n2 = sum(n)+m
-
+     n = [ch.n for ch in copula.children]
+     n2 = sum(n)+copula.m
      U = zeros(t, n2)
-     for j in 1:t
-        rand_vec = rand(rng, n2)
-        U[j,:] = nested_gumbel_gen(n1, ϕ, θ, rand_vec; rng=rng)
-    end
-return U
+     simulate_copula!(U, copula; rng = rng)
+     return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the nested Gumbel copula - Nested_Gumbel_cop
+N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
+
+```jldoctest
+julia> c1 = Gumbel_cop(2, 2.)
+Gumbel_cop(2, 2.0)
+
+julia> c2 = Gumbel_cop(2, 3.)
+Gumbel_cop(2, 3.0)
+
+julia> cp = Nested_Gumbel_cop([c1, c2], 1, 1.1)
+Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 2.0), Gumbel_cop(2, 3.0)], 1, 1.1)
+
+julia> u = zeros(4,5)
+4×5 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> simulate_copula!(u, cp)
+
+julia> u
+4×5 Array{Float64,2}:
+ 0.387085   0.693399   0.94718   0.953776  0.583379
+ 0.0646972  0.0865914  0.990691  0.991127  0.718803
+ 0.966896   0.709233   0.788019  0.855622  0.755476
+ 0.272487   0.106996   0.756052  0.834068  0.661432
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    m = copula.m
+    θ = copula.θ
+    children = copula.children
+    ϕ = [ch.θ for ch in children]
+    n = [ch.n for ch in children]
+    n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
+    n2 = sum(n)+m
+    size(U, 2) == n2 || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+
+    for j in 1:size(U,1)
+       rand_vec = rand(rng, n2)
+       U[j,:] = nested_gumbel_gen(n1, ϕ, θ, rand_vec; rng=rng)
+   end
 end
 
 """
@@ -502,13 +666,65 @@ julia> simulate_copula(5, copula)
 ```
 """
 function simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    v = copula.children
+    ns = [[ch.n for ch in vs.children] for vs in v]
+    dims = sum([sum(ns[i])+v[i].m for i in 1:length(v)])
+     U = zeros(t, dims)
+     simulate_copula!(U, copula; rng = rng)
+     return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the double nested Gumbel copula - Double_Nested_Gumbel_cop
+N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
+
+```jldoctest
+julia> a = Gumbel_cop(2, 5.)
+Gumbel_cop(2, 5.0)
+
+julia> b = Gumbel_cop(2, 6.)
+Gumbel_cop(2, 6.0)
+
+julia> c = Gumbel_cop(2, 5.5)
+Gumbel_cop(2, 5.5)
+
+julia> p1 = Nested_Gumbel_cop([a,b], 1, 2.)
+Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.0), Gumbel_cop(2, 6.0)], 1, 2.0)
+
+julia> p2 = Nested_Gumbel_cop([c], 2, 2.1)
+Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.5)], 2, 2.1)
+
+julia> copula = Double_Nested_Gumbel_cop([p1, p2], 1.5)
+Double_Nested_Gumbel_cop(Nested_Gumbel_cop[Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.0), Gumbel_cop(2, 6.0)], 1, 2.0), Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.5)], 2, 2.1)], 1.5)
+
+julia> u = zeros(3,9)
+3×9 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> simulate_copula!(u, copula)
+
+julia> u
+3×9 Array{Float64,2}:
+ 0.598555   0.671584  0.8403     0.846844  0.634609  0.686927  0.693906  0.651968    0.670812
+ 0.0518892  0.191236  0.0803859  0.104325  0.410727  0.529354  0.557387  0.370518    0.592302
+ 0.367914   0.276196  0.382616   0.470171  0.264135  0.144503  0.13097   0.00687015  0.01417
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
     θ = copula.θ
     v = copula.children
     ns = [[ch.n for ch in vs.children] for vs in v]
     Ψs = [[ch.θ for ch in vs.children] for vs in v]
     dims = sum([sum(ns[i])+v[i].m for i in 1:length(v)])
-    U = zeros(t, dims)
-    for j in 1:t
+    size(U, 2) == dims || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+
+    for j in 1:size(U,1)
         X = Float64[]
         for k in 1:length(v)
             n = ns[k]
@@ -520,7 +736,6 @@ function simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop; rng::Abstract
         X = -log.(X)./levyel(θ, rand(rng), rand(rng))
         U[j,:] = exp.(-X.^(1/θ))
     end
-    return U
 end
 
 """
@@ -593,24 +808,59 @@ julia> simulate_copula(3, c)
 ```
 """
 function simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    U = zeros(t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
+end
+
+"""
+    simulate_copula!(U::Matrix{Float64}, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+Given the preallocated output U, Returns size(U,1) realizations from the hierachically nested Gumbel copula - Hierarchical_Gumbel_cop
+N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula i.e. copula.n
+
+```jldoctest
+
+julia> c = Hierarchical_Gumbel_cop([5., 4., 3.])
+Hierarchical_Gumbel_cop(4, [5.0, 4.0, 3.0])
+
+julia> Random.seed!(43);
+
+julia> u = zeros(3,4)
+3×4 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0
+ 0.0  0.0  0.0  0.0
+
+julia> simulate_copula!(u, c)
+
+julia> u
+3×4 Array{Float64,2}:
+ 0.100353  0.207903  0.0988337  0.0431565
+ 0.347417  0.217052  0.223734   0.042903
+ 0.73617   0.347349  0.168348   0.410963
+```
+"""
+function simulate_copula!(U::Matrix{Float64}, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
   θ = copula.θ
-  n = copula.n
   θ = vcat(θ, [1.])
-  U = zeros(t, n)
-  for j in 1:t
+  size(U, 2) == copula.n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
+
+  for j in 1:size(U,1)
       X = rand(rng)
-      for i in 1:(n-1)
+      for i in 1:(copula.n-1)
           X = gumbel_step(vcat(X, rand(rng)), θ[i], θ[i+1]; rng = rng)
       end
      U[j,:] = X
     end
-    U
 end
 
 """
     nested_gumbel_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
                          θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
 
+Convert a vector of random independnet elements to such sampled from the
+Nested Gumbel copula
 """
 function nested_gumbel_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
                          θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)

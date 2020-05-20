@@ -44,7 +44,7 @@ module DatagenCopulaBased
 
   export gcop2tstudent, gcop2frechet, gcop2marshallolkin, gcop2arch
 
-  export simulate_copula
+  export simulate_copula, simulate_copula!
 
   # obsolete implemntations
   export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshallolkincopulagen

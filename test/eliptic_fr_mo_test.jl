@@ -62,6 +62,10 @@ end
     @test_throws DomainError Frechet_cop(2, 0.8, 0.5)
     @test_throws DomainError Frechet_cop(2, -0.2, 0.8)
     @test_throws DomainError Frechet_cop(2, 0.8, -0.5)
+
+    u = zeros(3, 5)
+    cop = Frechet_cop(3, 0.8)
+    @test_throws AssertionError simulate_copula!(u, cop)
   end
   @testset "small example" begin
     u = [0.3, 0.5, 0.7]
@@ -78,6 +82,15 @@ end
     @test frechet(1., rand(1,4); rng = Random.GLOBAL_RNG) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
     Random.seed!(43)
     @test simulate_copula(1, Frechet_cop(2, 0.4, 0.4)) ≈ [0.1809752 0.7753771] atol=1.0e-5
+
+    u = zeros(1,4)
+    u1 = zeros(1,2)
+    Random.seed!(43)
+    simulate_copula!(u, Frechet_cop(4, 1.))
+    @test u ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
+    Random.seed!(43)
+    simulate_copula!(u1, Frechet_cop(2, 0.4, 0.4))
+    @test u1 ≈ [0.1809752 0.7753771] atol=1.0e-5
   end
   @testset "examples on larger data" begin
     Random.seed!(43)
@@ -122,10 +135,19 @@ end
     @test τ2λ([0.4], [4.2, 1.2]) ≈ [4.2, 1.2, 3.6]
     @test τ2λ([0.5, 0.6, 0.5], [1., 2., 3., 4.]) ≈ [1, 2, 3, 0, 0.5, 0, 4]
     @test moρ2τ(0.6) ≈ 0.5 atol=1.0e-2
+
+    u = zeros(3,3)
+    cop = Marshall_Olkin_cop([1.,2.,3.])
+    @test_throws AssertionError simulate_copula!(u, cop)
   end
   @testset "small example" begin
     Random.seed!(43)
     @test simulate_copula(1, Marshall_Olkin_cop([1., 2., 3.])) ≈ [0.854724  0.821831] atol=1.0e-5
+
+    u = zeros(1,2)
+    Random.seed!(43)
+    simulate_copula!(u, Marshall_Olkin_cop([1., 2., 3.]))
+    @test u ≈ [0.854724  0.821831] atol=1.0e-5
 
     m = [0.252982 0.201189;  0.464758 0.409039; 0.585662 0.5357]
     @test mocopula([0.2 0.3 0.4; 0.3 0.4 0.6; 0.4 0.5 0.7], 2, [1., 1.5, 2.]) ≈ m atol=1.0e-4
