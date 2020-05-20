@@ -122,7 +122,7 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested:
 end
 
 """
-    gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false)
+    gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false, rng = Random.GLOBAL_RNG)
 
 Takes x the matrix of t realizations of data from the Gaussian n-variate distribution.
 

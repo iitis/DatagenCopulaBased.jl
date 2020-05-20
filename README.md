@@ -41,7 +41,42 @@ julia> simulate_copula(3, Gaussian_cop([1. 0.5; 0.5 1.]))
  0.708285  0.924962
  0.747341  0.156994
 ```
-Following copulas are supported.
+For `simulate_copula` all mentioned below copulas are supported.
+
+Given `U` the preallocated matrix of `Float64` it can be filled by
+`size(U,1)` sample of the copula by running:
+
+```julia
+julia> simulate_copula!(U::Matrix{Float64}, copula::TypeOfCopula; rng::AbstractRNG = Random.GLOBAL_RNG)
+```
+For `simulate_copula!` all mentioned Archimedean copulas (including nested and the chain) as well as the Frechet and Marshal-Olkin copulas are supported. Number of marginals in the preallocated  matrix must equal to these in the copula model, else the `Assertionerror` will be raised.
+
+```julia
+julia> u = zeros(6,3)
+6×3 Array{Float64,2}:
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+
+julia> Random.seed!(43);
+
+julia> c = Clayton_cop(3, 3.)
+Clayton_cop(3, 3.0)
+
+julia> simulate_copula!(u, c)
+
+julia> u
+6×3 Array{Float64,2}:
+ 0.740919   0.936613   0.968594
+ 0.369025   0.698884   0.586236
+ 0.0701388  0.185901   0.0890538
+ 0.535579   0.516761   0.538476
+ 0.487668   0.549494   0.804122
+ 0.653199   0.0923366  0.387304
+```
 
 ## Elliptical copulas
 
@@ -632,9 +667,10 @@ To change the chosen marginals subset, determined by the vector of indices`ind`,
 a parameter `ν` run:
 
 ```julia
-julia> gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false)
+julia> gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false, rng = Random.GLOBAL_RNG)
 ```
 all univariate marginal distributions will be Gaussian, hence unaffected by the transformation. The keyword `naive` means the naive resampling if true.
+Custom random number generator is supported.
 
 ```julia
 
@@ -663,11 +699,11 @@ julia> gcop2tstudent(x, [1,2], 6)
 To change the chosen marginals subset  of the multivariate Gaussian distributed data `x` by means of the Archimedean copula run:
 
 ```julia
-julia> gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}}; naive::Bool = false, notnested::Bool = false)
+julia> gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}}; naive::Bool = false, notnested::Bool = false, rng = Random.GLOBAL_RNG)
 ```
 
 Marginals to be changed are list in `inds[i][2]`, while the corresponding Archimedean copula is determined in `inds[i][1]`.
-Many disjoint subsets of marginals with different Archimedean copulas can be transformed. All univariate marginal distributions are Gaussian hence unaffected by the transformation. The keyword `naive` indicates the use of the naive data resampling if `true`. The keyword `notnested` if `true` indicates the use of one parameter Archimedean copula instead of a nested one.
+Many disjoint subsets of marginals with different Archimedean copulas can be transformed. All univariate marginal distributions are Gaussian hence unaffected by the transformation. The keyword `naive` indicates the use of the naive data resampling if `true`. The keyword `notnested` if `true` indicates the use of one parameter Archimedean copula instead of a nested one. Custom random number generator is supported.
 
 ```julia
 
@@ -751,10 +787,10 @@ julia> gcop2frechet(x, [1,2])
 To change the chosen marginals subset list in `ind` of themultivariate Gaussian distributed data `x` by means of the bivariate Marshall-Olkin copula run:
 
 ```julia
-julia> gcop2marshallolkin(x::Matrix{Float64}, ind::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false)
+julia> gcop2marshallolkin(x::Matrix{Float64}, ind::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false, rng = Random.GLOBAL_RNG)
 ```
 all univariate marginal distributions are Gaussian and unaffected by the transformation. In the keyword `naive` is `true` uses the naive resampling.
-The algorithm requires `length(ind) = 2` `λ₁ ≥ 0` and `λ₂ ≥ 0`. The parameter `λ₁₂` is computed from expected correlation between both changed marginals.
+The algorithm requires `length(ind) = 2` `λ₁ ≥ 0` and `λ₂ ≥ 0`. The parameter `λ₁₂` is computed from expected correlation between both changed marginals. Custom random number generator is supported.
 
 ```julia
 
@@ -780,9 +816,7 @@ julia> gcop2marshallolkin(x, [1,2])
   0.353654   1.19357    0.989712
  -0.867606  -0.589929  -1.54419
 ```
-
 ## Helpers
-
 
 ### Converting marginals
 

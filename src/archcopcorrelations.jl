@@ -5,7 +5,6 @@ abstract type CorrelationType end
 struct KendallCorrelation <: CorrelationType end
 struct SpearmanCorrelation <: CorrelationType end
 
-
 """
   Debye(x::Float64, k::Int)
 
