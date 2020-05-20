@@ -49,7 +49,7 @@ Given `U` the preallocated matrix of `Float64` it can be filled by
 ```julia
 julia> simulate_copula!(U::Matrix{Float64}, copula::TypeOfCopula; rng::AbstractRNG = Random.GLOBAL_RNG)
 ```
-For `simulate_copula!` all mentioned Archimedean copulas (including nested and the chain) as well as the Frechet and Marshal-Olkin copulas are supported. Number of marginals in the preallocated  matrix must equal to these in the copula model, else the `Assertionerror` will be raised.
+For `simulate_copula!` all mentioned Archimedean copulas (including nested and the chain) as well as the Frechet and the Marshal-Olkin copulas are supported. Number of marginals `size(U,2)` in the preallocated matrix must equal to these in the copula model, else the `Assertionerror` will be raised.
 
 ```julia
 julia> u = zeros(6,3)
