@@ -6,7 +6,7 @@
 
 Copula based data generator. Returns data in the form of the `t x n` matrix `U` where`t` numerates the number of realizations, and `n` numerates the number of marginals. By the copula definition each marginal `uᵢ` is uniformly distributed on the segment `[0,1]`. Realizations of such marginal would be `U[:,i]`.
 
-Interdependence between marginals is modeled by the `n`-variate copula, see e.g.: R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007). See also Domino, K., 'Selected Methods for non-Gaussian Data Analysis', Gliwice, IITiS PAN, 2019, [arXiv:1811.10486] (https://arxiv.org/abs/1811.10486).
+Interdependence between marginals is modeled by the `n`-variate copula, see e.g.: R. B. Nelsen, 'An introduction to copulas', Springer Science \& Business Media (2007). See also K. Domino: 'Selected Methods for non-Gaussian Data Analysis', Gliwice, IITiS PAN, 2019, [arXiv:1811.10486] (https://arxiv.org/abs/1811.10486).
 
 This module support the following copula families:
 * Elliptical copulas (Gaussian, t-Student),
@@ -944,4 +944,4 @@ This project was partially financed by the National Science Centre, Poland – p
 
 * while reffering to `gcop2tstudent()` - please cite K. Domino: 'Multivariate cumulants in outlier detection for financial data analysis', Physica A: Statistical Mechanics and its Applications Volume 558, 15 November 2020, 124995 (https://doi.org/10.1016/j.physa.2020.124995);
 
-* you may also cite Domino, K., 'Selected Methods for non-Gaussian Data Analysis', Gliwice, IITiS PAN, 2019, ISBN: 978-83-926054-3-0, [arXiv:1811.10486] (https://arxiv.org/abs/1811.10486)
+* you may also cite K. Domino: 'Selected Methods for non-Gaussian Data Analysis', Gliwice, IITiS PAN, 2019, ISBN: 978-83-926054-3-0, [arXiv:1811.10486] (https://arxiv.org/abs/1811.10486)
