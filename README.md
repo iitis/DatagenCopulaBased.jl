@@ -940,7 +940,7 @@ julia> chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = 
 
 This project was partially financed by the National Science Centre, Poland – project number 2014/15/B/ST6/05204;
 
-* while reffering to `gcop2arch()`, `gcop2frechet()`, and `gcop2marshallolkin()` - please K. Domino, A. Glos: 'Introducing higher order correlations to marginals' subset of multivariate data by means of Archimedean copulas', [arXiv:1803.07813] (https://arxiv.org/abs/1803.07813);
+* while reffering to `gcop2arch()`, `gcop2frechet()`, and `gcop2marshallolkin()` - please cite K. Domino, A. Glos: 'Introducing higher order correlations to marginals' subset of multivariate data by means of Archimedean copulas', [arXiv:1803.07813] (https://arxiv.org/abs/1803.07813);
 
 * while reffering to `gcop2tstudent()` - please cite K. Domino: 'Multivariate cumulants in outlier detection for financial data analysis', Physica A: Statistical Mechanics and its Applications Volume 558, 15 November 2020, 124995 (https://doi.org/10.1016/j.physa.2020.124995);
 
