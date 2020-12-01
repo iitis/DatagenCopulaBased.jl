@@ -83,6 +83,17 @@ end
       x = simulate_copula(75000, cp)
       @test corkendall(x)[:,1] ≈ [1, 0.7, 0.3] atol=1.0e-2
     end
+    if false
+    @testset "test on Big Float" begin
+        c1 = Clayton_cop(2, BigFloat(3.))
+        c2 = Clayton_cop(3, BigFloat(4.))
+        cp = Nested_Clayton_cop([c1, c2], 2, BigFloat(1.5))
+
+        Random.seed!(42)
+        x = simulate_copula(10, cp)
+        println(x)
+    end
+    end
 end
 
 @testset "nested Ali-Mikhail-Haq copula" begin

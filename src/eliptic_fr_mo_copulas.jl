@@ -12,7 +12,7 @@ Fields:
 
 Constructor
 
-    Gaussian_cop(Σ::Matrix{Float64})
+    Gaussian_cop(Σ::Matrix{T}) where T <: Real
 
 ```jldoctest
 
@@ -21,13 +21,13 @@ Gaussian_cop([1.0 0.5; 0.5 1.0])
 
 ```
 """
-struct Gaussian_cop
-  Σ::Matrix{Float64}
-  function(::Type{Gaussian_cop})(Σ::Matrix{Float64})
+struct Gaussian_cop{T}
+  Σ::Matrix{T}
+  function(::Type{Gaussian_cop})(Σ::Matrix{T}) where T <: Real
     Σ ≈ transpose(Σ) || throw(DomainError("Σ matrix not symmetric"))
     isposdef(Σ) || throw(DomainError("Σ matrix not positivelly defined"))
     prod(diag(Σ)) ≈ 1.0 || throw(DomainError("Σ matrix do not have ones on diagonal"))
-    new(Σ)
+    new{T}(Σ)
   end
 end
 
@@ -43,7 +43,7 @@ Returns t realizations of the Gaussian copula
 julia> Random.seed!(43);
 
 julia> simulate_copula(10, Gaussian_cop([1. 0.5; 0.5 1.]))
-10×2 Array{Float64,2}:
+10×2 Array{Real,2}:
  0.589188  0.815308
  0.708285  0.924962
  0.747341  0.156994
@@ -72,12 +72,12 @@ end
 t-Student copula
 
 fields
-  - Σ::Matrix{Float64} - the correlation matrix must be symmetric, positively defined and with ones on diagonal
+  - Σ::Matrix{Real} - the correlation matrix must be symmetric, positively defined and with ones on diagonal
   - ν::Int - the parameter n.o. degrees of freedom we require ν > 0
 
 Constructor:
 
-    Student_cop(Σ::Matrix{Float64}, ν::Int)
+    Student_cop(Σ::Matrix{Real}, ν::Int)
 
 ```jldoctest
 
@@ -86,15 +86,15 @@ Student_cop([1.0 0.5; 0.5 1.0], 4)
 
 ```
 """
-struct Student_cop
-  Σ::Matrix{Float64}
+struct Student_cop{T}
+  Σ::Matrix{T}
   ν::Int
-  function(::Type{Student_cop})(Σ::Matrix{Float64}, ν::Int)
+  function(::Type{Student_cop})(Σ::Matrix{T}, ν::Int) where T <: Real
     Σ ≈ transpose(Σ) || throw(DomainError("Σ matrix not symmetric"))
     isposdef(Σ) || throw(DomainError("Σ matrix not positivelly defined"))
     prod(diag(Σ)) ≈ 1.0 || throw(DomainError("Σ matrix do not have ones on diagonal"))
     ν > 0 || throw(DomainError("ν lower or equal zero"))
-    new(Σ, ν)
+    new{T}(Σ, ν)
   end
 end
 
@@ -111,7 +111,7 @@ where: Σ - correlation matrix, ν - degrees of freedom.
 julia> Random.seed!(43);
 
 julia> simulate_copula(10, Student_cop([1. 0.5; 0.5 1.], 10))
-10×2 Array{Float64,2}:
+10×2 Array{Real,2}:
  0.658199  0.937148
  0.718244  0.92602
  0.809521  0.0980325
@@ -124,11 +124,12 @@ julia> simulate_copula(10, Student_cop([1. 0.5; 0.5 1.], 10))
  0.113788  0.633349
 ```
 """
-function simulate_copula(t::Int, copula::Student_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula(t::Int, copula::Student_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
   Σ = copula.Σ
   ν = copula.ν
   z = transpose(rand(rng, MvNormal(Σ),t))
   U = rand(rng, Chisq(ν), size(z, 1))
+  U = T.(U)
   for i in 1:size(Σ, 1)
     x = z[:,i].*sqrt.(ν./U)./sqrt(Σ[i,i])
     z[:,i] = cdf.(TDist(ν), x)
@@ -148,14 +149,14 @@ Fileds:
 
 Constructor
 
-    Frechet_cop(n::Int, α::Float64)
+    Frechet_cop(n::Int, α::Real)
 
 The one parameter Frechet copula is a combination of maximal copula with  weight α
 and independent copula with  weight 1-α.
 
 Constructor
 
-    Frechet_cop(n::Int, α::Float64, β::Float64)
+    Frechet_cop(n::Int, α::Real, β::Real)
 
 The two parameters Frechet copula C = α C{max} + β C{min} + (1- α - β) C{⟂}, supported
 only for n = 2.
@@ -168,21 +169,21 @@ julia> Frechet_cop(2, 0.5, 0.3)
 Frechet_cop(2, 0.5, 0.3)
 ```
 """
-struct Frechet_cop
+struct Frechet_cop{T}
   n::Int
-  α::Float64
-  β::Float64
-  function(::Type{Frechet_cop})(n::Int, α::Float64)
+  α::T
+  β::T
+  function(::Type{Frechet_cop})(n::Int, α::T) where T <: Real
     0 <= α <= 1 || throw(DomainError("generaton not supported for α ∉ [0,1]"))
     n > 1 || throw(DomainError("n must be greater than 1"))
-    new(n, α, 0.)
+    new{T}(n, α, 0.)
   end
-  function(::Type{Frechet_cop})(n::Int, α::Float64, β::Float64)
+  function(::Type{Frechet_cop})(n::Int, α::T, β::T) where T <: Real
     0 <= α <= 1 || throw(DomainError("generaton not supported for α ∉ [0,1]"))
     0 <= β <= 1 || throw(DomainError("generaton not supported for β ∉ [0,1]"))
     n == 2 || throw(AssertionError("two parameters Frechet copula supported only for n = 2"))
     0 <= α+β <= 1 || throw(DomainError("α+β must be in range [0,1]"))
-    new(n, α, β)
+    new{T}(n, α, β)
   end
 end
 
@@ -202,7 +203,7 @@ julia> f = Frechet_cop(3, 0.5)
 Frechet_cop(3, 0.5, 0.0)
 
 julia> simulate_copula(1, f)
-1×3 Array{Float64,2}:
+1×3 Array{Real,2}:
 0.180975  0.775377  0.888934
 
 julia> Random.seed!(43);
@@ -211,19 +212,19 @@ julia> f = Frechet_cop(2, 0.5, 0.2)
 Frechet_cop(2, 0.5, 0.2)
 
 julia> simulate_copula(1, f)
-1×2 Array{Float64,2}:
+1×2 Array{Real,2}:
 0.180975  0.775377
 ```
 """
 
-function simulate_copula(t::Int, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-    U = zeros(t, copula.n)
+function simulate_copula(t::Int, copula::Frechet_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+    U = zeros(T, t, copula.n)
     simulate_copula!(U, copula; rng = rng)
     return U
 end
 
 """
-    simulate_copula!(U::Matrix{Float64}, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Given the preallocated output U, Returns size(U,1) realizations from the Frechet copula - Frechet_cop
 N.o. marginals is size(U,2), requires size(U,2) == copula.n
@@ -233,7 +234,7 @@ julia> f = Frechet_cop(3, 0.5)
 Frechet_cop(3, 0.5, 0.0)
 
 julia> u = zeros(1,3)
-1×3 Array{Float64,2}:
+1×3 Array{Real,2}:
  0.0  0.0  0.0
 
 julia> Random.seed!(43);
@@ -241,24 +242,24 @@ julia> Random.seed!(43);
 julia> simulate_copula!(u,f)
 
 julia> u
-1×3 Array{Float64,2}:
+1×3 Array{Real,2}:
  0.180975  0.775377  0.888934
 ```
 """
-function simulate_copula!(U::Matrix{Float64}, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula!(U::Matrix{T}, copula::Frechet_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
   n = copula.n
   α = copula.α
   β = copula.β
   size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
   if (β > 0) & (n == 2)
     for j in 1:size(U,1)
-      u_el = rand(rng, n)
+      u_el = rand(rng, T, n)
       frechet_el2!(u_el, α, β, rand(rng))
       U[j,:] = u_el
     end
   else
     for j in 1:size(U,1)
-      u_el = rand(rng, n)
+      u_el = rand(rng, T, n)
       frechet_el!(u_el, α, rand(rng))
       U[j,:] = u_el
     end
@@ -266,7 +267,7 @@ function simulate_copula!(U::Matrix{Float64}, copula::Frechet_cop; rng::Abstract
 end
 
 """
-  frechet(t::Int, n::Int, α::Float64; rng::AbstractRNG)
+  frechet(t::Int, n::Int, α::Real; rng::AbstractRNG)
 
 Given n-variate random data u ∈ R^{t, n}
 Returns t realization of n variate data generated from one parameter Frechet_cop(n, α).
@@ -277,7 +278,7 @@ julia> Random.seed!(43);
 julia> u = rand(10, 2);
 
 julia> frechet(0.5, u)
-10×2 Array{Float64,2}:
+10×2 Array{Real,2}:
  0.180975   0.661781
  0.0742681  0.0742681
  0.888934   0.125437
@@ -290,9 +291,9 @@ julia> frechet(0.5, u)
  0.955881   0.851275
 ```
 """
-function frechet(α::Float64, u::Matrix{Float64}; rng::AbstractRNG)
+function frechet(α::T, u::Matrix{T}; rng::AbstractRNG) where T <: Real
   for j in 1:size(u, 1)
-    v = rand(rng)
+    v = rand(rng, T)
     el = u[j, :]
     frechet_el!(el, α, v)
     u[j,:] = el
@@ -301,12 +302,12 @@ function frechet(α::Float64, u::Matrix{Float64}; rng::AbstractRNG)
 end
 
 """
-  frechet_el!(u::Vector{Float64}, α::Float64, v::Float64)
+  frechet_el!(u::Vector{Real}, α::Real, v::Real)
 
 Given n-variate random vector changes it to such modeled by the two parameters Frechet_cop(n, α, β).
 v is the random number form [0,1].
 """
-function frechet_el!(u::Vector{Float64}, α::Float64, v::Float64)
+function frechet_el!(u::Vector{T}, α::T, v::T) where T <: Real
   if (α >= v)
     for i in 1:length(u)-1
       u[i] = u[end]
@@ -315,13 +316,13 @@ function frechet_el!(u::Vector{Float64}, α::Float64, v::Float64)
 end
 
 """
-  function frechet_el2!(u::Vector{Float64}, α::Float64, β::Float64, v::Float64)
+  function frechet_el2!(u::Vector{Real}, α::Real, β::Real, v::Real)
 
 Given bivariate random vector changes it to such modeled by the two parameters Frechet_cop(n, α, β).
 v is the random number form [0,1]
 
 """
-function frechet_el2!(u::Vector{Float64}, α::Float64, β::Float64, v::Float64)
+function frechet_el2!(u::Vector{T}, α::T, β::T, v::T) where T <: Real
   if (α >= v)
     u[1] = u[2]
   elseif (α < v <= α+β)
@@ -336,7 +337,7 @@ end
 
 Fields:
   - n::Int - number of marginals
-  - λ::Vector{Float64} - vector of non-negative parameters λₛ, i.e.:
+  - λ::Vector{Real} - vector of non-negative parameters λₛ, i.e.:
       λ = [λ₁, λ₂, ..., λₙ, λ₁₂, λ₁₃, ..., λ₁ₙ, λ₂₃, ..., λₙ₋₁ₙ, λ₁₂₃, ..., λ₁₂...ₙ]
       and n = ceil(Int, log(2, length(λ)-1)).
 
@@ -354,14 +355,14 @@ julia> Marshall_Olkin_cop([0.5, 0.5, 0.6, 0.7, 0.7, 0.7, 0.8])
 Marshall_Olkin_cop(3, [0.5, 0.5, 0.6, 0.7, 0.7, 0.7, 0.8])
 ```
 """
-struct Marshall_Olkin_cop
+struct Marshall_Olkin_cop{T}
   n::Int
-  λ::Vector{Float64}
-  function(::Type{Marshall_Olkin_cop})(λ::Vector{Float64})
+  λ::Vector{T}
+  function(::Type{Marshall_Olkin_cop})(λ::Vector{T}) where T <: Real
     minimum(λ) >= 0 || throw(AssertionError("all parameters must by >= 0 "))
     length(λ) >= 3 || throw(AssertionError("not supported for length(λ) < 3"))
     n = floor(Int, log(2, length(λ)+1))
-    new(n, λ)
+    new{T}(n, λ)
   end
 end
 
@@ -384,14 +385,14 @@ julia> simulate_copula(1, cop)
   0.854724  0.821831
 ```
 """
-function simulate_copula(t::Int, copula::Marshall_Olkin_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-    U = zeros(t, copula.n)
+function simulate_copula(t::Int, copula::Marshall_Olkin_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+    U = zeros(T, t, copula.n)
     simulate_copula!(U, copula; rng = rng)
     return U
 end
 
 """
-    simulate_copula!(U::Matrix{Float64}, copula::Marshall_Olkin_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::Marshall_Olkin_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Given the preallocated output U, Returns size(U,1) realizations from the Marshall  Olkin copula - Marshall_Olkin_cop
 N.o. marginals is size(U,2), requires size(U,2) == copula.n
@@ -413,19 +414,19 @@ julia> u
  0.854724  0.821831
 ```
 """
-function simulate_copula!(U::Matrix{Float64}, copula::Marshall_Olkin_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula!(U::Matrix{T}, copula::Marshall_Olkin_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
   λ = copula.λ
   n = copula.n
   size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
   s = collect(combinations(1:n))
   for j in 1:size(U,1)
-    u = rand(rng, 2^n-1)
+    u = rand(rng, T, 2^n-1)
     U[j,:] = mocopula_el(u, n, λ, s)
   end
 end
 
 """
-  mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
+  mocopula(u::Matrix{Real}, n::Int, λ::Vector{Real})
 
   Returns: t x n Matrix{Float}, t realizations of n-variate data generated from Marshall-Olkin
   copula with parameter vector λ of non-negative elements λₛ, given [0,1]ᵗˣˡ ∋ u, where
@@ -441,9 +442,9 @@ end
 
 ```
 """
-function mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
+function mocopula(u::Matrix{T}, n::Int, λ::Vector{T}) where T <: Real
   t = size(u,1)
-  U = zeros(t, n)
+  U = zeros(T, t, n)
   s = collect(combinations(1:n))
   for j in 1:t
       U[j,:] = mocopula_el(u[j,:], n, λ, s)
@@ -452,7 +453,7 @@ function mocopula(u::Matrix{Float64}, n::Int, λ::Vector{Float64})
 end
 
 """
-    mocopula_el(u::Vector{Float64}, n::Int, λ::Vector{Float64}, s::Vector{Vector{Int}})
+    mocopula_el(u::Vector{Real}, n::Int, λ::Vector{Real}, s::Vector{Vector{Int}})
 
 ```jldoctest
 
@@ -462,9 +463,9 @@ julia> mocopula_el([0.1, 0.2, 0.3], 2, [1., 2., 3.], s)
  0.1344421423967149
 ```
 """
-function mocopula_el(u::Vector{Float64}, n::Int, λ::Vector{Float64}, s::Vector{Vector{Int}})
+function mocopula_el(u::Vector{T}, n::Int, λ::Vector{T}, s::Vector{Vector{Int}}) where T <: Real
   l = length(u)
-  U = zeros(n)
+  U = zeros(T, n)
   for i in 1:n
     inds = findall([i in s[k] for k in 1:l])
     x = minimum([-log(u[k])./(λ[k]) for k in inds])

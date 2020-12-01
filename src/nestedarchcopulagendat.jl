@@ -13,21 +13,21 @@
 Fields:
 - children::Vector{Clayton_cop}  vector of children copulas
 - m::Int ≧ 0 - number of additional marginals modeled by the parent copula only
-- θ::Float64 - parameter of parent copula, domain θ > 0.
+- θ::Real - parameter of parent copula, domain θ > 0.
 
 Nested Clayton copula: C_θ(C_ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C_ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
 If m > 0, the last m variables will be modeled by the parent copula only.
 
 Constructor
 
-    Nested_Clayton_cop(children::Vector{Clayton_cop}, m::Int, θ::Float64)
+    Nested_Clayton_cop(children::Vector{Clayton_cop}, m::Int, θ::Real)
 
 Let ϕ be the vector of parameter of children copula, sufficient nesting condition requires
 θ <= minimum(ϕ)
 
 Constructor
 
-    Nested_Clayton_cop(children::Vector{Clayton_cop}, m::Int, θ::Float64, cor::Type{<:CorrelationType})
+    Nested_Clayton_cop(children::Vector{Clayton_cop}, m::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
@@ -45,25 +45,25 @@ Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 2.0), Clayton_cop(2, 2.0)], 2, 0.5
 
 ```
 """
-struct Nested_Clayton_cop
-  children::Vector{Clayton_cop}
+struct Nested_Clayton_cop{T}
+  children::Vector{Clayton_cop{T}}
   m::Int
-  θ::Float64
-  function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop}, m::Int, θ::Float64)
+  θ::T
+  function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop{T}}, m::Int, θ::T) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       testθ(θ, "clayton")
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       maximum(ϕ) < θ+2*θ^2+750*θ^5 || @warn("θ << ϕ, marginals may not be uniform")
-      new(children, m, θ)
+      new{T}(children, m, θ)
   end
-  function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop}, m::Int, ρ::Float64, cor::Type{<:CorrelationType})
+  function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop{T}}, m::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "clayton", cor)
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       maximum(ϕ) < θ+2*θ^2+750*θ^5 || @warn("θ << ϕ, marginals may not be uniform")
-      new(children, m, θ)
+      new{T}(children, m, θ)
   end
 end
 
@@ -73,21 +73,21 @@ end
 Nested Ali-Mikhail-Haq copula, fields:
 - children::Vector{AMH _cop}  vector of children copulas
 - m::Int ≧ 0 - number of additional marginals modeled by the parent copula only
-- θ::Float64 - parameter of parent copula, domain θ ∈ (0,1).
+- θ::Real - parameter of parent copula, domain θ ∈ (0,1).
 
 Nested Ali-Mikhail-Haq copula: C _θ(C _ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C _ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
 If m > 0, the last m variables will be modeled by the parent copula only.
 
 Constructor
 
-    Nested_AMH_cop(children::Vector{AMH_cop}, m::Int, θ::Float64)
+    Nested_AMH_cop(children::Vector{AMH_cop}, m::Int, θ::Real)
 
 Let ϕ be the vector of parameter of children copula, sufficient nesting condition requires
 θ <= minimum(ϕ)
 
 Constructor
 
-    Nested_AMH_cop(children::Vector{AMH_cop}, m::Int, θ::Float64, cor::Type{<:CorrelationType})
+    Nested_AMH_cop(children::Vector{AMH_cop}, m::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
@@ -103,23 +103,23 @@ Nested_AMH_cop(AMH_cop[AMH_cop(2, 0.2), AMH_cop(2, 0.2)], 2, 0.1)
 
 ```
 """
-struct Nested_AMH_cop
-  children::Vector{AMH_cop}
+struct Nested_AMH_cop{T}
+  children::Vector{AMH_cop{T}}
   m::Int
-  θ::Float64
-  function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop}, m::Int, θ::Float64)
+  θ::T
+  function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop{T}}, m::Int, θ::T) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       testθ(θ, "amh")
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new(children, m, θ)
+      new{T}(children, m, θ)
   end
-  function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop}, m::Int, ρ::Float64, cor::Type{<:CorrelationType})
+  function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop{T}}, m::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "amh", cor)
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new(children, m, θ)
+      new{T}(children, m, θ)
   end
 end
 
@@ -129,21 +129,21 @@ end
 Fields:
 - children::Vector{Frank_cop}  vector of children copulas
 - m::Int ≧ 0 - number of additional marginals modeled by the parent copula only
-- θ::Float64 - parameter of parent copula, domain θ ∈ (0,∞).
+- θ::Real - parameter of parent copula, domain θ ∈ (0,∞).
 
 Nested Frank copula: C _θ(C _ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C _ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
 If m > 0, the last m variables will be modeled by the parent copula only.
 
 Constructor
 
-    Nested_Frank_cop(children::Vector{Frank_cop}, m::Int, θ::Float64)
+    Nested_Frank_cop(children::Vector{Frank_cop}, m::Int, θ::Real)
 
 Let ϕ be the vector of parameter of children copula, sufficient nesting condition requires
 θ <= minimum(ϕ)
 
 Constructor
 
-    Nested_Frank_cop(children::Vector{Frank_ cop}, m::Int, θ::Float64, cor::Type{<:CorrelationType})
+    Nested_Frank_cop(children::Vector{Frank_ cop}, m::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
@@ -158,23 +158,23 @@ julia> Nested_Frank_cop([a, a], 2, 0.1)
 Nested_Frank_cop(Frank_cop[Frank_cop(2, 5.0), Frank_cop(2, 5.0)], 2, 0.1)
 ```
 """
-struct Nested_Frank_cop
-  children::Vector{Frank_cop}
+struct Nested_Frank_cop{T}
+  children::Vector{Frank_cop{T}}
   m::Int
-  θ::Float64
-  function(::Type{Nested_Frank_cop})(children::Vector{Frank_cop}, m::Int, θ::Float64)
+  θ::T
+  function(::Type{Nested_Frank_cop})(children::Vector{Frank_cop{T}}, m::Int, θ::T) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       testθ(θ, "frank")
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new(children, m, θ)
+      new{T}(children, m, θ)
   end
-  function(::Type{Nested_Frank_cop})(children::Vector{Frank_cop}, m::Int, ρ::Float64, cor::Type{<:CorrelationType})
+  function(::Type{Nested_Frank_cop})(children::Vector{Frank_cop{T}}, m::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "frank", cor)
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new(children, m, θ)
+      new{T}(children, m, θ)
   end
 end
 
@@ -184,21 +184,21 @@ end
 Fields:
 - children::Vector{Gumbel_cop}  vector of children copulas
 - m::Int ≧ 0 - number of additional marginals modeled by the parent copula only
-- θ::Float64 - parameter of parent copula, domain θ ∈ [1,∞).
+- θ::Real - parameter of parent copula, domain θ ∈ [1,∞).
 
 Nested Gumbel copula: C _θ(C _ϕ₁(u₁₁, ..., u₁,ₙ₁), ..., C _ϕₖ(uₖ₁, ..., uₖ,ₙₖ), u₁ , ... uₘ).
 If m > 0, the last m variables will be modeled by the parent copula only.
 
 Constructor
 
-    Nested_Gumbel_cop(children::Vector{Gumbel_cop}, m::Int, θ::Float64)
+    Nested_Gumbel_cop(children::Vector{Gumbel_cop}, m::Int, θ::Real)
 
 Let ϕ be the vector of parameter of children copula, sufficient nesting condition requires
 θ <= minimum(ϕ)
 
 Constructor
 
-    Nested_Gumbel_cop(children::Vector{Gumbel_cop}, m::Int, θ::Float64, cor::Type{<:CorrelationType})
+    Nested_Gumbel_cop(children::Vector{Gumbel_cop}, m::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
@@ -213,23 +213,23 @@ julia> Nested_Gumbel_cop([a, a], 2, 2.1)
 Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.0), Gumbel_cop(2, 5.0)], 2, 2.1)
 ```
 """
-struct Nested_Gumbel_cop
-  children::Vector{Gumbel_cop}
+struct Nested_Gumbel_cop{T}
+  children::Vector{Gumbel_cop{T}}
   m::Int
-  θ::Float64
-  function(::Type{Nested_Gumbel_cop})(children::Vector{Gumbel_cop}, m::Int, θ::Float64)
+  θ::T
+  function(::Type{Nested_Gumbel_cop})(children::Vector{Gumbel_cop{T}}, m::Int, θ::T) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       testθ(θ, "gumbel")
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new(children, m, θ)
+      new{T}(children, m, θ)
   end
-  function(::Type{Nested_Gumbel_cop})(children::Vector{Gumbel_cop}, m::Int, ρ::Float64, cor::Type{<:CorrelationType})
+  function(::Type{Nested_Gumbel_cop})(children::Vector{Gumbel_cop{T}}, m::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "gumbel", cor)
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new(children, m, θ)
+      new{T}(children, m, θ)
   end
 end
 
@@ -259,16 +259,16 @@ julia> simulate_copula(4, cp)
 0.200051  0.304099  0.242572  0.177836  0.0851603
 ```
 """
-function simulate_copula(t::Int, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula(t::Int, copula::Nested_Clayton_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
      n = [ch.n for ch in copula.children]
      n2 = sum(n)+copula.m
-     U = zeros(t, n2)
+     U = zeros(T, t, n2)
      simulate_copula!(U, copula; rng = rng)
      return U
 end
 
 """
-    simulate_copula!(U::Matrix{Float64}, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Given the preallocated output U, Returns size(U,1) realizations from the nested Clayton copula - Nested_Clayton_cop
 N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
@@ -305,7 +305,7 @@ julia> U
  0.120914  0.0683055  0.0586907  0.126257  0.519241
 ```
 """
-function simulate_copula!(U::Matrix{Float64}, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula!(U::Matrix{T}, copula::Nested_Clayton_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
       m = copula.m
       θ = copula.θ
       children = copula.children
@@ -315,7 +315,7 @@ function simulate_copula!(U::Matrix{Float64}, copula::Nested_Clayton_cop; rng::A
       n2 = sum(n)+m
       size(U, 2) == n2 || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
       for j in 1:size(U,1)
-         rand_vec = rand(rng, n2+1)
+         rand_vec = rand(rng, T, n2+1)
          U[j,:] = nested_clayton_gen(n1, ϕ, θ, rand_vec; rng=rng)
      end
 end
@@ -346,7 +346,7 @@ julia> simulate_copula(4, cp)
  0.578143  0.840169  0.743728  0.963226  0.576695
 ```
 """
-function simulate_copula(t::Int, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula(t::Int, copula::Nested_AMH_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
      n = [ch.n for ch in copula.children]
      n2 = sum(n)+copula.m
      U = zeros(t, n2)
@@ -355,7 +355,7 @@ function simulate_copula(t::Int, copula::Nested_AMH_cop; rng::AbstractRNG = Rand
 end
 
 """
-    simulate_copula!(U::Matrix{Float64}, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Given the preallocated output U, Returns size(U,1) realizations from the nested AMH copula - Nested_AMH_cop
 N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
@@ -390,7 +390,7 @@ julia> U
  0.578143  0.840169  0.743728  0.963226  0.576695
 ```
 """
-function simulate_copula!(U::Matrix{Float64}, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula!(U::Matrix{T}, copula::Nested_AMH_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
     m = copula.m
     θ = copula.θ
     children = copula.children
@@ -400,7 +400,7 @@ function simulate_copula!(U::Matrix{Float64}, copula::Nested_AMH_cop; rng::Abstr
     n2 = sum(n)+m
     size(U, 2) == n2 || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
     for j in 1:size(U,1)
-       rand_vec = rand(rng, n2+1)
+       rand_vec = rand(rng, T, n2+1)
        U[j,:] = nested_amh_gen(n1, ϕ, θ, rand_vec; rng=rng)
    end
 end
@@ -427,16 +427,16 @@ julia> simulate_copula(1, c)
  0.642765  0.901183  0.969422  0.9792  0.74155
 ```
 """
-function simulate_copula(t::Int, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula(t::Int, copula::Nested_Frank_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
      n = [ch.n for ch in copula.children]
      n2 = sum(n)+copula.m
-     U = zeros(t, n2)
+     U = zeros(T, t, n2)
      simulate_copula!(U, copula; rng = rng)
      return U
 end
 
 """
-    simulate_copula!(U::Matrix{Float64}, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Given the preallocated output U, Returns size(U,1) realizations from the nested Frank copula a - Nested_Frank_cop
 N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
@@ -466,7 +466,7 @@ julia> U
 
 ```
 """
-function simulate_copula!(U::Matrix{Float64}, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula!(U::Matrix{T}, copula::Nested_Frank_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
     m = copula.m
     θ = copula.θ
     children = copula.children
@@ -479,7 +479,7 @@ function simulate_copula!(U::Matrix{Float64}, copula::Nested_Frank_cop; rng::Abs
     n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
     w = logseriescdf(1-exp(-θ))
     for j in 1:size(U,1)
-       rand_vec = rand(rng, n2+1)
+       rand_vec = rand(rng, T, n2+1)
        U[j,:] = nested_frank_gen(n1, ϕ, θ, rand_vec, w, ws; rng=rng)
    end
 end
@@ -510,16 +510,16 @@ julia> simulate_copula(4, cp)
  0.272487   0.106996   0.756052  0.834068  0.661432
 ```
 """
-function simulate_copula(t::Int, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula(t::Int, copula::Nested_Gumbel_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
      n = [ch.n for ch in copula.children]
      n2 = sum(n)+copula.m
-     U = zeros(t, n2)
+     U = zeros(T, t, n2)
      simulate_copula!(U, copula; rng = rng)
      return U
 end
 
 """
-    simulate_copula!(U::Matrix{Float64}, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Given the preallocated output U, Returns size(U,1) realizations from the nested Gumbel copula - Nested_Gumbel_cop
 N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
@@ -553,7 +553,7 @@ julia> u
  0.272487   0.106996   0.756052  0.834068  0.661432
 ```
 """
-function simulate_copula!(U::Matrix{Float64}, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula!(U::Matrix{T}, copula::Nested_Gumbel_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
     m = copula.m
     θ = copula.θ
     children = copula.children
@@ -564,7 +564,7 @@ function simulate_copula!(U::Matrix{Float64}, copula::Nested_Gumbel_cop; rng::Ab
     size(U, 2) == n2 || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
 
     for j in 1:size(U,1)
-       rand_vec = rand(rng, n2)
+       rand_vec = rand(rng, T, n2)
        U[j,:] = nested_gumbel_gen(n1, ϕ, θ, rand_vec; rng=rng)
    end
 end
@@ -574,16 +574,16 @@ end
 
 Fields:
 - children::Vector{Nested _Gumbel _cop}  vector of children copulas
-- θ::Float64 - parameter of parent copula, domain θ ∈ [1,∞).
+- θ::Real - parameter of parent copula, domain θ ∈ [1,∞).
 
 Constructor
 
-    Double_Nested_Gumbel _cop(children::Vector{Nested_Gumbel_cop}, θ::Float64)
+    Double_Nested_Gumbel _cop(children::Vector{Nested_Gumbel_cop}, θ::Real)
 requires sufficient nesting condition for θ and child copulas.
 
 Constructor
 
-    Doulbe_Nested_Gumbel_cop(children::Vector{Nested_Gumbel_cop}, θ::Float64, cor::Type{<:CorrelationType})
+    Doulbe_Nested_Gumbel_cop(children::Vector{Nested_Gumbel_cop}, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
@@ -611,20 +611,20 @@ julia> Double_Nested_Gumbel_cop([p1, p2], 1.5)
 Double_Nested_Gumbel_cop(Nested_Gumbel_cop[Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.0), Gumbel_cop(2, 6.0)], 1, 2.0), Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.5)], 2, 2.1)], 1.5)
 ```
 """
-struct Double_Nested_Gumbel_cop
-  children::Vector{Nested_Gumbel_cop}
-  θ::Float64
-  function(::Type{Double_Nested_Gumbel_cop})(children::Vector{Nested_Gumbel_cop}, θ::Float64)
+struct Double_Nested_Gumbel_cop{T}
+  children::Vector{Nested_Gumbel_cop{T}}
+  θ::T
+  function(::Type{Double_Nested_Gumbel_cop})(children::Vector{Nested_Gumbel_cop{T}}, θ::T) where T <: Real
       testθ(θ, "gumbel")
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new(children, θ)
+      new{T}(children, θ)
   end
-  function(::Type{Double_Nested_Gumbel_cop})(children::Vector{Nested_Gumbel_cop}, ρ::Float64, cor::Type{<:CorrelationType})
+  function(::Type{Double_Nested_Gumbel_cop})(children::Vector{Nested_Gumbel_cop{T}}, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       θ = getθ4arch(ρ, "gumbel", cor)
       ϕ = [ch.θ for ch in children]
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new(children, θ)
+      new{T}(children, θ)
   end
 end
 
@@ -665,17 +665,17 @@ julia> simulate_copula(5, copula)
  0.310365   0.0483216  0.119312   0.107155  0.336619  0.279602  0.262756  0.438432    0.403061
 ```
 """
-function simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
     v = copula.children
     ns = [[ch.n for ch in vs.children] for vs in v]
     dims = sum([sum(ns[i])+v[i].m for i in 1:length(v)])
-     U = zeros(t, dims)
+     U = zeros(T, t, dims)
      simulate_copula!(U, copula; rng = rng)
      return U
 end
 
 """
-    simulate_copula!(U::Matrix{Float64}, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Given the preallocated output U, Returns size(U,1) realizations from the double nested Gumbel copula - Double_Nested_Gumbel_cop
 N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula
@@ -716,7 +716,10 @@ julia> u
  0.367914   0.276196  0.382616   0.470171  0.264135  0.144503  0.13097   0.00687015  0.01417
 ```
 """
-function simulate_copula!(U::Matrix{Float64}, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+
+
+
+function simulate_copula!(U::Matrix{T}, copula::Double_Nested_Gumbel_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
     θ = copula.θ
     v = copula.children
     ns = [[ch.n for ch in vs.children] for vs in v]
@@ -725,12 +728,12 @@ function simulate_copula!(U::Matrix{Float64}, copula::Double_Nested_Gumbel_cop; 
     size(U, 2) == dims || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
 
     for j in 1:size(U,1)
-        X = Float64[]
+        X = Real[]
         for k in 1:length(v)
             n = ns[k]
             n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
             n2 = sum(n)+v[k].m
-            rand_vec = rand(rng, n2)
+            rand_vec = rand(rng, T, n2)
             X = vcat(X, nested_gumbel_gen(n1, Ψs[k], v[k].θ./θ, rand_vec; rng = rng))
         end
         X = -log.(X)./levyel(θ, rand(rng), rand(rng))
@@ -743,18 +746,18 @@ end
 
 Fields:
 - n::Int - number of marginals
-- θ::Vector{Float64} - vector of parameters, must be decreasing  and θ[end] ≧ 1, for the
+- θ::Vector{Real} - vector of parameters, must be decreasing  and θ[end] ≧ 1, for the
 sufficient nesting condition to be fulfilled.
 
 The hierarchically nested Gumbel copula C_θₙ₋₁(C_θₙ₋₂( ... C_θ₂(C_θ₁(u₁, u₂), u₃)...uₙ₋₁) uₙ)
 
 Constructor
 
-    Hierarchical_Gumbel_cop(θ::Vector{Float64})
+    Hierarchical_Gumbel_cop(θ::Vector{Real})
 
 Constructor
 
-    Hierarchical_Gumbel_cop(ρ::Vector{Float64}, cor::Type{<:CorrelationType})
+    Hierarchical_Gumbel_cop(ρ::Vector{Real}, cor::Type{<:CorrelationType})
 
 For computing copula parameters from expected correlations use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlations in the place of θ  in the constructor.
@@ -770,18 +773,18 @@ julia> c = Hierarchical_Gumbel_cop([0.95, 0.5, 0.05], KendallCorrelation)
 Hierarchical_Gumbel_cop(4, [19.999999999999982, 2.0, 1.0526315789473684])
 ```
 """
-struct Hierarchical_Gumbel_cop
+struct Hierarchical_Gumbel_cop{T}
   n::Int
-  θ::Vector{Float64}
-  function(::Type{Hierarchical_Gumbel_cop})(θ::Vector{Float64})
+  θ::Vector{T}
+  function(::Type{Hierarchical_Gumbel_cop})(θ::Vector{T}) where T <: Real
       testθ(θ[end], "gumbel")
       issorted(θ; rev=true) || throw(DomainError("violated sufficient nesting condition, parameters must be descending"))
-      new(length(θ)+1, θ)
+      new{T}(length(θ)+1, θ)
   end
-  function(::Type{Hierarchical_Gumbel_cop})(ρ::Vector{Float64}, cor::Type{<:CorrelationType})
+  function(::Type{Hierarchical_Gumbel_cop})(ρ::Vector{T}, cor::Type{<:CorrelationType}) where T <: Real
       θ = map(i -> getθ4arch(ρ[i], "gumbel", cor), 1:length(ρ))
       issorted(θ; rev=true) || throw(DomainError("violated sufficient nesting condition, parameters must be descending"))
-      new(length(θ)+1, θ)
+      new{T}(length(θ)+1, θ)
   end
 end
 
@@ -814,7 +817,7 @@ function simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop; rng::AbstractR
 end
 
 """
-    simulate_copula!(U::Matrix{Float64}, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Given the preallocated output U, Returns size(U,1) realizations from the hierachically nested Gumbel copula - Hierarchical_Gumbel_cop
 N.o. marginals is size(U,2), these must be euqal to n.o. marginals of the copula i.e. copula.n
@@ -841,13 +844,13 @@ julia> u
  0.73617   0.347349  0.168348   0.410963
 ```
 """
-function simulate_copula!(U::Matrix{Float64}, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula!(U::Matrix{T}, copula::Hierarchical_Gumbel_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
   θ = copula.θ
   θ = vcat(θ, [1.])
   size(U, 2) == copula.n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
 
   for j in 1:size(U,1)
-      X = rand(rng)
+      X = rand(rng, T)
       for i in 1:(copula.n-1)
           X = gumbel_step(vcat(X, rand(rng)), θ[i], θ[i+1]; rng = rng)
       end
@@ -856,15 +859,15 @@ function simulate_copula!(U::Matrix{Float64}, copula::Hierarchical_Gumbel_cop; r
 end
 
 """
-    nested_gumbel_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
-                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
+    nested_gumbel_gen(n::Vector{Vector{Int}}, ϕ::Vector{Real},
+                         θ::Real, rand_vec::Vector{Real}; rng::AbstractRNG)
 
 Convert a vector of random independnet elements to such sampled from the
 Nested Gumbel copula
 """
-function nested_gumbel_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
-                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
-    V0 = levyel(θ, rand(rng), rand(rng))
+function nested_gumbel_gen(n::Vector{Vector{Int}}, ϕ::Vector{T},
+                         θ::T, rand_vec::Vector{T}; rng::AbstractRNG) where T <: Real
+    V0 = levyel(θ, rand(rng, T), rand(rng, T))
     u = copy(rand_vec)
     for i in 1:length(n)
       u[n[i]] = gumbel_step(rand_vec[n[i]], ϕ[i], θ; rng = rng)
@@ -874,11 +877,11 @@ function nested_gumbel_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
 end
 
 """
-    nested_amh_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
-                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
+    nested_amh_gen(n::Vector{Vector{Int}}, ϕ::Vector{Real},
+                         θ::Real, rand_vec::Vector{Real}; rng::AbstractRNG)
 """
-function nested_amh_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
-                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
+function nested_amh_gen(n::Vector{Vector{Int}}, ϕ::Vector{T},
+                         θ::T, rand_vec::Vector{T}; rng::AbstractRNG) where T <: Real
     V0 = 1 .+ quantile.(Geometric(1-θ), rand_vec[end])
     u = copy(rand_vec[1:end-1])
     for i in 1:length(n)
@@ -889,14 +892,14 @@ function nested_amh_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
 end
 
 """
-    nested_frank_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64, rand_vec::Vector{Float64}, logseries::Vector{Float64},
-                         logseries_children::Vector{Vector{Float64}};
+    nested_frank_gen(n::Vector{Vector{Int}}, ϕ::Vector{Real}, θ::Real, rand_vec::Vector{Real}, logseries::Vector{Real},
+                         logseries_children::Vector{Vector{Real}};
                          rng::AbstractRNG)
 """
-function nested_frank_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
-                         θ::Float64, rand_vec::Vector{Float64}, logseries::Vector{Float64},
-                         logseries_children::Vector{Vector{Float64}};
-                         rng::AbstractRNG)
+function nested_frank_gen(n::Vector{Vector{Int}}, ϕ::Vector{T},
+                         θ::T, rand_vec::Vector{T}, logseries::Vector{T},
+                         logseries_children::Vector{Vector{T}};
+                         rng::AbstractRNG) where T <: Real
     V0 = findlast(logseries .< rand_vec[end])
     u = copy(rand_vec[1:end-1])
     for i in 1:length(n)
@@ -907,10 +910,10 @@ function nested_frank_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
 end
 
 """
-    nested_clayton_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG = Random.GLOBAL_RNG)
+    nested_clayton_gen(n::Vector{Vector{Int}}, ϕ::Vector{Real}, θ::Real, rand_vec::Vector{Real}; rng::AbstractRNG = Random.GLOBAL_RNG)
 """
-function nested_clayton_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
-                         θ::Float64, rand_vec::Vector{Float64}; rng::AbstractRNG)
+function nested_clayton_gen(n::Vector{Vector{Int}}, ϕ::Vector{T},
+                         θ::T, rand_vec::Vector{T}; rng::AbstractRNG) where T <: Real
     V0 = quantile.(Gamma(1/θ, 1), rand_vec[end])
     u = copy(rand_vec[1:end-1])
     for i in 1:length(n)
@@ -921,41 +924,41 @@ function nested_clayton_gen(n::Vector{Vector{Int}}, ϕ::Vector{Float64},
 end
 
 """
-    gumbel_step(u::Vector{Float64}, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+    gumbel_step(u::Vector{Real}, ϕ::Real, θ::Real; rng::AbstractRNG)
 """
-function gumbel_step(u::Vector{Float64}, ϕ::Float64, θ::Float64; rng::AbstractRNG)
-    u = -log.(u)./levyel(ϕ/θ, rand(rng), rand(rng))
+function gumbel_step(u::Vector{T}, ϕ::T, θ::T; rng::AbstractRNG) where T <: Real
+    u = -log.(u)./levyel(ϕ/θ, rand(rng, T), rand(rng, T))
     return exp.(-u.^(θ/ϕ))
 end
 
 """
-    clayton_step(u::Vector{Float64}, V0::Float64, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+    clayton_step(u::Vector{Real}, V0::Real, ϕ::Real, θ::Real; rng::AbstractRNG)
 """
-function clayton_step(u::Vector{Float64}, V0::Float64, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+function clayton_step(u::Vector{T}, V0::T, ϕ::T, θ::T; rng::AbstractRNG) where T <: Real
     u = -log.(u)./tiltedlevygen(V0, ϕ/θ; rng = rng)
     return exp.(V0.-V0.*(1 .+u).^(θ/ϕ))
 end
 
 """
-    frank_step(u::Vector{Float64}, V0::Int, ϕ::Float64, θ::Float64, logseries_child::Vector{Float64}; rng::AbstractRNG)
+    frank_step(u::Vector{Real}, V0::Int, ϕ::Real, θ::Real, logseries_child::Vector{Real}; rng::AbstractRNG)
 """
-function frank_step(u::Vector{Float64}, V0::Int, ϕ::Float64, θ::Float64, logseries_child::Vector{Float64}; rng::AbstractRNG)
+function frank_step(u::Vector{T}, V0::Int, ϕ::Real, θ::T, logseries_child::Vector{T}; rng::AbstractRNG) where T <: Real
     u = -log.(u)./nestedfrankgen(ϕ, θ, V0, logseries_child; rng = rng)
     X = (1 .-(1 .-exp.(-u)*(1-exp(-ϕ))).^(θ/ϕ))./(1-exp(-θ))
     return X.^V0
 end
 """
-    amh_step(u::Vector{Float64}, V0::Float64, ϕ::Float64, θ::Float64; rng::AbstractRNG)
+    amh_step(u::Vector{Real}, V0::Real, ϕ::Real, θ::Real; rng::AbstractRNG)
 """
-function amh_step(u::Vector{Float64}, V0::Float64, ϕ::Float64, θ::Float64; rng::AbstractRNG)
-    w = quantile(NegativeBinomial(V0, (1-ϕ)/(1-θ)), rand(rng))
+function amh_step(u::Vector{T}, V0::T, ϕ::T, θ::T; rng::AbstractRNG) where T <: Real
+    w = quantile(NegativeBinomial(V0, (1-ϕ)/(1-θ)), rand(rng, T))
     u = -log.(u)./(V0 + w)
     X = ((exp.(u) .-ϕ) .*(1-θ) .+θ*(1-ϕ)) ./(1-ϕ)
     return X.^(-V0)
 end
 
 """
-nestedcopulag(copula::String, ns::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64, r::Matrix{Float64})
+nestedcopulag(copula::String, ns::Vector{Vector{Int}}, ϕ::Vector{Real}, θ::Real, r::Matrix{Real})
 
 Given [0,1]ᵗˣˡ ∋ r, returns t realizations of l-1 variate data from nested archimedean copula
 
@@ -970,11 +973,11 @@ julia> nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0
  0.69035   0.740927  0.254842  0.279192
 ```
 """
-function nestedcopulag(copula::String, ns::Vector{Vector{Int}}, ϕ::Vector{Float64}, θ::Float64,
-                                                        r::Matrix{Float64}; rng::AbstractRNG)
+function nestedcopulag(copula::String, ns::Vector{Vector{Int}}, ϕ::Vector{T}, θ::T,
+                                                        r::Matrix{T}; rng::AbstractRNG) where T <: Real
     t = size(r,1)
     n = size(r,2)-1
-    u = zeros(t, n)
+    u = zeros(T, t, n)
     if copula == "clayton"
         for j in 1:t
             u[j,:] = nested_clayton_gen(ns, ϕ, θ, r[j,:]; rng = rng)

@@ -2,16 +2,16 @@
 
 # Old implemnetations
 
-gausscopulagen(t::Int, Σ::Matrix{Float64}) = simulate_copula(t, Gaussian_cop(Σ))
+gausscopulagen(t::Int, Σ::Matrix{T}) where T <: Real = simulate_copula(t, Gaussian_cop(Σ))
 
-tstudentcopulagen(t::Int, Σ::Matrix{Float64}, ν::Int) = simulate_copula(t, Student_cop(Σ, ν))
+tstudentcopulagen(t::Int, Σ::Matrix{T}, ν::Int) where T <: Real = simulate_copula(t, Student_cop(Σ, ν))
 
 frechetcopulagen(t::Int, args...) = simulate_copula(t, Frechet_cop(args...))
 
-marshallolkincopulagen(t::Int, λ::Vector{Float64}) = simulate_copula(t, Marshall_Olkin_cop(λ))
+marshallolkincopulagen(t::Int, λ::Vector{T}) where T <: Real = simulate_copula(t, Marshall_Olkin_cop(λ))
 
 
-function archcopulagen(t::Int, n::Int, θ::Float64, copula::String;
+function archcopulagen(t::Int, n::Int, θ::Real, copula::String;
                                                               rev::Bool = false,
                                                               cor::String = "")
 
@@ -48,7 +48,7 @@ function archcopulagen(t::Int, n::Int, θ::Float64, copula::String;
 end
 
 
-function nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String, m::Int = 0)
+function nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{T}, θ::T, copula::String, m::Int = 0) where T <: Real
     if copula == "gumbel"
         children = [Gumbel_cop(n[i], ϕ[i]) for i in 1:length(n)]
         simulate_copula(t, Nested_Gumbel_cop(children, m, θ))
@@ -67,33 +67,35 @@ function nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Fl
 end
 
 
-function nestedarchcopulagen(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{Float64}},
-                                                             ϕ::Vector{Float64}, θ::Float64,
-                                                             copula::String = "gumbel")
+function nestedarchcopulagen(t::Int, n::Vector{Vector{Int}}, Ψ::Vector{Vector{T}},
+                                                             ϕ::Vector{T}, θ::T,
+                                                             copula::String = "gumbel") where T <: Real
+
   copula == "gumbel" || throw(AssertionError("generator supported only for gumbel familly"))
   length(n) == length(Ψ) == length(ϕ) || throw(AssertionError("parameter vector must be of the sam size"))
-  parents = Nested_Gumbel_cop[]
+  parents = Nested_Gumbel_cop{T}[]
   for i in 1:length(n)
       length(n[i]) == length(Ψ[i]) || throw(AssertionError("parameter vector must be of the sam size"))
       child = [Gumbel_cop(n[i][j], Ψ[i][j])  for j in 1:length(n[i])]
-      push!(parents, Nested_Gumbel_cop(child, 0, ϕ[i]))
+      push!(parents, Nested_Gumbel_cop{T}(child, 0, ϕ[i]))
   end
   simulate_copula(t, Double_Nested_Gumbel_cop(parents, θ))
 end
 
 
-function nestedarchcopulagen(t::Int, θ::Vector{Float64}, copula::String = "gumbel")
+function nestedarchcopulagen(t::Int, θ::Vector{T}, copula::String = "gumbel") where T <: Real
+
     copula == "gumbel" || throw(AssertionError("generator supported only for gumbel familly"))
     simulate_copula(t, Hierarchical_Gumbel_cop(θ))
 end
 
 
-function chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zero(α))
+function chainfrechetcopulagen(t::Int, α::Vector{Real}, β::Vector{Real} = zero(α))
     simulate_copula(t, Chain_of_Frechet(α, β))
 end
 
 
-function chaincopulagen(t::Int, θ::Vector{Float64}, copula::Union{Vector{String}, String};
+function chaincopulagen(t::Int, θ::Vector{Real}, copula::Union{Vector{String}, String};
                                         rev::Bool = false, cor::String = "")
     args = (θ, copula)
     if cor != ""

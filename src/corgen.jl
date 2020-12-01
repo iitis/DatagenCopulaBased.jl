@@ -1,6 +1,6 @@
 # transforms marginal univariate distributions
 
-VecVec = Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}
+VecVec{T} = Union{Vector{Vector{Int64}}, Vector{Vector{T}}}
 
 """
   convertmarg!(X::Matrix, d::UnionAll, p::Vector{Vector})
@@ -27,12 +27,12 @@ julia> x
   1.35696     6.43914
   0.949145  -26.0172
  -0.251957  -18.9723
- -0.177808    0.54172
+ -0.177808Real4172
   1.70477    10.4192
 ```
 """
-function convertmarg!(U::Matrix{T}, d::UnionAll, p::VecVec = [fill([0,1], size(U, 2))...];
-                                                testunif::Bool = true) where T <: AbstractFloat
+function convertmarg!(U::Matrix{T}, d::UnionAll, p::VecVec{T} = [fill([0,1], size(U, 2))...];
+                                                testunif::Bool = true) where T <: Real
   for i = 1:size(U, 2)
     if testunif
       pvalue(ExactOneSampleKSTest(U[:,i],Uniform(0,1)))>0.0001 || throw(AssertionError("$i marg. not unif."))
@@ -103,18 +103,18 @@ function cormatgen_rand(n::Int = 20)
 end
 
 """
-    cormatgen_constant(n::Int, α::Float64)
+    cormatgen_constant(n::Int, α::Real)
 
 Returns the constant correlation matrix with constant correlations equal to 0 <= α <= 1
 
 ```julia
 julia> cormatgen_constant(2, 0.5)
-2×2 Array{Float64,2}:
+2×2 Array{Real,2}:
  1.0  0.5
  0.5  1.0
 ```
 """
-function cormatgen_constant(n::Int, α::Float64)
+function cormatgen_constant(n::Int, α::Real)
   @assert 0 <= α <= 1 "α should satisfy 0 <= α <= 1"
   α .*ones(n, n) .+(1-α) .*Matrix(1.0I, n,n)
 end
@@ -125,7 +125,7 @@ function random_unit_vector(dim::Int)
 end
 
 """
-    cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1 .-α)/2.)
+    cormatgen_constant_noised(n::Int, α::Real; ϵ::Real = (1 .-α)/2.)
 
 Returns the constant correlation matrix of size n x n  with constant correlations equal to 0 <= α <= 1
 and additinal noise determinde by ϵ.
@@ -140,7 +140,7 @@ julia> cormatgen_constant_noised(3, 0.5)
  0.285793  0.475609  1.0
 ```
 """
-function cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1 .-α)/2.)
+function cormatgen_constant_noised(n::Int, α::Real; ϵ::Real = (1 .-α)/2.)
   @assert 0 <= ϵ <= 1-α "ϵ must satisfy 0 <= ϵ <= 1-α"
   result = cormatgen_constant(n, α)
   u = hcat([random_unit_vector(n) for i=1:n]...)
@@ -149,7 +149,7 @@ function cormatgen_constant_noised(n::Int, α::Float64; ϵ::Float64 = (1 .-α)/2
 end
 
 """
-    cormatgen_two_constant(n::Int, α::Float64, β::Float64)
+    cormatgen_two_constant(n::Int, α::Real, β::Real)
 
 Returns the correlation matrix of size n x n of correlations determined by two constants, first must be greater than the second.
 
@@ -172,7 +172,7 @@ julia> cormatgen_two_constant(6, 0.5, 0.1)
   0.1  0.1  0.1  1.0
 ```
 """
-function cormatgen_two_constant(n::Int, α::Float64, β::Float64)
+function cormatgen_two_constant(n::Int, α::Real, β::Real)
   @assert α > β "First argument must be greater"
   result = fill(β, (n,n))
   result[1:div(n,2),1:div(n,2)] = fill(α, (div(n,2),div(n,2)))
@@ -181,7 +181,7 @@ function cormatgen_two_constant(n::Int, α::Float64, β::Float64)
 end
 
 """
-    cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Float64= (1-α)/2)
+    cormatgen_two_constant_noised(n::Int, α::Real, β::Real; ϵ::Real= (1-α)/2)
 
 Returns the correlation matrix of size n x n  of correlations determined by two constants, first must be greater than the second.
 Additional noise is introduced by the parameter ϵ.
@@ -197,7 +197,7 @@ julia> cormatgen_two_constant_noised(4, 0.5, 0.1)
  -0.0530078   0.112183   0.138089   1.0
 ```
 """
-function cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Float64= (1-α)/2)
+function cormatgen_two_constant_noised(n::Int, α::Real, β::Real; ϵ::Real= (1-α)/2)
   @assert ϵ <= 1-α
   result = cormatgen_two_constant(n, α, β)
   u = hcat([random_unit_vector(n) for i=1:n]...)
@@ -206,7 +206,7 @@ function cormatgen_two_constant_noised(n::Int, α::Float64, β::Float64; ϵ::Flo
 end
 
 """
-    cormatgen_toeplitz(n::Int, ρ::Float64)
+    cormatgen_toeplitz(n::Int, ρ::Real)
 
 Returns the correlation matrix of size n x n of the Toeplitz structure with
 maximal correlation equal to ρ.
@@ -229,13 +229,13 @@ julia> cormatgen_toeplitz(5, 0.6)
  0.1296  0.216  0.36  0.6    1.0
 ```
 """
-function cormatgen_toeplitz(n::Int, ρ::Float64)
+function cormatgen_toeplitz(n::Int, ρ::Real)
   @assert 0 <= ρ <= 1 "ρ needs to satisfy 0 <= ρ <= 1"
   [ρ^(abs(i-j)) for i=0:n-1, j=0:n-1]
 end
 
 """
-    cormatgen_toeplitz_noised(n::Int, ρ::Float64; ϵ=(1-ρ)/(1+ρ)/2)
+    cormatgen_toeplitz_noised(n::Int, ρ::Real; ϵ=(1-ρ)/(1+ρ)/2)
 
 Returns the correlation matrix of size n x n of the Toeplitz structure with
 maximal correlation equal to ρ. Additiona noise id added by the ϵ parameter.

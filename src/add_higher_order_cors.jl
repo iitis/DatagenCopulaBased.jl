@@ -3,7 +3,7 @@ VP = Vector{Pair{String,Vector{Int64}}}
 # our algorithm
 
 """
-    gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false)
+    gcop2tstudent(x::Matrix{Real}, ind::Vector{Int}, ν::Int; naive::Bool = false)
 
 Takes x the matrix of t realizations of data from Gaussian n-variate distribution.
 
@@ -36,7 +36,7 @@ julia> gcop2tstudent(x, [1,2], 6)
  -0.710786   0.239012   -1.54419
 ```
 """
-function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Bool = false, rng = Random.GLOBAL_RNG)
+function gcop2tstudent(x::Matrix{Real}, ind::Vector{Int}, ν::Int; naive::Bool = false, rng = Random.GLOBAL_RNG)
   unique(ind) == ind || throw(AssertionError("indices must not repeat"))
   y = copy(x)
   Σ = cov(x)
@@ -58,7 +58,7 @@ function gcop2tstudent(x::Matrix{Float64}, ind::Vector{Int}, ν::Int; naive::Boo
 end
 
 """
-    gcop2arch(x::Matrix{Float64}, inds::Vector{Pair{String,Vector{Int64}}}; naive::Bool = false, notnested::Bool = false, rng = Random.GLOBAL_RNG)
+    gcop2arch(x::Matrix{Real}, inds::Vector{Pair{String,Vector{Int64}}}; naive::Bool = false, notnested::Bool = false, rng = Random.GLOBAL_RNG)
 
 
 Takes x the matrix of t realizations of data from Gaussian n-variate distribution.
@@ -97,7 +97,7 @@ julia> gcop2arch(x, ["clayton" => [1,2]]; naive::Bool = false, notnested::Bool =
  -0.657297  -0.339814  -1.54419
 ```
 """
-function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested::Bool = false, rng = Random.GLOBAL_RNG)
+function gcop2arch(x::Matrix{Real}, inds::VP; naive::Bool = false, notnested::Bool = false, rng = Random.GLOBAL_RNG)
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
   μ = mean(x, dims=1)
@@ -122,7 +122,7 @@ function gcop2arch(x::Matrix{Float64}, inds::VP; naive::Bool = false, notnested:
 end
 
 """
-    gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false, rng = Random.GLOBAL_RNG)
+    gcop2frechet(x::Matrix{Real}, inds::Vector{Int}; naive::Bool = false, rng = Random.GLOBAL_RNG)
 
 Takes x the matrix of t realizations of data from the Gaussian n-variate distribution.
 
@@ -154,7 +154,7 @@ julia> gcop2frechet(x, [1,2])
  -0.7223     -0.172507   -1.54419
 ```
 """
-function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false, rng = Random.GLOBAL_RNG)
+function gcop2frechet(x::Matrix{Real}, inds::Vector{Int}; naive::Bool = false, rng = Random.GLOBAL_RNG)
   unique(inds) == inds || throw(AssertionError("indices must not repeat"))
   S = transpose(sqrt.(diag(cov(x))))
   μ = mean(x, dims = 1)
@@ -168,7 +168,7 @@ function gcop2frechet(x::Matrix{Float64}, inds::Vector{Int}; naive::Bool = false
 end
 
 """
-    gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false, rng = Random.GLOBAL_RNG)
+    gcop2marshallolkin(x::Matrix{Real}, inds::Vector{Int}, λ1::Real = 1., λ2::Real = 1.5; naive::Bool = false, rng = Random.GLOBAL_RNG)
 
 Takes x the matrix of t realizations of data from Gaussian n-variate distribution.
 
@@ -202,7 +202,7 @@ julia> gcop2marshallolkin(x, [1,2], 1., 1.5; naive = false)
  -0.867606  -0.589929  -1.54419
 ```
 """
-function gcop2marshallolkin(x::Matrix{Float64}, inds::Vector{Int}, λ1::Float64 = 1., λ2::Float64 = 1.5; naive::Bool = false, rng = Random.GLOBAL_RNG)
+function gcop2marshallolkin(x::Matrix{Real}, inds::Vector{Int}, λ1::Real = 1., λ2::Real = 1.5; naive::Bool = false, rng = Random.GLOBAL_RNG)
   unique(inds) == inds || throw(AssertionError("indices must not repeat"))
   length(inds) == 2 || throw(AssertionError("not supported for |inds| > 2"))
   λ1 >= 0 || throw(DomainError("not supported for λ1 < 0"))
@@ -234,11 +234,11 @@ function testind(inds::Vector{Pair{String,Vector{Int64}}})
 end
 
 """
-  norm2unifind(x::Matrix{Float64}, i::Vector{Int}, cop::String)
+  norm2unifind(x::Matrix{Real}, i::Vector{Int}, cop::String)
 
 Return uniformly distributed data from x[:,i] given a copula familly.
 """
-function norm2unifind(x::Matrix{Float64}, i::Vector{Int}, cop::String = "")
+function norm2unifind(x::Matrix{Real}, i::Vector{Int}, cop::String = "")
   x = (cop == "frechet") ? x[:,i] : hcat(x[:,i], randn(size(x,1),1))
   a, s = eigen(cor(x))
   w = x*s./transpose(sqrt.(a))
@@ -247,9 +247,9 @@ function norm2unifind(x::Matrix{Float64}, i::Vector{Int}, cop::String = "")
 end
 
 """
-  meanΣ(Σ::Matrix{Float64})
+  meanΣ(Σ::Matrix{Real})
 
-Returns Float64, a mean of the mean of lower diagal elements of a matrix
+Returns Real, a mean of the mean of lower diagal elements of a matrix
 
 ```jldoctest
 
@@ -259,14 +259,14 @@ julia> meanΣ(s)
 0.3
 ```
 """
-meanΣ(Σ::Matrix{Float64}) = mean(abs.(Σ[findall(tril(Σ-Matrix(I, size(Σ))).!=0)]))
+meanΣ(Σ::Matrix{Real}) = mean(abs.(Σ[findall(tril(Σ-Matrix(I, size(Σ))).!=0)]))
 
 """
-  mean_outer(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
+  mean_outer(Σ::Matrix{Real}, part::Vector{Vector{Int}})
 
 returns a mean correlation excluding internal one is subsets determined by part
 """
-function mean_outer(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
+function mean_outer(Σ::Matrix{Real}, part::Vector{Vector{Int}})
   Σ_copy = copy(Σ)-Matrix(I, size(Σ))
   for ind=part
     Σ_copy[ind,ind] = zeros(length(ind),length(ind))
@@ -275,33 +275,33 @@ function mean_outer(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
 end
 
 """
-    parameters(x::Matrix{Float64}, part::Vector{Vector{Int}})
+    parameters(x::Matrix{Real}, part::Vector{Vector{Int}})
 
 Returns parametrization by correlation for data `x` and partition `part` for nested copulas.
 
 """
-function parameters(Σ::Matrix{Float64}, part::Vector{Vector{Int}})
+function parameters(Σ::Matrix{Real}, part::Vector{Vector{Int}})
   ϕ = [meanΣ(Σ[ind,ind]) for ind=part]
   θ = mean_outer(Σ, part)
   ϕ, θ
 end
 
 """
-  are_parameters_good(ϕ::Vector{Float64}, θ::Float64)
+  are_parameters_good(ϕ::Vector{Real}, θ::Real)
 
 tests sufficient nesting condition given parameters, returns bool
 """
-function are_parameters_good(ϕ::Vector{Float64}, θ::Float64)
+function are_parameters_good(ϕ::Vector{Real}, θ::Real)
   θ < minimum(filter(x->!isnan(x), ϕ))
 end
 
 """
-  Σ_theor(ϕ::Vector{Float64}, θ::Float64, part::Vector{Vector{Int}})
+  Σ_theor(ϕ::Vector{Real}, θ::Real, part::Vector{Vector{Int}})
 
 returns a matrix indicating a theoretical correlation according togiven parameters
 and partition
 """
-function Σ_theor(ϕ::Vector{Float64}, θ::Float64, part::Vector{Vector{Int}})
+function Σ_theor(ϕ::Vector{Real}, θ::Real, part::Vector{Vector{Int}})
   n = sum(length.(part))
   result = fill(θ, n, n)
   for (ϕind,ind)=zip(ϕ,part)
@@ -314,11 +314,11 @@ function Σ_theor(ϕ::Vector{Float64}, θ::Float64, part::Vector{Vector{Int}})
 end
 
 """
-  getcors_advanced(x::Matrix{Float64})
+  getcors_advanced(x::Matrix{Real})
 
 clusters data on a basis of a correlation
 """
-function getcors_advanced(x::Matrix{Float64})
+function getcors_advanced(x::Matrix{Real})
   Σ = corspearman(x)
   var_no = size(Σ, 1)
   partitions = collect(Combinatorics.SetPartitions(1:var_no))[2:end-1] #TODO popraw first is trivial, last is nested

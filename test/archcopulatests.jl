@@ -390,3 +390,30 @@ end
     @test tail(x[:,1], x[:,2], "l", 0.0001) ≈ 0
   end
 end
+
+@testset "tests on Big Float" begin
+  Random.seed!(1234)
+  θ = BigFloat(2.)
+  x = simulate_copula(10, Gumbel_cop(3, θ))
+  println(x)
+
+  #Random.seed!(1234)
+  #θ = BigFloat(2.)
+  #x = simulate_copula(10, Clayton_cop(3, θ))
+  #println(x)
+
+  Random.seed!(1234)
+  θ = BigFloat(-.5)
+  x = simulate_copula(10, Clayton_cop(2, θ))
+  println(x)
+
+  Random.seed!(1234)
+  θ = BigFloat(2.)
+  x = simulate_copula(10, Frank_cop(3, θ))
+  println(x)
+
+  Random.seed!(1234)
+  θ = BigFloat(.5)
+  x = simulate_copula(10, AMH_cop(3, θ))
+  println(x)
+end
