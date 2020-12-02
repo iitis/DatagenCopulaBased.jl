@@ -15,7 +15,7 @@ module DatagenCopulaBased
   include("sampleunivdists.jl")
 
   # dispatching of the generator
-  include("copulagendat.jl")
+  #include("copulagendat.jl")
 
   # axiliary function for correlqations
   include("corgen.jl")
@@ -47,5 +47,5 @@ module DatagenCopulaBased
   export simulate_copula, simulate_copula!
 
   # obsolete implemntations
-  export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshallolkincopulagen
+  #export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshallolkincopulagen
 end

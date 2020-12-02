@@ -902,39 +902,6 @@ julia> quantile.(Levy(0, 1), U)
  0.582946    3.52799
 ```
 
-## Old dispatching, will be removed in future
-
-```julia
-julia> gausscopulagen(t::Int, Σ::Matrix{Float64})
-```
-
-```julia
-julia> archcopulagen(t::Int, n::Int, θ::Union{Float64, Int}, copula::String; rev::Bool = false, cor::String = "")
-```
-
-```julia
-julia> nestedarchcopulagen(t::Int, n::Vector{Int}, ϕ::Vector{Float64}, θ::Float64, copula::String, m::Int = 0)
-```
-
-```julia
-julia> chaincopulagen(t::Int, θ::Union{Vector{Float64}, Vector{Int}}, copula::Vector{String}; rev::Bool = false, cor::String = "")
-```
-
-```julia
-julia> marshallolkincopulagen(t::Int, λ::Vector{Float64})
-```
-
-```julia
-julia> frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64})
-```
-
-```julia
-julia> frechetcopulagen(t::Int, n::Int, α::Union{Int, Float64}, β::Union{Int, Float64})
-```
-
-```julia
-julia> chainfrechetcopulagen(t::Int, α::Vector{Float64}, β::Vector{Float64} = zeros(α))
-```
 
 # Citing this work
 

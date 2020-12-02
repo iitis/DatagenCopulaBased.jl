@@ -105,7 +105,7 @@ struct Chain_of_Archimedeans{T}
       copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
       new{T}(n, θ, [copula for i in 1:n-1])
   end
-  function(::Type{Chain_of_Archimedeans})(θ::Vector{Real}, copula::String, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{Chain_of_Archimedeans})(θ::Vector{T}, copula::String, cor::Type{<:CorrelationType}) where T <: Real
       n = length(θ)+1
       map(i -> testbivθ(θ[i], copula), 1:n-1)
       copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
@@ -321,7 +321,7 @@ function simulate_copula(t::Int, copula::Chain_of_Frechet{T}; rng::AbstractRNG =
   α = copula.α
   β = copula.β
   n = copula.n
-  fncopulagen(α, β, rand(rng, t, n))
+  fncopulagen(α, β, rand(rng, T, t, n))
 end
 
 """

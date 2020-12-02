@@ -45,15 +45,6 @@ end
 
   @testset "larger example" begin
     cops = ["clayton", "clayton", "clayton", "frank", "amh", "amh"]
-    #test old dispatching
-    Random.seed!(43)
-    x = simulate_copula(1000, Chain_of_Archimedeans([-0.9, 3., 2, 4., -0.3, 1.], cops))
-    Random.seed!(43)
-    x1 = chaincopulagen(1000, [-0.9, 3., 2, 4., -0.3, 1.], cops)
-    Random.seed!(43)
-    x2 = chaincopulagen(1000, [-0.9, 3., 2, 4., -0.3, 1.], cops; rev = true)
-    @test norm(x-x1) ≈ 0.
-    @test norm((1 .- x) - x2) ≈ 0.
 
     Random.seed!(43)
     x = simulate_copula(300000, Chain_of_Archimedeans([-0.9, 3., 2, 4., -0.3, 1.], cops))
@@ -111,12 +102,6 @@ end
     @test simulate_copula(1, Chain_of_Frechet([0.6, 0.4], [0.3, 0.5])) ≈ [0.888934  0.775377  0.180975] atol=1.0e-5
   end
   @testset "test on large example" begin
-    # test old dispatching
-    Random.seed!(43)
-    x2 = simulate_copula(1000, Chain_of_Frechet([0.9, 0.6, 0.2]))
-    Random.seed!(43)
-    x1 = chainfrechetcopulagen(1000, [0.9, 0.6, 0.2])
-    @test norm(x2 - x1) ≈ 0.
 
     # one parameter case
     Random.seed!(43)
@@ -139,4 +124,45 @@ end
     @test tail(x[:,1], x[:,2], "r") ≈ 0.8 atol=1.0e-1
     @test tail(x[:,2], x[:,3], "r") ≈ 0.5 atol=1.0e-1
   end
+end
+
+@testset "Big Float implementation" begin
+
+  cops = ["clayton", "clayton", "clayton", "frank", "amh", "amh"]
+
+  Random.seed!(43)
+  θs = BigFloat.([-0.9, 3., 2, 4., -0.3, 1.])
+  x = simulate_copula(300000, Chain_of_Archimedeans(θs, cops))
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,7], Uniform(0,1))) > α
+  @test tail(x[:,1], x[:,2], "l", BigFloat(0.0001)) ≈ 0
+
+  @test corkendall(x)[1,2] ≈ -0.9/(2-0.9) atol=1.0e-2
+  @test corkendall(x)[2,3] ≈ 3/(2+3) atol=1.0e-2
+  @test typeof(x) == Array{BigFloat,2}
+
+  va = BigFloat.([0.9, 0.6, 0.2])
+  Random.seed!(43)
+  x = simulate_copula(500000, Chain_of_Frechet(va))
+  @test typeof(x) == Array{BigFloat,2}
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test corspearman(x) ≈ [1. 0.9 0.6 0.2; 0.9 1. 0.6 0.2; 0.6 0.6 1. 0.2; 0.2 0.2 0.2 1.] atol=1.0e-2
+
+  va = BigFloat.([0.79999, 0.5])
+  vb = BigFloat.([0.2, 0.3])
+  Random.seed!(43)
+  x = simulate_copula(500000, Chain_of_Frechet(va, vb))
+  @test typeof(x) == Array{BigFloat,2}
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  @test corspearman(x) ≈ [1. 0.6 0.2; 0.6 1. 0.2; 0.2 0.2 1.] atol=1.0e-2
+
 end

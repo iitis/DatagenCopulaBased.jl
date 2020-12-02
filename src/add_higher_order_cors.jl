@@ -36,7 +36,7 @@ julia> gcop2tstudent(x, [1,2], 6)
  -0.710786   0.239012   -1.54419
 ```
 """
-function gcop2tstudent(x::Matrix{Real}, ind::Vector{Int}, ν::Int; naive::Bool = false, rng = Random.GLOBAL_RNG)
+function gcop2tstudent(x::Matrix{T}, ind::Vector{Int}, ν::Int; naive::Bool = false, rng = Random.GLOBAL_RNG) where T <: Real
   unique(ind) == ind || throw(AssertionError("indices must not repeat"))
   y = copy(x)
   Σ = cov(x)
@@ -97,7 +97,7 @@ julia> gcop2arch(x, ["clayton" => [1,2]]; naive::Bool = false, notnested::Bool =
  -0.657297  -0.339814  -1.54419
 ```
 """
-function gcop2arch(x::Matrix{Real}, inds::VP; naive::Bool = false, notnested::Bool = false, rng = Random.GLOBAL_RNG)
+function gcop2arch(x::Matrix{T}, inds::VP; naive::Bool = false, notnested::Bool = false, rng = Random.GLOBAL_RNG) where T <: Real
   testind(inds)
   S = transpose(sqrt.(diag(cov(x))))
   μ = mean(x, dims=1)
@@ -154,7 +154,7 @@ julia> gcop2frechet(x, [1,2])
  -0.7223     -0.172507   -1.54419
 ```
 """
-function gcop2frechet(x::Matrix{Real}, inds::Vector{Int}; naive::Bool = false, rng = Random.GLOBAL_RNG)
+function gcop2frechet(x::Matrix{T}, inds::Vector{Int}; naive::Bool = false, rng = Random.GLOBAL_RNG) where T <: Real
   unique(inds) == inds || throw(AssertionError("indices must not repeat"))
   S = transpose(sqrt.(diag(cov(x))))
   μ = mean(x, dims = 1)
@@ -202,7 +202,7 @@ julia> gcop2marshallolkin(x, [1,2], 1., 1.5; naive = false)
  -0.867606  -0.589929  -1.54419
 ```
 """
-function gcop2marshallolkin(x::Matrix{Real}, inds::Vector{Int}, λ1::Real = 1., λ2::Real = 1.5; naive::Bool = false, rng = Random.GLOBAL_RNG)
+function gcop2marshallolkin(x::Matrix{T}, inds::Vector{Int}, λ1::T = 1., λ2::T = 1.5; naive::Bool = false, rng = Random.GLOBAL_RNG) where T <: Real
   unique(inds) == inds || throw(AssertionError("indices must not repeat"))
   length(inds) == 2 || throw(AssertionError("not supported for |inds| > 2"))
   λ1 >= 0 || throw(DomainError("not supported for λ1 < 0"))
@@ -238,7 +238,7 @@ end
 
 Return uniformly distributed data from x[:,i] given a copula familly.
 """
-function norm2unifind(x::Matrix{Real}, i::Vector{Int}, cop::String = "")
+function norm2unifind(x::Matrix{T}, i::Vector{Int}, cop::String = "") where T <: Real
   x = (cop == "frechet") ? x[:,i] : hcat(x[:,i], randn(size(x,1),1))
   a, s = eigen(cor(x))
   w = x*s./transpose(sqrt.(a))
@@ -259,14 +259,14 @@ julia> meanΣ(s)
 0.3
 ```
 """
-meanΣ(Σ::Matrix{Real}) = mean(abs.(Σ[findall(tril(Σ-Matrix(I, size(Σ))).!=0)]))
+meanΣ(Σ::Matrix{T}) where T <: Real = mean(abs.(Σ[findall(tril(Σ-Matrix(I, size(Σ))).!=0)]))
 
 """
   mean_outer(Σ::Matrix{Real}, part::Vector{Vector{Int}})
 
 returns a mean correlation excluding internal one is subsets determined by part
 """
-function mean_outer(Σ::Matrix{Real}, part::Vector{Vector{Int}})
+function mean_outer(Σ::Matrix{T}, part::Vector{Vector{Int}}) where T <: Real
   Σ_copy = copy(Σ)-Matrix(I, size(Σ))
   for ind=part
     Σ_copy[ind,ind] = zeros(length(ind),length(ind))
@@ -280,7 +280,7 @@ end
 Returns parametrization by correlation for data `x` and partition `part` for nested copulas.
 
 """
-function parameters(Σ::Matrix{Real}, part::Vector{Vector{Int}})
+function parameters(Σ::Matrix{T}, part::Vector{Vector{Int}}) where T <: Real
   ϕ = [meanΣ(Σ[ind,ind]) for ind=part]
   θ = mean_outer(Σ, part)
   ϕ, θ
@@ -291,7 +291,7 @@ end
 
 tests sufficient nesting condition given parameters, returns bool
 """
-function are_parameters_good(ϕ::Vector{Real}, θ::Real)
+function are_parameters_good(ϕ::Vector{T}, θ::T) where T <: Real
   θ < minimum(filter(x->!isnan(x), ϕ))
 end
 
@@ -301,7 +301,7 @@ end
 returns a matrix indicating a theoretical correlation according togiven parameters
 and partition
 """
-function Σ_theor(ϕ::Vector{Real}, θ::Real, part::Vector{Vector{Int}})
+function Σ_theor(ϕ::Vector{T}, θ::T, part::Vector{Vector{Int}}) where T <: Real
   n = sum(length.(part))
   result = fill(θ, n, n)
   for (ϕind,ind)=zip(ϕ,part)
@@ -318,7 +318,7 @@ end
 
 clusters data on a basis of a correlation
 """
-function getcors_advanced(x::Matrix{Real})
+function getcors_advanced(x::Matrix{T}) where T <: Real
   Σ = corspearman(x)
   var_no = size(Σ, 1)
   partitions = collect(Combinatorics.SetPartitions(1:var_no))[2:end-1] #TODO popraw first is trivial, last is nested

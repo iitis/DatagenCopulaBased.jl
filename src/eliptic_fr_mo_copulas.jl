@@ -56,7 +56,7 @@ julia> simulate_copula(10, Gaussian_cop([1. 0.5; 0.5 1.]))
  0.190283  0.594451
 ```
 """
-function simulate_copula(t::Int, copula::Gaussian_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+function simulate_copula(t::Int, copula::Gaussian_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
   Σ = copula.Σ
   z = transpose(rand(rng, MvNormal(Σ),t))
   for i in 1:size(Σ, 1)
@@ -254,7 +254,7 @@ function simulate_copula!(U::Matrix{T}, copula::Frechet_cop{T}; rng::AbstractRNG
   if (β > 0) & (n == 2)
     for j in 1:size(U,1)
       u_el = rand(rng, T, n)
-      frechet_el2!(u_el, α, β, rand(rng))
+      frechet_el2!(u_el, α, β, rand(rng, T))
       U[j,:] = u_el
     end
   else

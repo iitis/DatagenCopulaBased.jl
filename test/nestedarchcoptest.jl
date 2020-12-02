@@ -51,12 +51,7 @@ end
       c1 = Clayton_cop(2, 3.)
       c2 = Clayton_cop(3, 4.)
       cp = Nested_Clayton_cop([c1, c2], 2, 1.5)
-      # test old dispatching
-      Random.seed!(42)
-      x1 = nestedarchcopulagen(1000, [2, 3],  [3., 4.], 1.5, "clayton", 2)
-      Random.seed!(42)
-      x2 = simulate_copula(1000, cp)
-      @test norm(x1 -x2) ≈ 0.
+
 
       Random.seed!(42)
       x = simulate_copula(80000, cp)
@@ -82,17 +77,6 @@ end
       cp = Nested_Clayton_cop([c1], 1, 0.3, KendallCorrelation)
       x = simulate_copula(75000, cp)
       @test corkendall(x)[:,1] ≈ [1, 0.7, 0.3] atol=1.0e-2
-    end
-    if false
-    @testset "test on Big Float" begin
-        c1 = Clayton_cop(2, BigFloat(3.))
-        c2 = Clayton_cop(3, BigFloat(4.))
-        cp = Nested_Clayton_cop([c1, c2], 2, BigFloat(1.5))
-
-        Random.seed!(42)
-        x = simulate_copula(10, cp)
-        println(x)
-    end
     end
 end
 
@@ -123,12 +107,7 @@ end
       c1 = AMH_cop(3, .8)
       c2 = AMH_cop(2, .7)
       cp = Nested_AMH_cop([c1, c2], 2, 0.5)
-      # test old dispatching
-      Random.seed!(43)
-      x2 = simulate_copula(1000, cp)
-      Random.seed!(43)
-      x1 = nestedarchcopulagen(1000, [3, 2], [0.8, 0.7], 0.5, "amh", 2)
-      @test norm(x1 -x2) ≈ 0.
+
 
       Random.seed!(44)
       x = simulate_copula(100_000, cp)
@@ -188,12 +167,7 @@ end
     a = Frank_cop(3, 8.)
     b = Frank_cop(2, 10.)
     cp = Nested_Frank_cop([a,b], 2, 2.)
-    Random.seed!(44)
-    x3 = simulate_copula(1000, cp)
 
-    Random.seed!(44)
-    x1 = nestedarchcopulagen(1000, [3, 2],  [8., 10.], 2., "frank", 2)
-    @test norm(x1 -x3) ≈ 0.
 
     Random.seed!(43)
     x = simulate_copula(200_000, cp)
@@ -254,12 +228,6 @@ end
     a = Gumbel_cop(2, 4.2)
     b = Gumbel_cop(2, 6.1)
     cp = Nested_Gumbel_cop([a,b], 1, 2.1)
-    # test old dispatching
-    Random.seed!(44)
-    x1 = nestedarchcopulagen(1000, [2,2], [4.2, 6.1], 2.1, "gumbel", 1)
-    Random.seed!(44)
-    x3 = simulate_copula(1000, cp)
-    @test norm(x1 -x3) ≈ 0.
 
     Random.seed!(44)
     x = simulate_copula(1_000_000, cp)
@@ -332,12 +300,6 @@ end
     cp1 = Nested_Gumbel_cop([a1, b1], 0, 2.4)
     cgp = Double_Nested_Gumbel_cop([cp, cp1], 1.2)
 
-    # test dispatching
-    Random.seed!(43)
-    x1 = nestedarchcopulagen(1000, [[2,2], [2,2]], [[4.1, 3.8],[5.1, 6.1]], [1.9, 2.4], 1.2, "gumbel")
-    Random.seed!(43)
-    x3 = simulate_copula(1000, cgp)
-    @test norm(x3 - x1) ≈ 0.
 
     Random.seed!(43)
     x = simulate_copula(200000, cgp)
@@ -405,12 +367,6 @@ end
 
   end
   @testset "larger example" begin
-    # test old dispatching
-    Random.seed!(42)
-    x1 = nestedarchcopulagen(1000, [4.2, 3.6, 1.1], "gumbel")
-    Random.seed!(42)
-    x2 = simulate_copula(1000, Hierarchical_Gumbel_cop([4.2, 3.6, 1.1]))
-    @test norm(x2 - x1) ≈ 0.
 
     Random.seed!(42)
     x = simulate_copula(500000, Hierarchical_Gumbel_cop([4.2, 3.6, 1.1]))
@@ -433,4 +389,76 @@ end
     @test c[:,1] ≈ [1., 0.9, 0.2] atol=1.0e-2
     @test c[:,3] ≈ [0.2, 0.2, 1.] atol=1.0e-2
   end
+end
+
+
+@testset "test on Big Float" begin
+    if false
+        c1 = Clayton_cop(2, BigFloat(3.))
+        c2 = Clayton_cop(3, BigFloat(4.))
+        cp = Nested_Clayton_cop([c1, c2], 2, BigFloat(1.5))
+
+        Random.seed!(42)
+        x = simulate_copula(10, cp)
+        @test typeof(x) == Array{BigFloat,2}
+        @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+        @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+        @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    end
+
+    c1 = Gumbel_cop(2, BigFloat(3.))
+    c2 = Gumbel_cop(3, BigFloat(4.))
+    cp = Nested_Gumbel_cop([c1, c2], 2, BigFloat(1.5))
+
+
+    Random.seed!(42)
+    x = simulate_copula(100, cp)
+    @test typeof(x) == Array{BigFloat,2}
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    
+
+    copula = Double_Nested_Gumbel_cop([cp, cp], BigFloat(1.2))
+    Random.seed!(42)
+    x = simulate_copula(100, cp)
+    @test typeof(x) == Array{BigFloat,2}
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+
+
+    ch = Hierarchical_Gumbel_cop(BigFloat.([2., 1.8, 1.7]))
+    x = simulate_copula(100, ch)
+    @test typeof(x) == Array{BigFloat,2}
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+
+
+    if false
+        c1 = AMH_cop(2, BigFloat(0.3))
+        c2 = AMH_cop(3, BigFloat(0.5))
+        cp = Nested_AMH_cop([c1, c2], 2, BigFloat(.2))
+
+        Random.seed!(42)
+        x = simulate_copula(100, cp)
+        println(typeof(x) == Array{BigFloat,2})
+        @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+        @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+        @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+
+
+        c1 = Frank_cop(2, BigFloat(2.5))
+        #c2 = Frank_cop(3, BigFloat(2.))
+        cp = Nested_Frank_cop([c1], 1, BigFloat(2.))
+
+        Random.seed!(42)
+        x = simulate_copula(2, cp)
+        @test typeof(x) == Array{BigFloat,2}
+        #@test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+        #@test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+        #@test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+
+    end
 end

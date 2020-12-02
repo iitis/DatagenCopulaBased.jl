@@ -349,7 +349,7 @@ julia> simulate_copula(4, cp)
 function simulate_copula(t::Int, copula::Nested_AMH_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
      n = [ch.n for ch in copula.children]
      n2 = sum(n)+copula.m
-     U = zeros(t, n2)
+     U = zeros(T, t, n2)
      simulate_copula!(U, copula; rng = rng)
      return U
 end
@@ -728,7 +728,7 @@ function simulate_copula!(U::Matrix{T}, copula::Double_Nested_Gumbel_cop{T}; rng
     size(U, 2) == dims || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
 
     for j in 1:size(U,1)
-        X = Real[]
+        X = T[]
         for k in 1:length(v)
             n = ns[k]
             n1 = vcat([collect(1:n[1])], [collect(cumsum(n)[i]+1:cumsum(n)[i+1]) for i in 1:length(n)-1])
@@ -810,8 +810,8 @@ julia> simulate_copula(3, c)
  0.73617   0.347349  0.168348   0.410963
 ```
 """
-function simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-    U = zeros(t, copula.n)
+function simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+    U = zeros(T, t, copula.n)
     simulate_copula!(U, copula; rng = rng)
     return U
 end

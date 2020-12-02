@@ -19,7 +19,7 @@ Debye(x::Real, k::Int=1) = k/x^k*(quadgk(i -> i^k/(exp(i)-1), 0, x)[1])
 
 Returns Float, a single parameter of Archimedean copula, given the Kenalss τ correlation
 """
-function τ2θ(τ::Real, copula::String)
+function τ2θ(τ::T, copula::String) where T <: Real
   if copula == "gumbel"
     return 1/(1-τ)
   elseif copula == "clayton"

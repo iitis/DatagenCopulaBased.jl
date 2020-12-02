@@ -15,11 +15,6 @@
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test tail(x[:,1], x[:,2], "l", 0.00001) ≈ 0
     @test tail(x[:,1], x[:,2], "r", 0.00001) ≈ 0
-
-    # compare old and new dispatching
-    Random.seed!(43)
-    x1 = gausscopulagen(350000, [1. 0.5; 0.5 1.])
-    @test norm(x-x1) == 0.
   end
 
 end
@@ -43,10 +38,6 @@ end
     @test pvalue(ExactOneSampleKSTest(xt[:,2], Uniform(0,1))) > α
     @test tail(xt[:,1], xt[:,2], "l") ≈ λ atol=1.0e-1
     @test tail(xt[:,1], xt[:,2], "r") ≈ λ atol=1.0e-1
-    # compare old and new dispatching
-    Random.seed!(43)
-    xt1 = tstudentcopulagen(350000, [1. rho; rho 1.], ν);
-    @test norm(xt-xt1) == 0.
 
     convertmarg!(xt, Normal)
     @test cor(xt) ≈ [1. rho; rho 1.] atol=1.0e-2
@@ -102,10 +93,6 @@ end
     @test tail(x[:,1], x[:,2], "r") ≈ 0.3 atol=1.0e-1
     @test corspearman(x) ≈ [1. 0.3 0.3; 0.3 1. 0.3; 0.3 0.3 1.] atol=1.0e-2
 
-    # compare old and new dispatching
-    Random.seed!(43)
-    x1 = frechetcopulagen(350000, 3, 0.3)
-    @test norm(x-x1) == 0.
 
     x = simulate_copula(350000, Frechet_cop(3, 1.))
     ret = (x[:, 1] .<  0.2).*(x[:, 2] .<  0.3).*(x[:, 3] .<  0.5)
@@ -169,12 +156,39 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+  end
+end
 
-    # compare old and new dispatching
+@testset "tests on Big Float" begin
+  α = 0.025
+  if false
+    Random.seed!(1234)
+    Σ = BigFloat.([1. 0.; 0. 1.])
+    x = simulate_copula(1000, Gaussian_cop(Σ))
 
-    Random.seed!(42)
-    x1 = marshallolkincopulagen(100000, [1.1, 0.2, 2.1, 0.6, 0.5, 3.2, 7.1, 2.1])
-    @test norm(x-x1) == 0.
+    println(typeof(x) == Array{BigFloat,2})
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+
+    Random.seed!(1234)
+    Σ = BigFloat.([1. 0.; 0. 1.])
+    x = simulate_copula(1000, Student_cop(Σ, 2))
+
+    println(typeof(x) == Array{BigFloat,2})
+    @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+    @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   end
 
+  λs = BigFloat.([1., 2., 3.])
+  Random.seed!(1234)
+  x = simulate_copula(1000, Marshall_Olkin_cop(λs))
+  @test typeof(x) == Array{BigFloat,2}
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
+
+  a = b = BigFloat(0.4)
+  x = simulate_copula(1000, Frechet_cop(2, a, b))
+  @test typeof(x) == Array{BigFloat,2}
+  @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
+  @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
 end

@@ -4,7 +4,7 @@
 
 Returns empirical left and right tail dependency of bivariate data
 """
-function tail(v1::Vector{T}, v2::Vector{T}, tail::String, α::T = 0.002) where T <: AbstractFloat
+function tail(v1::Vector{T}, v2::Vector{T}, tail::String, α::T = 0.002) where T <: Real
   if tail == "l"
     return sum((v1 .< α) .* (v2 .< α))./(length(v1)*α)
   elseif tail == "r"
