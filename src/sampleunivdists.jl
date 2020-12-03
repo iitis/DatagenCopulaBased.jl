@@ -7,7 +7,8 @@ function logseriescdf(p::T) where T <: Real
   cdfs = T.([0.])
   for i in 1:100000000
     @inbounds push!(cdfs, cdfs[i]-(p^i)/(i*log(1-p)))
-    if cdfs[i] ≈ T(1.0)
+    # one can change atol here
+    if isapprox(cdfs[i],  1.; atol = 1e-8)
       return cdfs
     end
   end
@@ -60,7 +61,7 @@ Ginv(y::Real, α::Real) = ((1-y)*SpecialFunctions.gamma(1-α))^(-1/α)
 Returns Real from the inverse laplacea transform of generator of Joe nested copula
 parametered by α
 """
-InvlaJ(n::Int, α::Real) = 1-1/(n*beta(1.0*n, 1-α))
+InvlaJ(n::Int, α::T) where T <: Real = 1-1/(n*beta(T(n), 1-α))
 
 """
   sampleInvlaJ(α::Real, v::Real)

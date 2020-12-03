@@ -914,7 +914,8 @@ end
 """
 function nested_clayton_gen(n::Vector{Vector{Int}}, ϕ::Vector{T},
                          θ::T, rand_vec::Vector{T}; rng::AbstractRNG) where T <: Real
-    V0 = quantile.(Gamma(1/θ, 1), rand_vec[end])
+    V0 = gamma_inc_inv(1/θ, T(1.), T(1.)-rand_vec[end])
+    #quantile.(Gamma(1/θ, 1), rand_vec[end])
     u = copy(rand_vec[1:end-1])
     for i in 1:length(n)
       u[n[i]] = clayton_step(rand_vec[n[i]], V0, ϕ[i], θ; rng = rng)
@@ -951,6 +952,7 @@ end
     amh_step(u::Vector{Real}, V0::Real, ϕ::Real, θ::Real; rng::AbstractRNG)
 """
 function amh_step(u::Vector{T}, V0::T, ϕ::T, θ::T; rng::AbstractRNG) where T <: Real
+    # TODO this need to be changed for BigFloat
     w = quantile(NegativeBinomial(V0, (1-ϕ)/(1-θ)), rand(rng, T))
     u = -log.(u)./(V0 + w)
     X = ((exp.(u) .-ϕ) .*(1-θ) .+θ*(1-ϕ)) ./(1-ϕ)

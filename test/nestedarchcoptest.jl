@@ -447,11 +447,12 @@ end
         @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
         @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
         @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
+    end
+    if false
 
-
-        c1 = Frank_cop(2, BigFloat(2.5))
+        c1 = Frank_cop(2, BigFloat(1.1))
         #c2 = Frank_cop(3, BigFloat(2.))
-        cp = Nested_Frank_cop([c1], 1, BigFloat(2.))
+        cp = Nested_Frank_cop([c1], 1, BigFloat(.9))
 
         Random.seed!(42)
         x = simulate_copula(2, cp)
