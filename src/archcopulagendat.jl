@@ -68,8 +68,8 @@ Given a vector of random numbers r of size n+1, return the sample from the Clayt
 copula parametrised by θ of the size n.
 """
 function clayton_gen(r::Vector{T}, θ::T) where T <: Real
-    gamma_vec = quantile.(Gamma{T}(1/θ, 1), r[end])
-    #gamma_vec = [gamma_inc_inv(1/θ, T(1.), q) for q in r[end]]
+
+    gamma_vec = gamma_inc_inv(1/θ, T(1.), T(1.)-r[end])
     u = -log.(r[1:end-1])./gamma_vec
     return (1 .+ u).^(-1/θ)
 end

@@ -163,7 +163,7 @@ end
     @test u ≈ [0.599183  0.908848  0.950577  0.966366  0.692735] atol=1.0e-5
   end
   @testset "large data set" begin
-    # test old dispatching
+
     a = Frank_cop(3, 8.)
     b = Frank_cop(2, 10.)
     cp = Nested_Frank_cop([a,b], 2, 2.)
@@ -417,7 +417,7 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-    
+
 
     copula = Double_Nested_Gumbel_cop([cp, cp], BigFloat(1.2))
     Random.seed!(42)

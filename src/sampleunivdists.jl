@@ -1,5 +1,5 @@
 """
-    logseriescdf(p::Real)
+    logseriescdf(p::T) where T <: Real
 
 Returns the vector of samples of the discrete cdf of logarithmic distribution
 """
@@ -37,12 +37,12 @@ Returns a Real sampled  from the expotencialy tilted Levy stable pdf
 f(x; V0, α) = exp(-V0^α) g(x; α)/exp(-V0), where g(x; α) is a stable Levy pdf
 with parameters α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0.
 """
-function tiltedlevygen(V0::Real, α::Real; rng::AbstractRNG)
-  x = levyel(α, rand(rng), rand(rng))
-  u = rand(rng)
+function tiltedlevygen(V0::T, α::T; rng::AbstractRNG) where T <: Real
+  x = levyel(α, rand(rng, T), rand(rng, T))
+  u = rand(rng, T)
   while exp(-V0^α*x)/(1500*exp(-V0)) < u
-    x = levyel(α, rand(rng), rand(rng))
-    u = rand(rng)
+    x = levyel(α, rand(rng, T), rand(rng, T))
+    u = rand(rng, T)
   end
   return x.*V0.^α
 end
@@ -91,26 +91,26 @@ function elInvlaF(θ₁::T, θ₀::T, logseriescdf::Vector{T}; rng::AbstractRNG)
   c1 = 1-exp(-θ₁)
   α = θ₀/θ₁
   if θ₀ <= 1
-    v = rand(rng)
-    X = findlast(logseriescdf .< rand(rng))[1]
+    v = rand(rng, T)
+    X = findlast(logseriescdf .< rand(rng, T))[1]
     while v > 1/((X-α)*beta(X, 1-α))
-      v = rand(rng)
-      X = findlast(logseriescdf .< rand(rng))[1]
+      v = rand(rng, T)
+      X = findlast(logseriescdf .< rand(rng, T))[1]
     end
     return X
   else
-    v = rand(rng)
-    X = sampleInvlaJ(α, rand(rng))
+    v = rand(rng, T)
+    X = sampleInvlaJ(α, rand(rng, T))
     while v > c1^(X-1)
-      X = sampleInvlaJ(α, rand(rng))
-      v = rand(rng)
+      X = sampleInvlaJ(α, rand(rng, T))
+      v = rand(rng, T)
     end
     return X
   end
 end
 
 """
-  nestedfrankgen(θ₁::Real, θ₀::Real, V0::Int, logseriescdf::Vector{Real}; rng::AbstractRNG))
+  nestedfrankgen(θ₁::T, θ₀::T, V0::Int, logseriescdf::Vector{T}; rng::AbstractRNG) where T <: Real
 
 Return int, sampled from the Inverse Laplace trensform of nested
 Frank copula given parametes θ₁ θ₀ (child and parent)

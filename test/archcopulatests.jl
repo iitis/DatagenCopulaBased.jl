@@ -50,8 +50,8 @@
   end
 end
 @testset "Archimedean copulas axiliary functions" begin
-  #c = arch_gen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.; rng = Random.GLOBAL_RNG)
-  #@test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
+  c = arch_gen("clayton", [0.2 0.4 0.8; 0.2 0.8 0.6; 0.3 0.9 0.6], 1.; rng = Random.GLOBAL_RNG)
+  @test c ≈ [0.5 0.637217; 0.362783 0.804163; 0.432159 0.896872] atol=1.0e-5
   @test useτ(0.5, "clayton") == 2.
   @test useρ(0.75, "gumbel") ≈ 2.285220798876495
   @test getθ4arch(0.5, "gumbel", SpearmanCorrelation) ≈ 1.541070420842913
@@ -160,27 +160,27 @@ end
   end
   @testset "small example" begin
     Random.seed!(43)
-    #@test simulate_copula(1, Clayton_cop(2, 2.)) ≈ [0.652812  0.912719] atol=1.0e-5
-    #@test simulate_copula(1, Clayton_cop(2, -0.5)) ≈ [0.924876  0.185707] atol=1.0e-5
+    @test simulate_copula(1, Clayton_cop(2, 2.)) ≈ [0.652812  0.912719] atol=1.0e-5
+    @test simulate_copula(1, Clayton_cop(2, -0.5)) ≈ [0.924876  0.185707] atol=1.0e-5
     Random.seed!(43)
-    #@test simulate_copula(1, Clayton_cop_rev(2, 2.)) ≈ [0.347188  0.087281] atol=1.0e-5
-    #@test simulate_copula(1, Clayton_cop_rev(2, -.5)) ≈ 1. .- [0.924876  0.185707] atol=1.0e-5
+    @test simulate_copula(1, Clayton_cop_rev(2, 2.)) ≈ [0.347188  0.087281] atol=1.0e-5
+    @test simulate_copula(1, Clayton_cop_rev(2, -.5)) ≈ 1. .- [0.924876  0.185707] atol=1.0e-5
 
     Random.seed!(43)
     u = zeros(1,2)
     u1 = zeros(1,2)
     simulate_copula!(u, Clayton_cop(2, 2.))
     simulate_copula!(u1, Clayton_cop(2, -0.5))
-    #@test u ≈ [0.652812  0.912719] atol=1.0e-5
-    #@test u1 ≈ [0.924876  0.185707] atol=1.0e-5
+    @test u ≈ [0.652812  0.912719] atol=1.0e-5
+    @test u1 ≈ [0.924876  0.185707] atol=1.0e-5
 
     Random.seed!(43)
     u = zeros(1,2)
     u1 = zeros(1,2)
     simulate_copula!(u, Clayton_cop_rev(2, 2.))
     simulate_copula!(u1, Clayton_cop_rev(2, -0.5))
-    #@test u ≈ 1 .- [0.652812  0.912719] atol=1.0e-5
-    #@test u1 ≈ 1 .- [0.924876  0.185707] atol=1.0e-5
+    @test u ≈ 1 .- [0.652812  0.912719] atol=1.0e-5
+    @test u1 ≈ 1 .- [0.924876  0.185707] atol=1.0e-5
   end
   @testset "test on larger data" begin
     Random.seed!(43)
