@@ -360,10 +360,10 @@ end
 
   Random.seed!(1234)
   θ = BigFloat(2.5)
-  if false
+  if true
     x = simulate_copula(1000, Clayton_cop(3, θ))
 
-    println(typeof(x) == Array{BigFloat,2})
+    @test typeof(x) == Array{BigFloat,2}
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   end
