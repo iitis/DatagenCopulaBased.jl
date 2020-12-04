@@ -1,3 +1,6 @@
+if VERSION >= v"1.3"
+  using CompilerSupportLibraries_jll
+end
 using Test
 using DatagenCopulaBased
 using Distributions
