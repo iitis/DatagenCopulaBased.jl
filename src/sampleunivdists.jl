@@ -8,7 +8,7 @@ function logseriescdf(p::T) where T <: Real
   for i in 1:100000000
     @inbounds push!(cdfs, cdfs[i]-(p^i)/(i*log(1-p)))
     # one can change atol here
-    if isapprox(cdfs[i],  1.; atol = 1e-8)
+    if isapprox(cdfs[i],  1.)
       return cdfs
     end
   end

@@ -16,6 +16,8 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 SharedArrays = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
+CompilerSupportLibraries_jll = "e66e0078-7015-5450-92f7-15fbd957f2ae"
+
 
 [compat]
 julia = "1.0, 1.1, 1.2, 1.3, 1.4, 1.5"
@@ -27,6 +29,7 @@ StatsBase = "0.32, 0.33"
 HCubature = "1.4"
 HypothesisTests = "0.9, 0.10"
 Roots = "1"
+CompilerSupportLibraries_jll = "0.3"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

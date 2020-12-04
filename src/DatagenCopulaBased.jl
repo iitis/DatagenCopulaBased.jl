@@ -11,6 +11,7 @@ module DatagenCopulaBased
   using LinearAlgebra
   using Distributed
   using SharedArrays
+  using CompilerSupportLibraries_jll
 
   include("sampleunivdists.jl")
 
