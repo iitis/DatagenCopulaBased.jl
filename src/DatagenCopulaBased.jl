@@ -11,14 +11,12 @@ module DatagenCopulaBased
   using LinearAlgebra
   using Distributed
   using SharedArrays
+  if VERSION >= v"1.3"
+    using CompilerSupportLibraries_jll
+  end
 
 
   include("sampleunivdists.jl")
-
-  # dispatching of the generator
-  #include("copulagendat.jl")
-
-  # axiliary function for correlqations
   include("corgen.jl")
   include("marshallolkincopcor.jl")
   include("archcopcorrelations.jl")
@@ -47,6 +45,4 @@ module DatagenCopulaBased
 
   export simulate_copula, simulate_copula!
 
-  # obsolete implemntations
-  #export tstudentcopulagen, gausscopulagen, frechetcopulagen, marshallolkincopulagen
 end

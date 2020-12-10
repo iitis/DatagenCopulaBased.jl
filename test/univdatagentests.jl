@@ -1,4 +1,3 @@
-
 @testset "logseries dist" begin
   @test logseriescdf(0.01)[1:3] ≈ [0.0, 0.994992, 0.999967] atol=1.0e-5
   @test logseriescdf(0.000000000001)[1:5] ≈ [0., 1., 1., 1., 1.] atol=1.0e-2

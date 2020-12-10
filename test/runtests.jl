@@ -1,8 +1,5 @@
-if VERSION >= v"1.3"
-  using CompilerSupportLibraries_jll
-end
-using Test
 using DatagenCopulaBased
+using Test
 using Distributions
 using HypothesisTests
 using StatsBase
@@ -16,7 +13,6 @@ using StableRNGs
 
 
 import DatagenCopulaBased: rand2cop, fncopulagen
-#import chainfrechetcopulagen
 import DatagenCopulaBased: logseriescdf, levyel, tiltedlevygen
 import DatagenCopulaBased: Ginv, InvlaJ, sampleInvlaJ, elInvlaF, nestedfrankgen
 import DatagenCopulaBased: testθ, useρ, useτ, testbivθ, usebivρ, getθ4arch
@@ -29,7 +25,6 @@ import DatagenCopulaBased: meanΣ, frechet, mean_outer, parameters, are_paramete
 import DatagenCopulaBased: getcors_advanced
 import DatagenCopulaBased: random_unit_vector
 import DatagenCopulaBased: frechet_el!, frechet_el2!, mocopula_el
-#import DatagenCopulaBased: archcopulagen, chaincopulagen, nestedarchcopulagen
 
 # axiliary tests
 include("tailtest.jl")
