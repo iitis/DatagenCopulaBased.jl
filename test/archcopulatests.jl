@@ -360,7 +360,7 @@ end
 
   Random.seed!(1234)
   θ = BigFloat(2.5)
-  if true
+  if false
     x = simulate_copula(1000, Clayton_cop(3, θ))
 
     @test typeof(x) == Array{BigFloat,2}
