@@ -901,7 +901,23 @@ julia> quantile.(Levy(0, 1), U)
  2.18374     2.02902
  0.582946    3.52799
 ```
+## BigFloat implementation, developement version.
 
+For some copulas: Marshall-Olkin, Frechet, Gumbel, Frank, Ali-Mikhail-Haq,and Nested Gumbel the BigFloat implementation is supported. However it is a development version that requires enhancement of other Julia packages.
+
+```julia
+
+julia> θ = BigFloat(2.);
+
+julia> c = Gumbel_cop(3, θ)
+Gumbel_cop{BigFloat}(3, 2.0)
+
+julia> simulate_copula(3, c)
+3×3 Array{BigFloat,2}:
+ 0.641156  0.397985  0.737306
+ 0.285039  0.483624  0.547879
+ 0.533071  0.634007  0.478209
+```
 
 # Citing this work
 
