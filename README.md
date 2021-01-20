@@ -1,6 +1,5 @@
 # DatagenCopulaBased.jl
 
-[![Build Status](https://travis-ci.org/iitis/DatagenCopulaBased.jl.svg?branch=master)](https://travis-ci.org/iitis/DatagenCopulaBased.jl)
 [![Coverage Status](https://coveralls.io/repos/github/iitis/DatagenCopulaBased.jl/badge.svg?branch=master)](https://coveralls.io/github/iitis/DatagenCopulaBased.jl?branch=master)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3837307.svg)](https://doi.org/10.5281/zenodo.3837307)
 
