@@ -1,4 +1,4 @@
-α = 0.025
+α = 0.0225
 
 @testset "helpers" begin
   Σ = [1 0.5 0.5 0.6; 0.5 1 0.5 0.6; 0.5 0.5 1. 0.6; 0.6 0.6 0.6 1.]
@@ -127,8 +127,8 @@ end
     @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
     @test pvalue(ExactOneSampleKSTest(x1[:,3], Normal(0,S[3]))) > α
     @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
-    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.06
-    @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.06
+    @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.07
+    @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.07
     @test maximum(abs.(cor(y)-cor(x1))) < 0.115
   end
 end
