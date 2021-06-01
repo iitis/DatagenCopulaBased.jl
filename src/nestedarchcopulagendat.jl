@@ -914,8 +914,8 @@ end
 """
 function nested_clayton_gen(n::Vector{Vector{Int}}, ϕ::Vector{T},
                          θ::T, rand_vec::Vector{T}; rng::AbstractRNG) where T <: Real
-    V0 = gamma_inc_inv(1/θ, T(1.), T(1.)-rand_vec[end])
-    #quantile.(Gamma(1/θ, 1), rand_vec[end])
+
+    V0 = gamma_inc_inv(1/θ, rand_vec[end], T(1.)-rand_vec[end])
     u = copy(rand_vec[1:end-1])
     for i in 1:length(n)
       u[n[i]] = clayton_step(rand_vec[n[i]], V0, ϕ[i], θ; rng = rng)
