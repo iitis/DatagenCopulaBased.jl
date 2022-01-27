@@ -18,7 +18,7 @@
 Returns Real  generated using copula::String given u1 and w from uniform distribution
 and copula parameter θ.
 """
-function rand2cop(u1::T, θ::T, copula::String, w::T) where T <: Real
+function rand2cop(u1, θ, copula, w)
   copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
   if copula == "clayton"
     return (u1^(-θ)*(w^(-θ/(1+θ)) -1) +1)^(-1/θ)
@@ -142,7 +142,7 @@ julia> simulate_copula(1, c)
  0.180975  0.408582  0.646887
 ```
 """
-function simulate_copula(t::Int, copula::Chain_of_Archimedeans{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+function simulate_copula(t, copula::Chain_of_Archimedeans{T}; rng= Random.GLOBAL_RNG) where T
     U = zeros(T, t, copula.n)
     simulate_copula!(U, copula; rng = rng)
     U
@@ -186,7 +186,7 @@ julia> u
  0.180975  0.408582  0.646887
 ```
 """
-function simulate_copula!(U::Matrix{T}, copula::Chain_of_Archimedeans{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+function simulate_copula!(U, copula::Chain_of_Archimedeans{T}; rng = Random.GLOBAL_RNG) where T
     θ = copula.θ
     copulas = copula.copulas
     size(U, 2) == copula.n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
@@ -209,7 +209,7 @@ clayton bivariate sub-copulas with parameters (θᵢ ≥ -1) ^ ∧ (θᵢ ≠ 0)
 amh -- Ali-Mikhail-Haq bi-variate sub-copulas with parameters -1 ≥ θᵢ ≥ 1
 Frank bi-variate sub-copulas with parameters (θᵢ ≠ 0)
 """
-function testbivθ(θ::Union{T, Int}, copula::String) where T <: Real
+function testbivθ(θ, copula)
   !(0. in θ)|(copula == "amh") || throw(DomainError("not supported for θ = 0"))
   if copula == "clayton"
     θ >= -1 || throw(DomainError("not supported for θ < -1"))
@@ -227,7 +227,7 @@ Returns Real, a copula parameter given the Spearman or the Kendall correlation
 For Clayton or Frank copula the correlation must fulfill (-1 > ρᵢ > 1) ∧ (ρᵢ ≠ 0)
 For the AMH copula Spearman must fulfill -0.2816 > ρᵢ >= .5, while Kendall -0.18 < τ < 1/3
 """
-function usebivρ(ρ::T, copula::String, cor::Type{<:CorrelationType}) where T <: Real
+function usebivρ(ρ, copula, cor)
   if copula == "amh"
       -0.2816 < ρ <= 0.5 || throw(DomainError("correlation coeficiant must fulfill -0.2816 < ρ <= 0.5"))
     if cor == KendallCorrelation
@@ -317,12 +317,13 @@ julia> simulate_copula(10, Chain_of_Frechet([0.6, 0.4], [0.3, 0.5]))
   0.804096  0.851275  0.955881
 ```
 """
-function simulate_copula(t::Int, copula::Chain_of_Frechet{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+function simulate_copula(t, copula::Chain_of_Frechet{T}; rng = Random.GLOBAL_RNG) where T
   α = copula.α
   β = copula.β
   n = copula.n
   fncopulagen(α, β, rand(rng, T, t, n))
 end
+
 
 """
   fncopulagen(α::Vector{Real}, β::Vector{Real}, u::Matrix{Real})
@@ -336,7 +337,7 @@ julia> fncopulagen(2, [0.2, 0.4], [0.1, 0.1], [0.2 0.4 0.6; 0.3 0.5 0.7])
 
 ```
 """
-function fncopulagen(α::Vector{T}, β::Vector{T}, u::Matrix{T}) where T <: Real
+function fncopulagen(α, β, u) where T
   p = invperm(sortperm(u[:,1]))
   u = u[:,end:-1:1]
   lx = floor.(Int, size(u,1).*α)
