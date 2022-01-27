@@ -8,6 +8,8 @@ value_eltype(::Copula{T}) where T = T
 Returns t realizations from a given copula
 
 ```jldoctest
+julia> using Random
+
 julia> Random.seed!(43);
 
 julia> simulate_copula(2, Gumbel_cop(3, 1.5))
@@ -185,8 +187,6 @@ Marshall_Olkin_cop(2, [1.0, 2.0, 3.0])
 julia> simulate_copula(1, cop)
 1×2 Array{Float64,2}:
   0.854724  0.821831
-
-julia> using Random
 
 julia> Random.seed!(43);
 

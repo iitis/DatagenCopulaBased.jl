@@ -259,7 +259,7 @@ julia> meanΣ(s)
 0.3
 ```
 """
-meanΣ(Σ) where T= mean(abs.(Σ[findall(tril(Σ-Matrix(I, size(Σ))).!=0)]))
+meanΣ(Σ) = mean(abs.(Σ[findall(tril(Σ-Matrix(I, size(Σ))).!=0)]))
 
 """
   mean_outer(Σ::Matrix{Real}, part::Vector{Vector{Int}})

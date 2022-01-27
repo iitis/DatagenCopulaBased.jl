@@ -29,7 +29,6 @@ module DatagenCopulaBased
 
   # change Gaussian data by adding higher order cross-correlations
   include("add_higher_order_cors.jl")
-  
 
 
   export Gaussian_cop, Student_cop, Frechet_cop, Marshall_Olkin_cop
