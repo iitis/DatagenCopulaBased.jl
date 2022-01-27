@@ -3,9 +3,9 @@ value_eltype(::Copula{T}) where T = T
 
 
 """
-    simulate_copula(t::Int, copula::Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula(t::Int, copula::Copula; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations from the Gumbel copula -  Gumbel_cop(n, θ)
+Returns t realizations from a given copula
 
 ```jldoctest
 julia> Random.seed!(43);
@@ -70,7 +70,6 @@ julia> simulate_copula(4, AMH_cop_rev(2, 0.5))
  0.0379356  0.334231
  0.292457   0.74958
  0.0845089  0.505477
-
 
 julia> simulate_copula(4, AMH_cop_rev(2, -0.5))
 4×2 Array{Float64,2}:

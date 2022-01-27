@@ -269,7 +269,7 @@ function simulate_copula!(U, copula::Chain_of_Frechet{T}; rng = Random.GLOBAL_RN
   α = copula.α
   β = copula.β
   n = copula.n
-  U .= fncopulagen(α, β, rand(rng, T, t, n))
+  U .= fncopulagen(α, β, rand(rng, T, size(U,1), n))
   return nothing
 end
 
