@@ -505,7 +505,7 @@ struct Double_Nested_Gumbel_cop{T} <: Copula{T}
       testθ(θ, "gumbel")
       ϕ = [ch.θ for ch in children]
       ns = [[ch.n for ch in vs.children] for vs in children]
-      n = sum([sum(ns[i])+v[i].m for i in 1:length(children)])
+      n = sum([sum(ns[i])+children[i].m for i in 1:length(children)])
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       new{T}(children, θ,n)
   end
@@ -513,7 +513,7 @@ struct Double_Nested_Gumbel_cop{T} <: Copula{T}
       θ = getθ4arch(ρ, "gumbel", cor)
       ϕ = [ch.θ for ch in children]
       ns = [[ch.n for ch in vs.children] for vs in children]
-      n = sum([sum(ns[i])+v[i].m for i in 1:length(children)])
+      n = sum([sum(ns[i])+children[i].m for i in 1:length(children)])
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       new{T}(children, θ,n)
   end

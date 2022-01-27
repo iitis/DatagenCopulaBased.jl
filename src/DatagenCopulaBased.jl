@@ -15,7 +15,7 @@ module DatagenCopulaBased
     using CompilerSupportLibraries_jll
   end
 
-
+  include("simulate_copula.jl")
   include("sampleunivdists.jl")
   include("corgen.jl")
   include("marshallolkincopcor.jl")
@@ -29,7 +29,7 @@ module DatagenCopulaBased
 
   # change Gaussian data by adding higher order cross-correlations
   include("add_higher_order_cors.jl")
-  include("simulate_copula.jl")
+  
 
 
   export Gaussian_cop, Student_cop, Frechet_cop, Marshall_Olkin_cop
