@@ -6,20 +6,20 @@ struct KendallCorrelation <: CorrelationType end
 struct SpearmanCorrelation <: CorrelationType end
 
 """
-  Debye(x::Real, k::Int)
+  Debye(x, k::Int)
 
 Returns Debye function Dₖ(x) value
 """
-Debye(x::Real, k::Int=1) = k/x^k*(quadgk(i -> i^k/(exp(i)-1), 0, x)[1])
+Debye(x, k::Int=1) = k/x^k*(quadgk(i -> i^k/(exp(i)-1), 0, x)[1])
 
 # kendall's τ to copulas parameters
 
 """
-  τ2θ(τ::Real, copula::String)
+  τ2θ(τ, copula::String)
 
 Returns Float, a single parameter of Archimedean copula, given the Kenalss τ correlation
 """
-function τ2θ(τ::T, copula::String) where T <: Real
+function τ2θ(τ, copula)
   if copula == "gumbel"
     return 1/(1-τ)
   elseif copula == "clayton"
@@ -34,11 +34,11 @@ function τ2θ(τ::T, copula::String) where T <: Real
 end
 
 """
-  frankτ2θ(τ::Real)
+  frankτ2θ(τ)
 
 Returns a Frank copula θ parameter, givem Kendall's τ
 """
-function frankτ2θ(τ::Real)
+function frankτ2θ(τ)
   f(θ) = 1+4*(Debye(θ)-1)/θ - τ
   if τ > 0.
     return fzero(f, τ, 100.)
@@ -49,11 +49,11 @@ function frankτ2θ(τ::Real)
 end
 
 """
-  AMHτ2θ(τ::Real)
+  AMHτ2θ(τ)
 
 Returns Ali-Mikhail-Haq copula θ parameter, givem Kendall's τ
 """
-function AMHτ2θ(τ::Real)
+function AMHτ2θ(τ)
   f(θ) = (1 - 2*(*(1-θ)*(1-θ)log(1-θ) + θ)/(3*θ^2))-τ
   if -0.01 < τ < 0.01
     return 0.0000000000001
@@ -70,13 +70,13 @@ end
 # Spearman ρ to copulas parameter
 
 """
- ρ2θ(ρ::Real, copula::String)
+ ρ2θ(ρ, copula)
 
  Returns a Float, an Archimedean copula parameter given expected Spermann correlation
  ρ and a copula.
 
 """
-function ρ2θ(ρ::Real, copula::String)
+function ρ2θ(ρ, copula)
   if copula == "gumbel"
     return gumbelρ2θ(ρ)
   elseif copula == "clayton"
@@ -91,7 +91,7 @@ end
 
 ### Clayton and gumbel copulas
 
-function Ccl(x, θ::Real)
+function Ccl(x, θ)
   if θ > 0
     return (x[1]^(-θ)+x[2]^(-θ)-1)^(-1/θ)
   else
@@ -99,7 +99,7 @@ function Ccl(x, θ::Real)
   end
 end
 
-Cg(x, θ::Real) = exp(-((-log(x[1]))^θ+(-log(x[2]))^θ)^(1/θ))
+Cg(x, θ) = exp(-((-log(x[1]))^θ+(-log(x[2]))^θ)^(1/θ))
 
 dilog(x) = quadgk(t -> log(t)/(1-t), 1, x)[1]
 
@@ -129,7 +129,7 @@ function claytonρ2θ(ρ)
   end
 end
 
-function AMHρ2θ(ρ::Real)
+function AMHρ2θ(ρ)
   f(p) = (12*(1+p)*dilog(1-p)-24*(1-p)*log(1-p))/p^2-3*(p+12)/p-ρ
   if -0.01 < ρ  < 0.01
     return 0.00001
@@ -143,7 +143,7 @@ function AMHρ2θ(ρ::Real)
   0.999999
 end
 
-function frankρ2θ(ρ::Real)
+function frankρ2θ(ρ)
   f(θ) = 1+12*(Debye(θ, 2)- Debye(θ))/θ-ρ
   if ρ > 0.00001
     return fzero(f, ρ, 100.)

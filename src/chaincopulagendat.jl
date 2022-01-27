@@ -114,39 +114,7 @@ struct Chain_of_Archimedeans{T}
   end
 end
 
-"""
-    simulate_copula(t::Int, copula::Chain_of_Archimedeans; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations of multivariate data modeled by the chain of bivariate
-Archimedean copulas, i.e.
-
-    Chain_of_Archimedeans(θ::Vector{Flota64}, copulas::Union{String, Vector{String}})
-
-```jldoctest
-julia> Random.seed!(43);
-
-julia> c = Chain_of_Archimedeans([4., 11.], "frank")
-Chain_of_Archimedeans(3, [4.0, 11.0], ["frank", "frank"])
-
-julia> simulate_copula(1, c)
-1×3 Array{Float64,2}:
- 0.180975  0.492923  0.679345
-
-julia> c = Chain_of_Archimedeans([.5, .7], ["frank", "clayton"], KendallCorrelation)
-Chain_of_Archimedeans(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
-
-julia> Random.seed!(43);
-
-julia> simulate_copula(1, c)
-1×3 Array{Float64,2}:
- 0.180975  0.408582  0.646887
-```
-"""
-function simulate_copula(t, copula::Chain_of_Archimedeans{T}; rng= Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    U
-end
 
 """
     simulate_copula!(U::Matrix{Real}, copula::Chain_of_Archimedeans; rng::AbstractRNG = Random.GLOBAL_RNG)
@@ -295,33 +263,14 @@ struct Chain_of_Frechet{T}
   end
 end
 
-"""
-    simulate_copula(t::Int, copula::Chain_of_Frechet; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations modeled by the chain of bivariate two parameter Frechet copulas
 
-```jldoctest
-julia> Random.seed!(43)
-
-julia> simulate_copula(10, Chain_of_Frechet([0.6, 0.4], [0.3, 0.5]))
-  10×3 Array{Float64,2}:
-  0.996764  0.996764  0.996764
-  0.204033  0.795967  0.204033
-  0.979901  0.979901  0.0200985
-  0.120669  0.879331  0.120669
-  0.453027  0.453027  0.453027
-  0.800909  0.199091  0.800909
-  0.54892   0.54892   0.54892
-  0.933832  0.933832  0.0661679
-  0.396943  0.396943  0.396943
-  0.804096  0.851275  0.955881
-```
-"""
-function simulate_copula(t, copula::Chain_of_Frechet{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::Chain_of_Frechet{T}; rng = Random.GLOBAL_RNG) where T
   α = copula.α
   β = copula.β
   n = copula.n
-  fncopulagen(α, β, rand(rng, T, t, n))
+  U .= fncopulagen(α, β, rand(rng, T, t, n))
+  return nothing
 end
 
 

@@ -4,7 +4,7 @@
 Suplement the vector of λ patrameters of Marshall-Olkin copula, given some of those
 parameters and a vector fo Kendall's τ correlations. Wroks fo 2,3 variate MO copula
 """
-function τ2λ(τ::Vector{T}, λ::Vector{T}) where T <: Real
+function τ2λ(τ, λ)
   if length(τ) == 1
     return [λ[1],λ[2],(λ[1]+λ[2])*τ[1]/(1-τ[1])]
   else
@@ -16,7 +16,7 @@ function τ2λ(τ::Vector{T}, λ::Vector{T}) where T <: Real
   end
 end
 
-function moρ2τ(ρ::T) where T <: Real
+function moρ2τ(ρ)
   f(τ) = 1/2 .*sin.(τ[1]*pi/2)+τ[1]/2 - ρ[1]
   fzero(f, -0.999, 0.999)
 end

@@ -20,7 +20,6 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 Combinatorics = "1"
-#CompilerSupportLibraries_jll = "0.3, 0.4, 0.5"
 Distributions = "0.25"
 HCubature = "1.5"
 HypothesisTests = "0.10"

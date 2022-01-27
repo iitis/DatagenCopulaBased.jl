@@ -38,7 +38,7 @@ Returns a sample from the expotencialy tilted Levy stable pdf
 f(x; V0, α) = exp(-V0^α) g(x; α)/exp(-V0), where g(x; α) is a stable Levy pdf
 with parameters α = 1/θ, β = 1, γ = (cos(pi/(2*θ)))^θ and δ = 0.
 """
-function tiltedlevygen(V0, α; rng::AbstractRNG)
+function tiltedlevygen(V0, α; rng)
   T = eltype(V0)
   x = levyel(α, rand(rng, T), rand(rng, T))
   u = rand(rng, T)
@@ -62,7 +62,7 @@ Ginv(y, α) = ((1-y)*SpecialFunctions.gamma(1-α))^(-1/α)
 Returns the inverse Laplace transform of generator of Joe nested copula
 parametered by α
 """
-function InvlaJ(n::Int, α)
+function InvlaJ(n, α)
   T = eltype(α)
   return 1-1/(n*beta(T(n), 1-α))
 end
@@ -92,7 +92,7 @@ end
 Returns Int, a single sample of the inverse Laplace transform of the generator
 of nested Frank copula
 """
-function elInvlaF(θ₁, θ₀, logseriescdf; rng::AbstractRNG)
+function elInvlaF(θ₁, θ₀, logseriescdf; rng)
   T = eltype(θ₁)
   c1 = 1-exp(-θ₁)
   α = θ₀/θ₁
@@ -122,7 +122,7 @@ Return int, sampled from the Inverse Laplace trensform of nested
 Frank copula given parametes θ₁ θ₀ (child and parent)
 and an element of V0 - vector of samples of invlaplace of the parents copula
 """
-function nestedfrankgen(θ₁, θ₀, V0::Int, logseriescdf; rng::AbstractRNG)
+function nestedfrankgen(θ₁, θ₀, V0, logseriescdf; rng)
   T = eltype(θ₁)
   return sum([elInvlaF(θ₁, θ₀, logseriescdf; rng = rng) for j in 1:V0])
 end
