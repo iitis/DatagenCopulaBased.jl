@@ -128,7 +128,7 @@ julia> Gumbel_cop(4, .75, KendallCorrelation)
 Gumbel_cop(4, 4.0)
 ```
 """
-struct Gumbel_cop{T}
+struct Gumbel_cop{T} <: Copula{T}
   n::Int
   θ::T
   function(::Type{Gumbel_cop})(n::Int, θ::T) where T <: Real
@@ -211,7 +211,7 @@ julia> simulate_copula(2, c)
  0.0954475  0.138451  0.13593   0.0678172
 ```
 """
-struct Gumbel_cop_rev{T}
+struct Gumbel_cop_rev{T} <: Copula{T}
   n::Int
   θ::T
   function(::Type{Gumbel_cop_rev})(n::Int, θ::T) where T <: Real
@@ -290,7 +290,7 @@ julia> Clayton_cop(4, 0.9, SpearmanCorrelation)
 Clayton_cop(4, 5.5595567742323775)
 ```
 """
-struct Clayton_cop{T}
+struct Clayton_cop{T} <: Copula{T}
   n::Int
   θ::T
   function(::Type{Clayton_cop})(n::Int, θ::T) where T <: Real
@@ -396,7 +396,7 @@ Clayton_cop_rev(4, 5.5595567742323775)
 
 ```
 """
-struct Clayton_cop_rev{T}
+struct Clayton_cop_rev{T} <: Copula{T}
   n::Int
   θ::T
   function(::Type{Clayton_cop_rev})(n::Int, θ::T) where T <: Real
@@ -504,7 +504,7 @@ AMH_cop(4, 0.9999)
 
 ```
 """
-struct AMH_cop{T}
+struct AMH_cop{T} <: Copula{T}
   n::Int
   θ::T
   function(::Type{AMH_cop})(n::Int, θ::T) where T <: Real
@@ -589,7 +589,7 @@ julia> AMH_cop_rev(4, .3)
 AMH_cop_rev(4, 0.3)
 ```
 """
-struct AMH_cop_rev{T}
+struct AMH_cop_rev{T} <: Copula{T}
   n::Int
   θ::T
   function(::Type{AMH_cop_rev})(n::Int, θ::T) where T <: Real
@@ -685,7 +685,7 @@ julia> Frank_cop(4, .3)
 Frank_cop(4, 0.3)
 ```
 """
-struct Frank_cop{T}
+struct Frank_cop{T} <: Copula{T}
   n::Int
   θ::T
   function(::Type{Frank_cop})(n::Int, θ::T) where T <: Real

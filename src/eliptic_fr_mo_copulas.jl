@@ -21,20 +21,21 @@ Gaussian_cop([1.0 0.5; 0.5 1.0])
 
 ```
 """
-struct Gaussian_cop{T}
+struct Gaussian_cop{T} <: Copula{T}
   Σ::Matrix{T}
+  n::Int
   function(::Type{Gaussian_cop})(Σ::Matrix{T}) where T <: Real
     Σ ≈ transpose(Σ) || throw(DomainError("Σ matrix not symmetric"))
     isposdef(Σ) || throw(DomainError("Σ matrix not positivelly defined"))
     prod(diag(Σ)) ≈ 1.0 || throw(DomainError("Σ matrix do not have ones on diagonal"))
-    new{T}(Σ)
+    new{T}(Σ,size(Σ,1))
   end
 end
 
 
-function simulate_copula!(U,t, copula::Gaussian_cop{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::Gaussian_cop{T}; rng = Random.GLOBAL_RNG) where T
   Σ = copula.Σ
-  z = transpose(rand(rng, MvNormal(Σ),t))
+  z = transpose(rand(rng, MvNormal(Σ),size(U,1)))
   for i in 1:size(Σ, 1)
     d = Normal(0, sqrt.(Σ[i,i]))
     z[:,i] = cdf.(d, z[:,i])
@@ -63,27 +64,28 @@ Student_cop([1.0 0.5; 0.5 1.0], 4)
 
 ```
 """
-struct Student_cop{T}
+struct Student_cop{T} <: Copula{T}
   Σ::Matrix{T}
   ν::Int
+  n::Int
   function(::Type{Student_cop})(Σ::Matrix{T}, ν::Int) where T <: Real
     Σ ≈ transpose(Σ) || throw(DomainError("Σ matrix not symmetric"))
     isposdef(Σ) || throw(DomainError("Σ matrix not positivelly defined"))
     prod(diag(Σ)) ≈ 1.0 || throw(DomainError("Σ matrix do not have ones on diagonal"))
     ν > 0 || throw(DomainError("ν lower or equal zero"))
-    new{T}(Σ, ν)
+    new{T}(Σ, ν,size(Σ,1))
   end
 end
 
 
-function simulate_copula!(U,t, copula::Student_cop{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::Student_cop{T}; rng = Random.GLOBAL_RNG) where T
   Σ = copula.Σ
   ν = copula.ν
-  z = transpose(rand(rng, MvNormal(Σ),t))
-  U = rand(rng, Chisq(ν), size(z, 1))
-  U = T.(U)
+  z = transpose(rand(rng, MvNormal(Σ),size(U,1)))
+  V = rand(rng, Chisq(ν), size(z, 1))
+  V = T.(V)
   for i in 1:size(Σ, 1)
-    x = z[:,i].*sqrt.(ν./U)./sqrt(Σ[i,i])
+    x = z[:,i].*sqrt.(ν./V)./sqrt(Σ[i,i])
     z[:,i] = cdf.(TDist(ν), x)
   end
   U .= Array(z)
@@ -122,7 +124,7 @@ julia> Frechet_cop(2, 0.5, 0.3)
 Frechet_cop(2, 0.5, 0.3)
 ```
 """
-struct Frechet_cop{T}
+struct Frechet_cop{T} <: Copula{T}
   n::Int
   α::T
   β::T
@@ -274,7 +276,7 @@ julia> Marshall_Olkin_cop([0.5, 0.5, 0.6, 0.7, 0.7, 0.7, 0.8])
 Marshall_Olkin_cop(3, [0.5, 0.5, 0.6, 0.7, 0.7, 0.7, 0.8])
 ```
 """
-struct Marshall_Olkin_cop{T}
+struct Marshall_Olkin_cop{T} <: Copula{T}
   n::Int
   λ::Vector{T}
   function(::Type{Marshall_Olkin_cop})(λ::Vector{T}) where T <: Real

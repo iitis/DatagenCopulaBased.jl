@@ -1,3 +1,7 @@
+struct Copula{T} end 
+Base.eltype(::Copula{T}) where T = T
+
+
 """
     simulate_copula(t::Int, copula::Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
@@ -10,21 +14,7 @@ julia> simulate_copula(2, Gumbel_cop(3, 1.5))
 2×3 Array{Real,2}:
  0.740038  0.918928  0.950674
  0.637826  0.483514  0.123949
-```
-"""
-function simulate_copula(t, copula::Gumbel_cop{T}; rng = Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
-"""
-    simulate_copula(t::Int, copula::Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-
-Returns t realizations from the Clayton copula - Clayton_cop(n, θ)
-
-```jldoctest
 julia> Random.seed!(43);
 
 julia> simulate_copula(3, Clayton_cop(2, 1.))
@@ -39,41 +29,13 @@ julia> simulate_copula(3, Clayton_cop(2, 1.))
  2×2 Array{Float64,2}:
   0.180975  0.818017
   0.888934  0.863358
-```
-"""
-function simulate_copula(t, copula::Clayton_cop{T}; rng= Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
-
-"""
-    simulate_copula(t::Int, copula::Gumbel_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations from the Gumbel _cop _rev(n, θ) - the reversed Gumbel copula (reversed means u → 1 .- u).
-
-```jldoctest
 julia> Random.seed!(43);
 
 julia> simulate_copula(2, Gumbel_cop_rev(3, 1.5))
 2×3 Array{Real,2}:
  0.259962  0.081072  0.0493259
  0.362174  0.516486  0.876051
-```
-"""
-function simulate_copula(t, copula::Gumbel_cop_rev{T}; rng= Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
-
-"""
-    simulate_copula(t::Int, copula::Clayton_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations form the Clayton _cop _rev(n, θ) - the reversed Clayton copula (reversed means u → 1 .- u)
-
-```jldoctest
 
   julia> Random.seed!(43);
 
@@ -81,20 +43,7 @@ Returns t realizations form the Clayton _cop _rev(n, θ) - the reversed Clayton 
  2×2 Array{Float64,2}:
    0.819025  0.181983
    0.111066  0.136642
-```
-"""
-function simulate_copula(t, copula::Clayton_cop_rev{T}; rng = Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
-"""
-    simulate_copula(t::Int, copula::AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations from the Ali-Mikhail-Haq copula- AMH_cop(n, θ)
-
-```jldoctest
 julia> Random.seed!(43);
 
 julia> simulate_copula(4, AMH_cop(2, 0.5))
@@ -112,20 +61,7 @@ julia> simulate_copula(4, AMH_cop(2, -0.5))
  0.888934  0.886169
  0.408278  0.919572
  0.828727  0.335864
-```
-"""
-function simulate_copula(t, copula::AMH_cop{T}; rng = Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
-"""
-    simulate_copula(t::Int, copula::AMH_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations from the reversed Ali-Mikhail-Haq copula - AMH _cop _rev(n, θ), reversed means u → 1 .- u.
-
-```jldoctest
 julia> Random.seed!(43);
 
 julia> simulate_copula(4, AMH_cop_rev(2, 0.5))
@@ -142,20 +78,7 @@ julia> simulate_copula(4, AMH_cop_rev(2, -0.5))
  0.111066  0.113831
  0.591722  0.0804284
  0.171273  0.664136
-```
-"""
-function simulate_copula(t, copula::AMH_cop_rev{T}; rng = Random.GLOBAL_RNG) where T
-    U = zeros(T ,t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
-"""
-    simulate_copula(t::Int, copula::Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations from the n-variate Frank copula - Frank _cop(n, θ)
-
-```jldoctest
 julia> Random.seed!(43);
 
 julia> simulate_copula(4, Frank_cop(2, 3.5))
@@ -173,23 +96,7 @@ julia> simulate_copula(4, Frank_cop(2, 0.2, SpearmanCorrelation))
  0.962936  0.678791
  0.718628  0.271543
  0.917759  0.51439
-```
-"""
-function simulate_copula(t, copula::Frank_cop{T}; rng = Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
-"""
-    simulate_copula(t::Int, copula::Chain_of_Archimedeans; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations of multivariate data modeled by the chain of bivariate
-Archimedean copulas, i.e.
-
-    Chain_of_Archimedeans(θ::Vector{Flota64}, copulas::Union{String, Vector{String}})
-
-```jldoctest
 julia> Random.seed!(43);
 
 julia> c = Chain_of_Archimedeans([4., 11.], "frank")
@@ -207,20 +114,7 @@ julia> Random.seed!(43);
 julia> simulate_copula(1, c)
 1×3 Array{Float64,2}:
  0.180975  0.408582  0.646887
-```
-"""
-function simulate_copula(t, copula::Chain_of_Archimedeans{T}; rng= Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
-"""
-    simulate_copula(t::Int, copula::Chain_of_Frechet; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations modeled by the chain of bivariate two parameter Frechet copulas
-
-```jldoctest
 julia> Random.seed!(43)
 
 julia> simulate_copula(10, Chain_of_Frechet([0.6, 0.4], [0.3, 0.5]))
@@ -235,22 +129,6 @@ julia> simulate_copula(10, Chain_of_Frechet([0.6, 0.4], [0.3, 0.5]))
   0.933832  0.933832  0.0661679
   0.396943  0.396943  0.396943
   0.804096  0.851275  0.955881
-```
-"""
-function simulate_copula(t, copula::Chain_of_Frechet{T}; rng = Random.GLOBAL_RNG) where T
-  U = zeros(T, t, copula.n)
-  simulate_copula!(U, copula; rng = rng)
-  return U
-end
-
-"""
-    simulate_copula(t::Int, copula::Gaussian_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations of the Gaussian copula
-
-    Gaussian_cop(Σ)
-
-```jldoctest
 
 julia> Random.seed!(43);
 
@@ -266,23 +144,7 @@ julia> simulate_copula(10, Gaussian_cop([1. 0.5; 0.5 1.]))
  0.585362  0.23135
  0.498593  0.48266
  0.190283  0.594451
-```
-"""
-function simulate_copula(t, copula::Gaussian_cop{T}; rng = Random.GLOBAL_RNG) where T
-  U = zeros(T, t, copula.n)
-  simulate_copula!(U, copula; rng = rng)
-  return U
-end
-"""
-    simulate_copula(t::Int, copula::Student _cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations of the t-Student Copula
-
-    Student_cop(Σ, ν)
-
-where: Σ - correlation matrix, ν - degrees of freedom.
-
-```jldoctest
 julia> Random.seed!(43);
 
 julia> simulate_copula(10, Student_cop([1. 0.5; 0.5 1.], 10))
@@ -297,23 +159,6 @@ julia> simulate_copula(10, Student_cop([1. 0.5; 0.5 1.], 10))
  0.57113   0.272525
  0.498443  0.48082
  0.113788  0.633349
-```
-"""
-function simulate_copula(t, copula::Student_cop{T}; rng = Random.GLOBAL_RNG) where T
-  U = zeros(T, t, copula.n)
-  simulate_copula!(U, copula; rng = rng)
-  return U
-end
-
-"""
-    simulate_copula(t::Int, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizatioins of data from the Frechet copula
-
-    Frechet_cop(n, α)
-    Frechet_cop(n, α, β)
-
-```jldoctest
 
 julia> Random.seed!(43);
 
@@ -332,23 +177,6 @@ Frechet_cop(2, 0.5, 0.2)
 julia> simulate_copula(1, f)
 1×2 Array{Real,2}:
 0.180975  0.775377
-```
-"""
-
-function simulate_copula(t, copula::Frechet_cop{T}; rng = Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
-
-"""
-    simulate_copula(t::Int, copula::Marshall_Olkin_cop(λ); rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations of the n-variate Marshall-Olkin copula:
-
-    Marshall_Olkin_cop(λ)
-
-```jldoctest
 
 julia> Random.seed!(43);
 
@@ -358,22 +186,7 @@ Marshall_Olkin_cop(2, [1.0, 2.0, 3.0])
 julia> simulate_copula(1, cop)
 1×2 Array{Float64,2}:
   0.854724  0.821831
-```
-"""
-function simulate_copula(t, copula::Marshall_Olkin_cop{T}; rng = Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
-"""
-    simulate_copula(t::Int, copula::Hierarchical_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations of multivariate data from hierarchically nested Gumbel copula, i.e.
-
-    Hierarchical_Gumbel_cop(θ)
-
-```jldoctest
 julia> using Random
 
 julia> Random.seed!(43);
@@ -386,20 +199,6 @@ julia> simulate_copula(3, c)
  0.100353  0.207903  0.0988337  0.0431565
  0.347417  0.217052  0.223734   0.042903
  0.73617   0.347349  0.168348   0.410963
-```
-"""
-function simulate_copula(t, copula::Hierarchical_Gumbel_cop{T}; rng = Random.GLOBAL_RNG) where T
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
-
-"""
-    simulate_copula(t::Int, copula::Nested_Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations of data generated using Nested Clayton copula
-
-```jldoctest
 
 julia> Random.seed!(43);
 
@@ -418,21 +217,6 @@ julia> simulate_copula(4, cp)
 0.588245  0.85816   0.935308  0.944444  0.709009
 0.59625   0.665947  0.483649  0.603074  0.153501
 0.200051  0.304099  0.242572  0.177836  0.0851603
-```
-"""
-function simulate_copula(t, copula::Nested_Clayton_cop{T}; rng = Random.GLOBAL_RNG) where T
-     U = zeros(T, t, copula.n)
-     simulate_copula!(U, copula; rng = rng)
-     return U
-end
-
-
-"""
-     simulate_copula(t::Int, copula::Nested_AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations of data generated using Nested AMH copula
-
-```jldoctest
 
 julia> c1 = AMH_cop(2, .7)
 AMH_cop(2, 0.7)
@@ -451,20 +235,6 @@ julia> simulate_copula(4, cp)
  0.184204  0.866664  0.699134  0.226744  0.102932
  0.268634  0.383355  0.179023  0.533749  0.995958
  0.578143  0.840169  0.743728  0.963226  0.576695
-```
-"""
-function simulate_copula(t, copula::Nested_AMH_cop{T}; rng = Random.GLOBAL_RNG) where T
-     U = zeros(T, t, copula.n)
-     simulate_copula!(U, copula; rng = rng)
-     return U
-end
-
-
-"""
-    simulate_copula(t::Int, copula::Nested_Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations of data generated using Nested Frank copula
-```jldoctest
 
 julia> c1 = Frank_cop(2, 4.)
 Frank_cop(2, 4.0)
@@ -480,20 +250,6 @@ julia> Random.seed!(43);
 julia> simulate_copula(1, c)
 1×5 Array{Float64,2}:
  0.642765  0.901183  0.969422  0.9792  0.74155
-```
-"""
-function simulate_copula(t, copula::Nested_Frank_cop{T}; rng = Random.GLOBAL_RNG) where T
-     U = zeros(T, t, copula.n)
-     simulate_copula!(U, copula; rng = rng)
-     return U
-end
-
-"""
-    simulate_copula(t::Int, copula::Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Returns t realizations of data generated using  Nested Gumbel copula
-
-```jldoctest
 
 julia> Random.seed!(43);
 
@@ -512,22 +268,7 @@ julia> simulate_copula(4, cp)
  0.0646972  0.0865914  0.990691  0.991127  0.718803
  0.966896   0.709233   0.788019  0.855622  0.755476
  0.272487   0.106996   0.756052  0.834068  0.661432
-```
-"""
-function simulate_copula(t, copula::Nested_Gumbel_cop{T}; rng = Random.GLOBAL_RNG) where T
-     U = zeros(T, t, copula.n)
-     simulate_copula!(U, copula; rng = rng)
-     return U
-end
 
-"""
-    simulate_copula(t::Int, copula::Double_Nested_Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
-
-Simulate t realization of the Double Nested Gumbel copula i.e.
-
-    Double_Nested_Gumbel_cop(vec_of_children, θ)
-
-```jldoctest
 julia> a = Gumbel_cop(2, 5.)
 Gumbel_cop(2, 5.0)
 
@@ -557,8 +298,8 @@ julia> simulate_copula(5, copula)
  0.310365   0.0483216  0.119312   0.107155  0.336619  0.279602  0.262756  0.438432    0.403061
 ```
 """
-function simulate_copula(t, copula::Double_Nested_Gumbel_cop{T}; rng = Random.GLOBAL_RNG) where T
-     U = zeros(T, t, copula.n)
-     simulate_copula!(U, copula; rng = rng)
-     return U
+function simulate_copula(t, copula; rng = Random.GLOBAL_RNG)
+    U = zeros(eltype(copula), t, copula.n)
+    simulate_copula!(U, copula; rng = rng)
+    return U
 end

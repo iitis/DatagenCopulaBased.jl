@@ -45,25 +45,28 @@ Nested_Clayton_cop(Clayton_cop[Clayton_cop(2, 2.0), Clayton_cop(2, 2.0)], 2, 0.5
 
 ```
 """
-struct Nested_Clayton_cop{T}
+struct Nested_Clayton_cop{T} <: Copula{T}
   children::Vector{Clayton_cop{T}}
   m::Int
   θ::T
+  n::Int
   function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop{T}}, m::Int, θ::T) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       testθ(θ, "clayton")
       ϕ = [ch.θ for ch in children]
+      n = sum(ch.n for ch in children)+m
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       maximum(ϕ) < θ+2*θ^2+750*θ^5 || @warn("θ << ϕ, marginals may not be uniform")
-      new{T}(children, m, θ)
+      new{T}(children, m, θ, n)
   end
   function(::Type{Nested_Clayton_cop})(children::Vector{Clayton_cop{T}}, m::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "clayton", cor)
       ϕ = [ch.θ for ch in children]
+      n = sum(ch.n for ch in children)+m
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
       maximum(ϕ) < θ+2*θ^2+750*θ^5 || @warn("θ << ϕ, marginals may not be uniform")
-      new{T}(children, m, θ)
+      new{T}(children, m, θ, n)
   end
 end
 
@@ -103,23 +106,26 @@ Nested_AMH_cop(AMH_cop[AMH_cop(2, 0.2), AMH_cop(2, 0.2)], 2, 0.1)
 
 ```
 """
-struct Nested_AMH_cop{T}
+struct Nested_AMH_cop{T} <: Copula{T}
   children::Vector{AMH_cop{T}}
   m::Int
   θ::T
+  n::Int
   function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop{T}}, m::Int, θ::T) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       testθ(θ, "amh")
       ϕ = [ch.θ for ch in children]
+      n = sum(ch.n for ch in children)+m
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new{T}(children, m, θ)
+      new{T}(children, m, θ, n)
   end
   function(::Type{Nested_AMH_cop})(children::Vector{AMH_cop{T}}, m::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       θ = getθ4arch(ρ, "amh", cor)
       ϕ = [ch.θ for ch in children]
+      n = sum(ch.n for ch in children)+m
       θ <= minimum(ϕ) || throw(DomainError("violated sufficient nesting condition"))
-      new{T}(children, m, θ)
+      new{T}(children, m, θ, n)
   end
 end
 
@@ -158,11 +164,11 @@ julia> Nested_Frank_cop([a, a], 2, 0.1)
 Nested_Frank_cop(Frank_cop[Frank_cop(2, 5.0), Frank_cop(2, 5.0)], 2, 0.1)
 ```
 """
-struct Nested_Frank_cop{T}
+struct Nested_Frank_cop{T} <: Copula{T}
   children::Vector{Frank_cop{T}}
   m::Int
   θ::T
-  n::T
+  n::Int
   function(::Type{Nested_Frank_cop})(children::Vector{Frank_cop{T}}, m::Int, θ::T) where T <: Real
       m >= 0 || throw(DomainError("not supported for m  < 0 "))
       testθ(θ, "frank")
@@ -216,7 +222,7 @@ julia> Nested_Gumbel_cop([a, a], 2, 2.1)
 Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.0), Gumbel_cop(2, 5.0)], 2, 2.1)
 ```
 """
-struct Nested_Gumbel_cop{T}
+struct Nested_Gumbel_cop{T} <: Copula{T}
   children::Vector{Gumbel_cop{T}}
   m::Int
   θ::T
@@ -491,7 +497,7 @@ julia> Double_Nested_Gumbel_cop([p1, p2], 1.5)
 Double_Nested_Gumbel_cop(Nested_Gumbel_cop[Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.0), Gumbel_cop(2, 6.0)], 1, 2.0), Nested_Gumbel_cop(Gumbel_cop[Gumbel_cop(2, 5.5)], 2, 2.1)], 1.5)
 ```
 """
-struct Double_Nested_Gumbel_cop{T}
+struct Double_Nested_Gumbel_cop{T} <: Copula{T}
   children::Vector{Nested_Gumbel_cop{T}}
   θ::T
   n::Int
@@ -614,7 +620,7 @@ julia> c = Hierarchical_Gumbel_cop([0.95, 0.5, 0.05], KendallCorrelation)
 Hierarchical_Gumbel_cop(4, [19.999999999999982, 2.0, 1.0526315789473684])
 ```
 """
-struct Hierarchical_Gumbel_cop{T}
+struct Hierarchical_Gumbel_cop{T} <: Copula{T}
   n::Int
   θ::Vector{T}
   function(::Type{Hierarchical_Gumbel_cop})(θ::Vector{T}) where T <: Real

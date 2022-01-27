@@ -77,7 +77,7 @@ Chain_of_Archimedeans(3, [5.736282707019972, 4.666666666666666], ["frank", "clay
 
 ```
 """
-struct Chain_of_Archimedeans{T}
+struct Chain_of_Archimedeans{T} <: Copula{T}
   n::Int
   θ::Vector{T}
   copulas::Vector{String}
@@ -242,7 +242,7 @@ julia> Chain_of_Frechet([0.2, 0.3, 0.4], [0.1, 0.1, 0.1])
 Chain_of_Frechet(4, [0.2, 0.3, 0.4], [0.1, 0.1, 0.1])
 ```
 """
-struct Chain_of_Frechet{T}
+struct Chain_of_Frechet{T} <: Copula{T}
   n::Int
   α::Vector{T}
   β::Vector{T}
