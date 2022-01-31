@@ -89,12 +89,9 @@ function ρ2θ(ρ, copula)
   throw(AssertionError("$(copula) not supported"))
 end
 
-### Clayton and gumbel copulas
+### Clayton and Gumbel copulas
 
 function Ccl(x, θ)
-  print(x)
-  print(θ)
-  println("........")
   if θ > 0
     return (x[1]^(-θ)+x[2]^(-θ)-1)^(-1/θ)
   else
