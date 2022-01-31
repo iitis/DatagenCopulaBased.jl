@@ -157,12 +157,20 @@ end
   end
   @testset "small example" begin
     Random.seed!(43)
-    @test simulate_copula(1, Marshall_Olkin_cop([1., 2., 3.])) ≈ [0.854724  0.821831] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, Marshall_Olkin_cop([1., 2., 3.])) ≈ [0.854724  0.821831] atol=1.0e-5
+    else
+      @test simulate_copula(1, Marshall_Olkin_cop([1., 2., 3.])) ≈ [0.277907 0.971565] atol=1.0e-5
+    end
 
     u = zeros(1,2)
     Random.seed!(43)
     simulate_copula!(u, Marshall_Olkin_cop([1., 2., 3.]))
-    @test u ≈ [0.854724  0.821831] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test u ≈ [0.854724  0.821831] atol=1.0e-5
+    else
+      @test u ≈ [0.277907 0.971565] atol=1.0e-5
+    end
 
     m = [0.252982 0.201189;  0.464758 0.409039; 0.585662 0.5357]
     @test mocopula([0.2 0.3 0.4; 0.3 0.4 0.6; 0.4 0.5 0.7], 2, [1., 1.5, 2.]) ≈ m atol=1.0e-4
@@ -180,7 +188,7 @@ end
     @test corkendall(x)[1,2]≈ a1*a2/(a1+a2-a1*a2) atol=1.0e-3
     @test tail(x[:,1], x[:,2], "r") ≈ a1 atol=1.0e-1
     Random.seed!(42)
-    x = simulate_copula(100000, Marshall_Olkin_cop([1.1, 0.2, 2.1, 0.6, 0.5, 3.2, 7.1, 2.1]))
+    x = simulate_copula(20000, Marshall_Olkin_cop([1.1, 0.2, 2.1, 0.6, 0.5, 3.2, 7.1, 2.1]))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
