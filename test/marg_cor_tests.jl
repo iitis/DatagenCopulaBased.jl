@@ -15,10 +15,18 @@ end
 
 @testset "generate corelation matrix" begin
   Random.seed!(43)
-  @test random_unit_vector(2) ≈ [0.2414027539276207, 0.9704250153392381]
+  if VERSION <= v"1.7"
+    @test random_unit_normal_vector(2) ≈ [0.2414027539276207, 0.9704250153392381]
+  else
+    @test random_unit_normal_vector(2) ≈ [0.19041035339908666; -0.9817045876018076]
+  end
 
   Random.seed!(43)
-  @test cormatgen(2) ≈ [1.0 0.660768; 0.660768 1.0] atol=1.0e-5
+  if VERSION <= v"1.7"
+    @test cormatgen(2) ≈ [1.0 0.660768; 0.660768 1.0] atol=1.0e-5
+  else
+    @test cormatgen(2) ≈ [1.0 0.278807; 0.278806 1.0] atol=1.0e-5
+  end
 
   @test cormatgen_constant(3, 0.3) == [1 0.3 0.3; 0.3 1 0.3; 0.3 0.3 1]
   @test cormatgen_toeplitz(3, 0.3) == [1 0.3 0.09; 0.3 1 0.3; 0.09 0.3 1]
@@ -37,7 +45,11 @@ end
   @test diag(cormatgen_two_constant_noised(10, 0.8, 0.2)) ≈ ones(10)
 
   Random.seed!(43)
-  @test cormatgen_rand(2) ≈ [1.0 0.879086; 0.879086 1.0] atol=1.0e-5
+  if VERSION <= v"1.7"
+    @test cormatgen_rand(2) ≈ [1.0 0.879086; 0.879086 1.0] atol=1.0e-5
+  else
+    @test cormatgen_rand(2) ≈ [1.0 0.723043; 0.723043 1.0] atol=1.0e-5
+  end
   @test all(eigvals(cormatgen_rand(10)) .> 0)
   @test diag(cormatgen_rand(10)) ≈ ones(10)
 

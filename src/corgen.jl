@@ -119,7 +119,7 @@ function cormatgen_constant(n, α)
   α .*ones(n, n) .+(1-α) .*Matrix(1.0I, n,n)
 end
 
-function random_unit_vector(dim)
+function random_unit_normal_vector(dim)
   result = rand(Normal(), dim, 1)
   result /= norm(result)
 end
@@ -143,7 +143,7 @@ julia> cormatgen_constant_noised(3, 0.5)
 function cormatgen_constant_noised(n, α; ϵ = (1 .-α)/2.)
   @assert 0 <= ϵ <= 1-α "ϵ must satisfy 0 <= ϵ <= 1-α"
   result = cormatgen_constant(n, α)
-  u = hcat([random_unit_vector(n) for i=1:n]...)
+  u = hcat([random_unit_normal_vector(n) for i=1:n]...)
   result += ϵ .*(u'*u)
   result - ϵ .*Matrix(1.0I, size(result)...)
 end
@@ -200,7 +200,7 @@ julia> cormatgen_two_constant_noised(4, 0.5, 0.1)
 function cormatgen_two_constant_noised(n, α, β; ϵ= (1-α)/2)
   @assert ϵ <= 1-α
   result = cormatgen_two_constant(n, α, β)
-  u = hcat([random_unit_vector(n) for i=1:n]...)
+  u = hcat([random_unit_normal_vector(n) for i=1:n]...)
   result += ϵ .*(u'*u)
   result - ϵ .*Matrix(1.0I, size(result)...)
 end
@@ -256,7 +256,7 @@ function cormatgen_toeplitz_noised(n, ρ; ϵ=(1-ρ)/(1+ρ)/2)
   @assert 0 <= ϵ <= (1-ρ)/(1+ρ) "ϵ must satisfy 0 <= ϵ <= (1-ρ)/(1+ρ)"
 
   result = cormatgen_toeplitz(n, ρ)
-  u = hcat([random_unit_vector(n) for i=1:n]...)
+  u = hcat([random_unit_normal_vector(n) for i=1:n]...)
   result += ϵ .*(u'*u)
   result - ϵ .*Matrix(1.0I, size(result)...)
 end

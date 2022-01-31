@@ -23,7 +23,7 @@ import DatagenCopulaBased: mocopula, arch_gen
 import DatagenCopulaBased: nestedcopulag
 import DatagenCopulaBased: meanΣ, frechet, mean_outer, parameters, are_parameters_good, Σ_theor
 import DatagenCopulaBased: getcors_advanced
-import DatagenCopulaBased: random_unit_vector
+import DatagenCopulaBased: random_unit_normal_vector
 import DatagenCopulaBased: frechet_el!, frechet_el2!, mocopula_el
 
 # axiliary tests
