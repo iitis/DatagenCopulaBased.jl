@@ -76,20 +76,40 @@ end
     frechet_el2!(u, 0.2, 0.6, 0.6)
     @test u ≈ [0.2, 0.8]
     Random.seed!(43)
-    @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
+    else
+      @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.428396 0.428396 0.428396 0.42839656] atol=1.0e-5
+    end
     Random.seed!(43)
-    @test frechet(1., rand(1,4); rng = Random.GLOBAL_RNG) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
+    else
+      @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.428396 0.428396 0.428396 0.42839656] atol=1.0e-5
+    end
     Random.seed!(43)
-    @test simulate_copula(1, Frechet_cop(2, 0.4, 0.4)) ≈ [0.1809752 0.7753771] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, Frechet_cop(2, 0.4, 0.4)) ≈ [0.1809752 0.7753771] atol=1.0e-5
+    else
+      @test simulate_copula(1, Frechet_cop(2, 0.4, 0.4)) ≈ [0.988527 0.9885277] atol=1.0e-5
+    end
 
     u = zeros(1,4)
     u1 = zeros(1,2)
     Random.seed!(43)
     simulate_copula!(u, Frechet_cop(4, 1.))
-    @test u ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test u ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
+    else
+      @test u ≈ [0.428396 0.4283965 0.428396 0.4283965] atol=1.0e-5
+    end
     Random.seed!(43)
     simulate_copula!(u1, Frechet_cop(2, 0.4, 0.4))
-    @test u1 ≈ [0.1809752 0.7753771] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test u1 ≈ [0.1809752 0.7753771] atol=1.0e-5
+    else
+      @test u1 ≈ [0.98852774 0.98852774] atol=1.0e-5
+    end
   end
   @testset "examples on larger data" begin
     Random.seed!(43)
