@@ -32,7 +32,11 @@ end
 
   @testset "example on data" begin
     Random.seed!(43)
-    @test simulate_copula(1, Student_cop([1. 0.; 0. 1.], 1)) ≈ [0.936433  0.983987] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, Student_cop([1. 0.; 0. 1.], 1)) ≈ [0.936433  0.983987] atol=1.0e-5
+    else
+      @test simulate_copula(1, Student_cop([1. 0.; 0. 1.], 1)) ≈ [0.727310 0.070078] atol=1.0e-5
+    end
     ν = 10
     rho = 0.5
     λ = 2*pdf(TDist(ν+1), -sqrt.((ν+1)*(1-rho)/(1+rho)))
