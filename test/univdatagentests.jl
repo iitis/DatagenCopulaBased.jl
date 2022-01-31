@@ -12,11 +12,20 @@
 end
 @testset "stable levy dist" begin
   Random.seed!(43)
-  @test levyel(2., rand(), rand()) ≈ 0.18170339379413047
+  if VERSION <= v"1.7"
+    @test levyel(2., rand(), rand()) ≈ 0.181703 atol=1.0e-5
     Random.seed!(43)
-  @test tiltedlevygen(0.2, 2.; rng = Random.GLOBAL_RNG) ≈ 0.00409133 atol=1.0e-5
-  Random.seed!(43)
-  @test tiltedlevygen(0.6, 2.; rng = Random.GLOBAL_RNG) ≈ 0.036822009 atol=1.0e-5
+    @test tiltedlevygen(0.2, 2.; rng = Random.GLOBAL_RNG) ≈ 0.00409133 atol=1.0e-5
+    Random.seed!(43)
+    @test tiltedlevygen(0.6, 2.; rng = Random.GLOBAL_RNG) ≈ 0.036822009 atol=1.0e-5
+  else
+    @test levyel(2., rand(), rand()) ≈ 0.059716 atol=1.0e-5
+    Random.seed!(43)
+    @test tiltedlevygen(0.2, 2.; rng = Random.GLOBAL_RNG) ≈ 0.032748 atol=1.0e-5
+    Random.seed!(43)
+    @test tiltedlevygen(0.6, 2.; rng = Random.GLOBAL_RNG) ≈ 0.294735 atol=1.0e-5
+  end
+
 end
 @testset "nested copulas data generators" begin
   @test Ginv(0.5, 0.5) ≈ 1.2732395447351625
