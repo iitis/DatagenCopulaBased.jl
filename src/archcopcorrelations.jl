@@ -116,7 +116,7 @@ function gumbelρ2θ(ρ)
   end
 end
 
- claytonθ2ρ(θ) = 12*hcubature(x-> Ccl(x, θ), [0,0],[1,1])[1]-3
+ claytonθ2ρ(θ) = 12*hcubature(x-> Ccl(x, θ), [1e-10,1e-10],[1,1])[1]-3
 
 function claytonρ2θ(ρ)
   f(θ) = claytonθ2ρ(θ)-ρ
