@@ -31,8 +31,8 @@ julia> x
   1.70477    10.4192
 ```
 """
-function convertmarg!(U::Matrix{T}, d::UnionAll, p::VecVec{T} = [fill([0,1], size(U, 2))...];
-                                                testunif::Bool = true) where T <: Real
+function convertmarg!(U, d, p = [fill([0,1], size(U, 2))...];
+                                                testunif = true)
   for i = 1:size(U, 2)
     if testunif
       pvalue(ExactOneSampleKSTest(U[:,i],Uniform(0,1)))>0.0001 || throw(AssertionError("$i marg. not unif."))
@@ -64,7 +64,7 @@ julia> cormatgen(2)
  0.660768  1.0
 ```
 """
-function cormatgen(n::Int = 20)
+function cormatgen(n = 20)
   a = rand(n,n)
   b = a*a'
   c = b./maximum(b)
@@ -94,7 +94,7 @@ julia> cormatgen_rand(2)
  0.879086  1.0
 ```
 """
-function cormatgen_rand(n::Int = 20)
+function cormatgen_rand(n = 20)
   a = rand(n,n)
   b = a*a'
   diagb = Matrix(Diagonal(1 ./sqrt.(LinearAlgebra.diag(b))))
@@ -114,12 +114,12 @@ julia> cormatgen_constant(2, 0.5)
  0.5  1.0
 ```
 """
-function cormatgen_constant(n::Int, α::Real)
+function cormatgen_constant(n, α)
   @assert 0 <= α <= 1 "α should satisfy 0 <= α <= 1"
   α .*ones(n, n) .+(1-α) .*Matrix(1.0I, n,n)
 end
 
-function random_unit_vector(dim::Int)
+function random_unit_vector(dim)
   result = rand(Normal(), dim, 1)
   result /= norm(result)
 end
@@ -140,7 +140,7 @@ julia> cormatgen_constant_noised(3, 0.5)
  0.285793  0.475609  1.0
 ```
 """
-function cormatgen_constant_noised(n::Int, α::Real; ϵ::Real = (1 .-α)/2.)
+function cormatgen_constant_noised(n, α; ϵ = (1 .-α)/2.)
   @assert 0 <= ϵ <= 1-α "ϵ must satisfy 0 <= ϵ <= 1-α"
   result = cormatgen_constant(n, α)
   u = hcat([random_unit_vector(n) for i=1:n]...)
@@ -172,7 +172,7 @@ julia> cormatgen_two_constant(6, 0.5, 0.1)
   0.1  0.1  0.1  1.0
 ```
 """
-function cormatgen_two_constant(n::Int, α::Real, β::Real)
+function cormatgen_two_constant(n, α, β)
   @assert α > β "First argument must be greater"
   result = fill(β, (n,n))
   result[1:div(n,2),1:div(n,2)] = fill(α, (div(n,2),div(n,2)))
@@ -197,7 +197,7 @@ julia> cormatgen_two_constant_noised(4, 0.5, 0.1)
  -0.0530078   0.112183   0.138089   1.0
 ```
 """
-function cormatgen_two_constant_noised(n::Int, α::Real, β::Real; ϵ::Real= (1-α)/2)
+function cormatgen_two_constant_noised(n, α, β; ϵ= (1-α)/2)
   @assert ϵ <= 1-α
   result = cormatgen_two_constant(n, α, β)
   u = hcat([random_unit_vector(n) for i=1:n]...)
@@ -229,7 +229,7 @@ julia> cormatgen_toeplitz(5, 0.6)
  0.1296  0.216  0.36  0.6    1.0
 ```
 """
-function cormatgen_toeplitz(n::Int, ρ::Real)
+function cormatgen_toeplitz(n, ρ)
   @assert 0 <= ρ <= 1 "ρ needs to satisfy 0 <= ρ <= 1"
   [ρ^(abs(i-j)) for i=0:n-1, j=0:n-1]
 end
@@ -252,7 +252,7 @@ julia> cormatgen_toeplitz_noised(5, 0.9)
  0.64318   0.734564  0.822804  0.903819  1.0
 ```
 """
-function cormatgen_toeplitz_noised(n::Int, ρ::Float64; ϵ=(1-ρ)/(1+ρ)/2)
+function cormatgen_toeplitz_noised(n, ρ; ϵ=(1-ρ)/(1+ρ)/2)
   @assert 0 <= ϵ <= (1-ρ)/(1+ρ) "ϵ must satisfy 0 <= ϵ <= (1-ρ)/(1+ρ)"
 
   result = cormatgen_toeplitz(n, ρ)

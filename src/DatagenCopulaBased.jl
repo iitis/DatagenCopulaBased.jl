@@ -15,7 +15,7 @@ module DatagenCopulaBased
     using CompilerSupportLibraries_jll
   end
 
-
+  include("simulate_copula.jl")
   include("sampleunivdists.jl")
   include("corgen.jl")
   include("marshallolkincopcor.jl")

@@ -21,49 +21,27 @@ Gaussian_cop([1.0 0.5; 0.5 1.0])
 
 ```
 """
-struct Gaussian_cop{T}
+struct Gaussian_cop{T} <: Copula{T}
   Σ::Matrix{T}
+  n::Int
   function(::Type{Gaussian_cop})(Σ::Matrix{T}) where T <: Real
     Σ ≈ transpose(Σ) || throw(DomainError("Σ matrix not symmetric"))
     isposdef(Σ) || throw(DomainError("Σ matrix not positivelly defined"))
     prod(diag(Σ)) ≈ 1.0 || throw(DomainError("Σ matrix do not have ones on diagonal"))
-    new{T}(Σ)
+    new{T}(Σ,size(Σ,1))
   end
 end
 
-"""
-    simulate_copula(t::Int, copula::Gaussian_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations of the Gaussian copula
-
-    Gaussian_cop(Σ)
-
-```jldoctest
-
-julia> Random.seed!(43);
-
-julia> simulate_copula(10, Gaussian_cop([1. 0.5; 0.5 1.]))
-10×2 Array{Real,2}:
- 0.589188  0.815308
- 0.708285  0.924962
- 0.747341  0.156994
- 0.227634  0.183116
- 0.227575  0.957376
- 0.271558  0.364803
- 0.445691  0.52792
- 0.585362  0.23135
- 0.498593  0.48266
- 0.190283  0.594451
-```
-"""
-function simulate_copula(t::Int, copula::Gaussian_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+function simulate_copula!(U, copula::Gaussian_cop{T}; rng = Random.GLOBAL_RNG) where T
   Σ = copula.Σ
-  z = transpose(rand(rng, MvNormal(Σ),t))
+  z = transpose(rand(rng, MvNormal(Σ),size(U,1)))
   for i in 1:size(Σ, 1)
     d = Normal(0, sqrt.(Σ[i,i]))
     z[:,i] = cdf.(d, z[:,i])
   end
-  Array(z)
+  U .= Array(z)
+  return nothing
 end
 
 """
@@ -86,55 +64,32 @@ Student_cop([1.0 0.5; 0.5 1.0], 4)
 
 ```
 """
-struct Student_cop{T}
+struct Student_cop{T} <: Copula{T}
   Σ::Matrix{T}
   ν::Int
+  n::Int
   function(::Type{Student_cop})(Σ::Matrix{T}, ν::Int) where T <: Real
     Σ ≈ transpose(Σ) || throw(DomainError("Σ matrix not symmetric"))
     isposdef(Σ) || throw(DomainError("Σ matrix not positivelly defined"))
     prod(diag(Σ)) ≈ 1.0 || throw(DomainError("Σ matrix do not have ones on diagonal"))
     ν > 0 || throw(DomainError("ν lower or equal zero"))
-    new{T}(Σ, ν)
+    new{T}(Σ, ν,size(Σ,1))
   end
 end
 
-"""
-    simulate_copula(t::Int, copula::Student _cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations of the t-Student Copula
-
-    Student_cop(Σ, ν)
-
-where: Σ - correlation matrix, ν - degrees of freedom.
-
-```jldoctest
-julia> Random.seed!(43);
-
-julia> simulate_copula(10, Student_cop([1. 0.5; 0.5 1.], 10))
-10×2 Array{Real,2}:
- 0.658199  0.937148
- 0.718244  0.92602
- 0.809521  0.0980325
- 0.263068  0.222589
- 0.187187  0.971109
- 0.245373  0.346428
- 0.452336  0.524498
- 0.57113   0.272525
- 0.498443  0.48082
- 0.113788  0.633349
-```
-"""
-function simulate_copula(t::Int, copula::Student_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+function simulate_copula!(U, copula::Student_cop{T}; rng = Random.GLOBAL_RNG) where T
   Σ = copula.Σ
   ν = copula.ν
-  z = transpose(rand(rng, MvNormal(Σ),t))
-  U = rand(rng, Chisq(ν), size(z, 1))
-  U = T.(U)
+  z = transpose(rand(rng, MvNormal(Σ),size(U,1)))
+  V = rand(rng, Chisq(ν), size(z, 1))
+  V = T.(V)
   for i in 1:size(Σ, 1)
-    x = z[:,i].*sqrt.(ν./U)./sqrt(Σ[i,i])
+    x = z[:,i].*sqrt.(ν./V)./sqrt(Σ[i,i])
     z[:,i] = cdf.(TDist(ν), x)
   end
-  Array(z)
+  U .= Array(z)
+  return nothing
 end
 
 """
@@ -169,7 +124,7 @@ julia> Frechet_cop(2, 0.5, 0.3)
 Frechet_cop(2, 0.5, 0.3)
 ```
 """
-struct Frechet_cop{T}
+struct Frechet_cop{T} <: Copula{T}
   n::Int
   α::T
   β::T
@@ -187,41 +142,7 @@ struct Frechet_cop{T}
   end
 end
 
-"""
-    simulate_copula(t::Int, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizatioins of data from the Frechet copula
-
-    Frechet_cop(n, α)
-    Frechet_cop(n, α, β)
-
-```jldoctest
-
-julia> Random.seed!(43);
-
-julia> f = Frechet_cop(3, 0.5)
-Frechet_cop(3, 0.5, 0.0)
-
-julia> simulate_copula(1, f)
-1×3 Array{Real,2}:
-0.180975  0.775377  0.888934
-
-julia> Random.seed!(43);
-
-julia> f = Frechet_cop(2, 0.5, 0.2)
-Frechet_cop(2, 0.5, 0.2)
-
-julia> simulate_copula(1, f)
-1×2 Array{Real,2}:
-0.180975  0.775377
-```
-"""
-
-function simulate_copula(t::Int, copula::Frechet_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
 """
     simulate_copula!(U::Matrix{Real}, copula::Frechet_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
@@ -246,7 +167,7 @@ julia> u
  0.180975  0.775377  0.888934
 ```
 """
-function simulate_copula!(U::Matrix{T}, copula::Frechet_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+function simulate_copula!(U, copula::Frechet_cop{T}; rng = Random.GLOBAL_RNG) where T
   n = copula.n
   α = copula.α
   β = copula.β
@@ -291,7 +212,7 @@ julia> frechet(0.5, u)
  0.955881   0.851275
 ```
 """
-function frechet(α::T, u::Matrix{T}; rng::AbstractRNG) where T <: Real
+function frechet(α::T, u; rng) where T
   for j in 1:size(u, 1)
     v = rand(rng, T)
     el = u[j, :]
@@ -307,7 +228,7 @@ end
 Given n-variate random vector changes it to such modeled by the two parameters Frechet_cop(n, α, β).
 v is the random number form [0,1].
 """
-function frechet_el!(u::Vector{T}, α::T, v::T) where T <: Real
+function frechet_el!(u, α, v)
   if (α >= v)
     for i in 1:length(u)-1
       u[i] = u[end]
@@ -322,7 +243,7 @@ Given bivariate random vector changes it to such modeled by the two parameters F
 v is the random number form [0,1]
 
 """
-function frechet_el2!(u::Vector{T}, α::T, β::T, v::T) where T <: Real
+function frechet_el2!(u, α, β, v)
   if (α >= v)
     u[1] = u[2]
   elseif (α < v <= α+β)
@@ -355,7 +276,7 @@ julia> Marshall_Olkin_cop([0.5, 0.5, 0.6, 0.7, 0.7, 0.7, 0.8])
 Marshall_Olkin_cop(3, [0.5, 0.5, 0.6, 0.7, 0.7, 0.7, 0.8])
 ```
 """
-struct Marshall_Olkin_cop{T}
+struct Marshall_Olkin_cop{T} <: Copula{T}
   n::Int
   λ::Vector{T}
   function(::Type{Marshall_Olkin_cop})(λ::Vector{T}) where T <: Real
@@ -366,30 +287,7 @@ struct Marshall_Olkin_cop{T}
   end
 end
 
-"""
-    simulate_copula(t::Int, copula::Marshall_Olkin_cop(λ); rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Returns t realizations of the n-variate Marshall-Olkin copula:
-
-    Marshall_Olkin_cop(λ)
-
-```jldoctest
-
-julia> Random.seed!(43);
-
-julia> cop = Marshall_Olkin_cop([1.,2.,3.])
-Marshall_Olkin_cop(2, [1.0, 2.0, 3.0])
-
-julia> simulate_copula(1, cop)
-1×2 Array{Float64,2}:
-  0.854724  0.821831
-```
-"""
-function simulate_copula(t::Int, copula::Marshall_Olkin_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
-    U = zeros(T, t, copula.n)
-    simulate_copula!(U, copula; rng = rng)
-    return U
-end
 
 """
     simulate_copula!(U::Matrix{Real}, copula::Marshall_Olkin_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
@@ -414,7 +312,7 @@ julia> u
  0.854724  0.821831
 ```
 """
-function simulate_copula!(U::Matrix{T}, copula::Marshall_Olkin_cop{T}; rng::AbstractRNG = Random.GLOBAL_RNG) where T <: Real
+function simulate_copula!(U, copula::Marshall_Olkin_cop{T}; rng = Random.GLOBAL_RNG) where T
   λ = copula.λ
   n = copula.n
   size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
@@ -442,7 +340,8 @@ end
 
 ```
 """
-function mocopula(u::Matrix{T}, n::Int, λ::Vector{T}) where T <: Real
+function mocopula(u, n, λ)
+  T = eltype(u)
   t = size(u,1)
   U = zeros(T, t, n)
   s = collect(combinations(1:n))
@@ -463,7 +362,8 @@ julia> mocopula_el([0.1, 0.2, 0.3], 2, [1., 2., 3.], s)
  0.1344421423967149
 ```
 """
-function mocopula_el(u::Vector{T}, n::Int, λ::Vector{T}, s::Vector{Vector{Int}}) where T <: Real
+function mocopula_el(u, n, λ, s)
+  T = eltype(u)
   l = length(u)
   U = zeros(T, n)
   for i in 1:n
