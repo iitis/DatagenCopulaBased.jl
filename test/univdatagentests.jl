@@ -14,15 +14,19 @@ end
   Random.seed!(43)
   if VERSION <= v"1.7"
     @test levyel(2., rand(), rand()) ≈ 0.181703 atol=1.0e-5
-    Random.seed!(43)
-    @test tiltedlevygen(0.2, 2.; rng = Random.GLOBAL_RNG) ≈ 0.00409133 atol=1.0e-5
-    Random.seed!(43)
-    @test tiltedlevygen(0.6, 2.; rng = Random.GLOBAL_RNG) ≈ 0.036822009 atol=1.0e-5
   else
     @test levyel(2., rand(), rand()) ≈ 0.059716 atol=1.0e-5
-    Random.seed!(43)
+  end
+  Random.seed!(43)
+  if VERSION <= v"1.7"
+    @test tiltedlevygen(0.2, 2.; rng = Random.GLOBAL_RNG) ≈ 0.00409 atol=1.0e-5
+  else
     @test tiltedlevygen(0.2, 2.; rng = Random.GLOBAL_RNG) ≈ 0.032748 atol=1.0e-5
-    Random.seed!(43)
+  end
+  Random.seed!(43)
+  if VERSION <= v"1.7"
+    @test tiltedlevygen(0.6, 2.; rng = Random.GLOBAL_RNG) ≈ 0.036822 atol=1.0e-5
+  else
     @test tiltedlevygen(0.6, 2.; rng = Random.GLOBAL_RNG) ≈ 0.294735 atol=1.0e-5
   end
 
@@ -34,8 +38,17 @@ end
   @test sampleInvlaJ(0.5, 0.8) == 8
   Random.seed!(43)
   w = logseriescdf(1-exp(-4.))
-  @test elInvlaF(4., 2., w; rng = Random.GLOBAL_RNG) == 7
+  if VERSION <= v"1.7"
+    @test elInvlaF(4., 2., w; rng = Random.GLOBAL_RNG) == 7
+  else
+    @test elInvlaF(4., 2., w; rng = Random.GLOBAL_RNG) == 1
+  end
   Random.seed!(43)
-  @test elInvlaF(4., .5, w; rng = Random.GLOBAL_RNG) == 16
-  @test nestedfrankgen(4., 3., 1, w; rng = Random.GLOBAL_RNG) == 6
+  if VERSION <= v"1.7"
+    @test elInvlaF(4., .5, w; rng = Random.GLOBAL_RNG) == 16
+    @test nestedfrankgen(4., 3., 1, w; rng = Random.GLOBAL_RNG) == 6
+  else
+    @test elInvlaF(4., .5, w; rng = Random.GLOBAL_RNG) == 111
+    @test nestedfrankgen(4., 3., 1, w; rng = Random.GLOBAL_RNG) == 1
+  end
 end
