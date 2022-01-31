@@ -8,7 +8,11 @@
   end
   @testset "examples on data" begin
     Random.seed!(43)
-    @test simulate_copula(1, Gaussian_cop([1. 0.; 0. 1.])) ≈ [0.589188  0.817617] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, Gaussian_cop([1. 0.; 0. 1.])) ≈ [0.589188  0.817617] atol=1.0e-5
+    else
+      @test simulate_copula(1, Gaussian_cop([1. 0.; 0. 1.])) ≈ [0.623817 0.0518950] atol=1.0e-5
+    end
     Random.seed!(43)
     x = simulate_copula(350000, Gaussian_cop([1. 0.5; 0.5 1.]))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
