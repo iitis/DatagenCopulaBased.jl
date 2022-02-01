@@ -165,13 +165,13 @@ end
   Σ = cormatgen(25)
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   mu = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
-  y = rand(MvNormal(Σ), 20_000)'
+  y = rand(MvNormal(Σ), 100_000)'
   y = y.*S'.+mu'
   x = gcop2frechet(y, [1,2,3])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Normal(mu[2],S[2]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(mu[3],S[3]))) > α
-  @test norm(cor(y)-cor(x))/norm(cor(y)) < 0.2
+  @test norm(cor(y)-cor(x))/norm(cor(y)) < 0.21
   @test norm(cov(y)-cov(x))/norm(cov(y)) < 0.2
   @test maximum(abs.(cor(y)-cor(x))) < 0.26
   @test_throws AssertionError gcop2frechet(y, [1,1,3,4])
@@ -189,7 +189,7 @@ end
   Σ = cormatgen(25)
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   mu = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
-  y = rand(MvNormal(Σ), 50_000)'
+  y = rand(MvNormal(Σ), 100_000)'
   y = y.*S'.+mu'
   x = gcop2marshallolkin(y, [1,2])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
