@@ -51,7 +51,7 @@ end
     cops = ["clayton", "clayton", "clayton", "frank", "amh", "amh"]
 
     Random.seed!(43)
-    x = simulate_copula(200_000, Chain_of_Archimedeans([-0.9, 3., 2, 4., -0.3, 1.], cops))
+    x = simulate_copula(50_000, Chain_of_Archimedeans([-0.9, 3., 2, 4., -0.3, 1.], cops))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -64,8 +64,8 @@ end
     @test tail(x[:,5], x[:,6], "r", 0.0001) ≈ 0
     @test tail(x[:,3], x[:,4], "l") ≈ 1/(2^(1/2)) atol=1.0e-1
     @test tail(x[:,3], x[:,4], "r", 0.0001) ≈ 0
-    @test corkendall(x)[1,2] ≈ -0.9/(2-0.9) atol=1.0e-3
-    @test corkendall(x)[2,3] ≈ 3/(2+3) atol=1.0e-3
+    @test corkendall(x)[1,2] ≈ -0.9/(2-0.9) atol=1.0e-2
+    @test corkendall(x)[2,3] ≈ 3/(2+3) atol=1.0e-2
 
     # further testing
     Random.seed!(43)
