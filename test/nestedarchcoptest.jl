@@ -413,7 +413,7 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
     @test corkendall(x)[1:2,:] ≈ [1. 0.7619 0.72222 0.0909; 0.7619 1. 0.72222 0.0909] atol=1.0e-2
     @test tail(x[:,2], x[:,3], "r", 0.01) ≈ 2-2^(1/3.6) atol=1.0e-1
-    @test tail(x[:,3], x[:,4], "r", 0.01) ≈ 2-2^(1/1.1) atol=1.0e-2
+    @test tail(x[:,3], x[:,4], "r", 0.01) ≈ 2-2^(1/1.1) atol=1.0e-1
     @test tail(x[:,1], x[:,2], "l", 0.00001) ≈ 0
 
     # correlations
