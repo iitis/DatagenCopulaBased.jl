@@ -28,11 +28,11 @@
   if VERSION <= v"1.7"
     @test c[1] == [[1, 4], [2, 3, 5]]
     @test c[2] ≈ [0.04729, 0.0195683] atol=1.0e-4
-    @test c[3] ≈ -0.021774209774209772
+    @test c[3] ≈ -0.02177 atol=1.0e-4
   else
     @test c[1] == [[2, 3], [4, 5]]
     @test c[2] ≈ [0.009164, 0.0894643]  atol=1.0e-4
-    @test c[3] ≈ -0.0056868
+    @test c[3] ≈ -0.00568 atol=1.0e-4
   end
   x = frechet(0.6, rand(100000, 4); rng = Random.GLOBAL_RNG)
   Σ = cor(x)
