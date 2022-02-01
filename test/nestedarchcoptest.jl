@@ -79,8 +79,8 @@ end
       @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
       @test pvalue(ExactOneSampleKSTest(x[:,7], Uniform(0,1))) > α
       cc = corkendall(x)
-      @test cc[:,1] ≈ [1.0, 3/5, 1.5/3.5, 1.5/3.5, 1.5/3.5, 1.5/3.5, 1.5/3.5] atol=1.0e-2
-      @test cc[:,5] ≈ [1.5/3.5, 1.5/3.5, 2/3, 2/3, 1.0, 1.5/3.5, 1.5/3.5] atol=1.0e-2
+      @test cc[:,1] ≈ [1.0, 3/5, 1.5/3.5, 1.5/3.5, 1.5/3.5, 1.5/3.5, 1.5/3.5] atol=1.0e-1
+      @test cc[:,5] ≈ [1.5/3.5, 1.5/3.5, 2/3, 2/3, 1.0, 1.5/3.5, 1.5/3.5] atol=1.0e-1
       @test cc[6,7] ≈ 1.5/3.5 atol=1.0e-2
       @test tail(x[:,4], x[:,5], "r", 0.0001) ≈ 0
       @test tail(x[:,1], x[:,5], "r", 0.0001) ≈ 0
