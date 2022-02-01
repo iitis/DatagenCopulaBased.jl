@@ -176,27 +176,47 @@ end
   end
   @testset "small example" begin
     Random.seed!(43)
-    @test simulate_copula(1, Clayton_cop(2, 2.)) ≈ [0.652812  0.912719] atol=1.0e-5
-    @test simulate_copula(1, Clayton_cop(2, -0.5)) ≈ [0.924876  0.185707] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, Clayton_cop(2, 2.)) ≈ [0.652812  0.912719] atol=1.0e-5
+      @test simulate_copula(1, Clayton_cop(2, -0.5)) ≈ [0.924876  0.185707] atol=1.0e-5
+    else
+      @test simulate_copula(1, Clayton_cop(2, 2.)) ≈ [0.2531841 0.9567753] atol=1.0e-5
+      @test simulate_copula(1, Clayton_cop(2, -0.5)) ≈ [0.428396 0.4814575]  atol=1.0e-5
+    end
     Random.seed!(43)
-    @test simulate_copula(1, Clayton_cop_rev(2, 2.)) ≈ [0.347188  0.087281] atol=1.0e-5
-    @test simulate_copula(1, Clayton_cop_rev(2, -.5)) ≈ 1. .- [0.924876  0.185707] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, Clayton_cop_rev(2, 2.)) ≈ [0.347188  0.087281] atol=1.0e-5
+      @test simulate_copula(1, Clayton_cop_rev(2, -.5)) ≈ 1. .- [0.924876  0.185707] atol=1.0e-5
+    else
+      @test simulate_copula(1, Clayton_cop_rev(2, 2.)) ≈ [0.746815 0.0432246] atol=1.0e-5
+      @test simulate_copula(1, Clayton_cop_rev(2, -.5)) ≈ [0.57160 0.5185424] atol=1.0e-5
+    end
 
     Random.seed!(43)
     u = zeros(1,2)
     u1 = zeros(1,2)
     simulate_copula!(u, Clayton_cop(2, 2.))
     simulate_copula!(u1, Clayton_cop(2, -0.5))
-    @test u ≈ [0.652812  0.912719] atol=1.0e-5
-    @test u1 ≈ [0.924876  0.185707] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test u ≈ [0.652812  0.912719] atol=1.0e-5
+      @test u1 ≈ [0.924876  0.185707] atol=1.0e-5
+    else
+      @test u ≈  [0.253184 0.9567753] atol=1.0e-5
+      @test u1 ≈ [0.428396 0.4814575] atol=1.0e-5
+    end
 
     Random.seed!(43)
     u = zeros(1,2)
     u1 = zeros(1,2)
     simulate_copula!(u, Clayton_cop_rev(2, 2.))
     simulate_copula!(u1, Clayton_cop_rev(2, -0.5))
-    @test u ≈ 1 .- [0.652812  0.912719] atol=1.0e-5
-    @test u1 ≈ 1 .- [0.924876  0.185707] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test u ≈ 1 .- [0.652812  0.912719] atol=1.0e-5
+      @test u1 ≈ 1 .- [0.924876  0.185707] atol=1.0e-5
+    else
+      @test u ≈ 1 .- [0.253184 0.9567753] atol=1.0e-5
+      @test u1 ≈ 1 .- [0.428396 0.4814575] atol=1.0e-5
+    end
   end
   @testset "test on larger data" begin
     Random.seed!(43)
