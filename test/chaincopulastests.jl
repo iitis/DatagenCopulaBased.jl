@@ -136,7 +136,7 @@ end
 
   Random.seed!(43)
   θs = BigFloat.([-0.9, 3., 2, 4., -0.3, 1.])
-  x = simulate_copula(1000, Chain_of_Archimedeans(θs, cops))
+  x = simulate_copula(500, Chain_of_Archimedeans(θs, cops))
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
