@@ -165,7 +165,7 @@ end
   Σ = cormatgen(25)
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   mu = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
-  y = rand(MvNormal(Σ), 100_000)'
+  y = rand(MvNormal(Σ), 200_000)'
   y = y.*S'.+mu'
   x = gcop2frechet(y, [1,2,3])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
@@ -180,7 +180,7 @@ end
   @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(mu[1],S[1]))) > α
   @test pvalue(ExactOneSampleKSTest(x2[:,2], Normal(mu[2],S[2]))) > α
   @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(mu[3],S[3]))) > α
-  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.075
+  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.15
 end
 
 
