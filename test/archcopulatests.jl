@@ -273,27 +273,47 @@ end
   end
   @testset "small example" begin
     Random.seed!(43)
-    @test simulate_copula(1, AMH_cop(2, 0.5)) ≈ [0.483939  0.883911] atol=1.0e-5
-    @test simulate_copula(1, AMH_cop(2, -0.5)) ≈ [0.924876  0.320496] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, AMH_cop(2, 0.5)) ≈ [0.483939  0.883911] atol=1.0e-5
+      @test simulate_copula(1, AMH_cop(2, -0.5)) ≈ [0.924876  0.320496] atol=1.0e-5
+    else
+      @test simulate_copula(1, AMH_cop(2, 0.5)) ≈ [0.087839 0.9773157]  atol=1.0e-5
+      @test simulate_copula(1, AMH_cop(2, -0.5)) ≈ [0.428396 0.5532944]  atol=1.0e-5
+    end
     Random.seed!(43)
-    @test simulate_copula(1, AMH_cop_rev(2, 0.5)) ≈ 1 .- [0.483939  0.883911] atol=1.0e-5
-    @test simulate_copula(1, AMH_cop_rev(2, -0.5)) ≈ 1 .- [0.924876  0.320496] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, AMH_cop_rev(2, 0.5)) ≈ 1 .- [0.483939  0.883911] atol=1.0e-5
+      @test simulate_copula(1, AMH_cop_rev(2, -0.5)) ≈ 1 .- [0.924876  0.320496] atol=1.0e-5
+    else
+      @test simulate_copula(1, AMH_cop_rev(2, 0.5)) ≈ 1 .- [0.087839 0.9773157] atol=1.0e-5
+      @test simulate_copula(1, AMH_cop_rev(2, -0.5)) ≈ 1 .- [0.428396 0.5532944] atol=1.0e-5
+    end
 
     Random.seed!(43)
     u = zeros(1,2)
     u1 = zeros(1,2)
     simulate_copula!(u, AMH_cop(2, 0.5))
     simulate_copula!(u1, AMH_cop(2, -0.5))
-    @test u ≈ [0.483939  0.883911] atol=1.0e-5
-    @test u1 ≈ [0.924876  0.320496] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test u ≈ [0.483939  0.883911] atol=1.0e-5
+      @test u1 ≈ [0.924876  0.320496] atol=1.0e-5
+    else
+      @test u ≈ [0.087839 0.9773157] atol=1.0e-5
+      @test u1 ≈ [0.428396 0.5532944] atol=1.0e-5
+    end
 
     Random.seed!(43)
     u = zeros(1,2)
     u1 = zeros(1,2)
     simulate_copula!(u, AMH_cop_rev(2, 0.5))
     simulate_copula!(u1, AMH_cop_rev(2, -0.5))
-    @test u ≈ 1 .- [0.483939  0.883911] atol=1.0e-5
-    @test u1 ≈ 1 .- [0.924876  0.320496] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test u ≈ 1 .- [0.483939  0.883911] atol=1.0e-5
+      @test u1 ≈ 1 .- [0.924876  0.320496] atol=1.0e-5
+    else
+      @test u ≈ 1 .- [0.087839 0.9773157] atol=1.0e-5
+      @test u1 ≈ 1 .- [0.428396 0.5532944] atol=1.0e-5
+    end
   end
   @testset "test on larger data" begin
 
@@ -344,16 +364,27 @@ end
   end
   @testset "small example" begin
     Random.seed!(43)
-    @test simulate_copula(1, Frank_cop(2, 2.)) ≈ [0.565546  0.897293] atol=1.0e-5
-    @test simulate_copula(1, Frank_cop(2, -2.)) ≈ [0.924876  0.242893] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test simulate_copula(1, Frank_cop(2, 2.)) ≈ [0.565546  0.897293] atol=1.0e-5
+      @test simulate_copula(1, Frank_cop(2, -2.)) ≈ [0.924876  0.242893] atol=1.0e-5
+    else
+      @test simulate_copula(1, Frank_cop(2, 2.)) ≈ [0.565546  0.897293] atol=1.0e-5
+      @test simulate_copula(1, Frank_cop(2, -2.)) ≈ [0.924876  0.242893] atol=1.0e-5
+    end
 
     Random.seed!(43)
     u = zeros(1,2)
     u1 = zeros(1,2)
     simulate_copula!(u, Frank_cop(2, 2.))
     simulate_copula!(u1, Frank_cop(2, -2.))
-    @test u ≈ [0.565546  0.897293] atol=1.0e-5
-    @test u1 ≈ [0.924876  0.242893] atol=1.0e-5
+    if VERSION <= v"1.7"
+      @test u ≈ [0.565546  0.897293] atol=1.0e-5
+      @test u1 ≈ [0.924876  0.242893] atol=1.0e-5
+    else
+      @test u ≈ [0.565546  0.897293] atol=1.0e-5
+      @test u1 ≈ [0.924876  0.242893] atol=1.0e-5
+    end
+
   end
   @testset "test on larger data" begin
     Random.seed!(43)
