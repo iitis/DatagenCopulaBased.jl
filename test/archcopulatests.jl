@@ -368,8 +368,8 @@ end
       @test simulate_copula(1, Frank_cop(2, 2.)) ≈ [0.565546  0.897293] atol=1.0e-5
       @test simulate_copula(1, Frank_cop(2, -2.)) ≈ [0.924876  0.242893] atol=1.0e-5
     else
-      @test simulate_copula(1, Frank_cop(2, 2.)) ≈ [0.565546  0.897293] atol=1.0e-5
-      @test simulate_copula(1, Frank_cop(2, -2.)) ≈ [0.924876  0.242893] atol=1.0e-5
+      @test simulate_copula(1, Frank_cop(2, 2.)) ≈  [0.075201 0.9646324] atol=1.0e-5
+      @test simulate_copula(1, Frank_cop(2, -2.)) ≈ [0.428396 0.5626651] atol=1.0e-5
     end
 
     Random.seed!(43)
@@ -381,14 +381,14 @@ end
       @test u ≈ [0.565546  0.897293] atol=1.0e-5
       @test u1 ≈ [0.924876  0.242893] atol=1.0e-5
     else
-      @test u ≈ [0.565546  0.897293] atol=1.0e-5
-      @test u1 ≈ [0.924876  0.242893] atol=1.0e-5
+      @test u ≈ [0.075201 0.9646324] atol=1.0e-5
+      @test u1 ≈ [0.428396 0.5626651] atol=1.0e-5
     end
 
   end
   @testset "test on larger data" begin
     Random.seed!(43)
-    x = simulate_copula(300000, Frank_cop(3, 0.8))
+    x = simulate_copula(100000, Frank_cop(3, 0.8))
 
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
