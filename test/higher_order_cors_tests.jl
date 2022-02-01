@@ -50,7 +50,7 @@ end
   Σ1 =0.8*ones(25,25) + 0.2*Matrix(1.0I, 25, 25)
   Σ = 0.3*Σ + 0.7*Σ1
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
-  y = rand(MvNormal(Σ), 70000)'
+  y = rand(MvNormal(Σ), 50_000)'
   y = y.*S'
 
   @testset "Clayton nested, not nested and naive" begin
@@ -127,7 +127,7 @@ end
     @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
     @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.06
     @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.06
-    @test maximum(abs.(cor(y)-cor(x1))) < 0.11
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.14
 
     x1 = gcop2arch(y, ["frank" => [1,2,3,4,9]])
     @test pvalue(ExactOneSampleKSTest(x1[:,1], Normal(0,S[1]))) > α
@@ -135,7 +135,7 @@ end
     @test pvalue(ExactOneSampleKSTest(x1[:,4], Normal(0,S[4]))) > α
     @test norm(cor(y)-cor(x1))/norm(cor(y)) < 0.07
     @test norm(cov(y)-cov(x1))/norm(cov(y)) < 0.07
-    @test maximum(abs.(cor(y)-cor(x1))) < 0.115
+    @test maximum(abs.(cor(y)-cor(x1))) < 0.14
   end
 end
 
@@ -165,7 +165,7 @@ end
   Σ = cormatgen(25)
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   mu = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
-  y = rand(MvNormal(Σ), 100000)'
+  y = rand(MvNormal(Σ), 50_000)'
   y = y.*S'.+mu'
   x = gcop2frechet(y, [1,2,3])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
@@ -189,7 +189,7 @@ end
   Σ = cormatgen(25)
   S = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
   mu = rand([0.8, 0.9, 1, 1.1, 1.2], 25)
-  y = rand(MvNormal(Σ), 100000)'
+  y = rand(MvNormal(Σ), 50_000)'
   y = y.*S'.+mu'
   x = gcop2marshallolkin(y, [1,2])
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
@@ -206,5 +206,5 @@ end
   @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(mu[1],S[1]))) > α
   @test pvalue(ExactOneSampleKSTest(x2[:,2], Normal(mu[2],S[2]))) > α
   @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(mu[3],S[3]))) > α
-  @test maximum(abs.(cov(y[:,1:2])-cov(x2[:,1:2]))) < 0.03
+  @test maximum(abs.(cov(y[:,1:2])-cov(x2[:,1:2]))) < 0.05
 end
