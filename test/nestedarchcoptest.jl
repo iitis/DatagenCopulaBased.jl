@@ -406,7 +406,7 @@ end
   @testset "larger example" begin
 
     Random.seed!(42)
-    x = simulate_copula(10_000, Hierarchical_Gumbel_cop([4.2, 3.6, 1.1]))
+    x = simulate_copula(25_000, Hierarchical_Gumbel_cop([4.2, 3.6, 1.1]))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
