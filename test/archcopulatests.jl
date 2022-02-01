@@ -444,7 +444,7 @@ end
 
   Random.seed!(1234)
   θ = BigFloat(.5)
-  x = simulate_copula(10, AMH_cop(3, θ))
+  x = simulate_copula(25, AMH_cop(3, θ))
   @test typeof(x) == Array{BigFloat,2}
   @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
