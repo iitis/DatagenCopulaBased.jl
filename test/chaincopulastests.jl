@@ -54,7 +54,6 @@ end
     x = simulate_copula(50_000, Chain_of_Archimedeans([-0.9, 3., 2, 4., -0.3, 1.], cops))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-    @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,5], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,6], Uniform(0,1))) > α
