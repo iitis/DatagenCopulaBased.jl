@@ -3,10 +3,18 @@
 @testset "nested archimedean copulas helpers 4 higher correlations" begin
   Random.seed!(43)
   u = nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6]; rng = Random.GLOBAL_RNG)
-  @test u ≈ [0.1532819 0.1824212 0.3742276 0.4076627; 0.690350 0.740927 0.254841 0.279192] atol=1.0e-5
+  if VERSION <= v"1.7"
+      @test u ≈ [0.1532 0.1824 0.3742 0.4076; 0.6903 0.7409 0.2548 0.2791] atol=1.0e-3
+  else
+      @test u ≈ [0.3491 0.40705 0.6121 0.6551; 0.3630 0.41073 0.6927 0.7349] atol=1.0e-3
+  end
   Random.seed!(42)
   x = nestedcopulag("gumbel", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6]; rng = Random.GLOBAL_RNG)
-  @test x ≈ [0.624812  0.674897  0.451637  0.483973 ;  0.800605  0.825022  0.907411  0.915277] atol=1.0e-5
+  if VERSION <= v"1.7"
+      @test x ≈ [0.6248 0.6748 0.4516 0.4839; 0.8006 0.8250 0.9074 0.9152] atol=1.0e-3
+  else
+      @test x ≈ [0.3974 0.4623 0.2064 0.2368; 0.2826 0.3352 0.3489 0.38313] atol=1.0e-3
+  end
 end
 
 @testset "nested Clayton copula" begin
@@ -30,22 +38,38 @@ end
       cp = Nested_Clayton_cop([c1, c2], 1, 1.1)
 
       Random.seed!(43)
-      @test simulate_copula(1, cp) ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
+      if VERSION <= v"1.7"
+          @test simulate_copula(1, cp) ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
+      else
+          @test simulate_copula(1, cp) ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
+      end
 
       u = zeros(1,5)
       Random.seed!(43)
       simulate_copula!(u, cp)
-      @test u ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
+      if VERSION <= v"1.7"
+          @test u ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
+      else
+          @test u ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
+      end
 
       Random.seed!(43)
       rng = StableRNG(123)
-      @test simulate_copula(1, cp; rng = rng) ≈ [0.274511 0.349494 0.8443515 0.5447064 0.44514597] atol=1.0e-5
+      if VERSION <= v"1.7"
+          @test simulate_copula(1, cp; rng = rng) ≈ [0.274511 0.349494 0.8443515 0.5447064 0.44514597] atol=1.0e-5
+      else
+          @test simulate_copula(1, cp; rng = rng) ≈ [0.274511 0.349494 0.8443515 0.5447064 0.44514597] atol=1.0e-5
+      end
 
       u = zeros(1,5)
       Random.seed!(43)
       rng = StableRNG(123)
       simulate_copula!(u, cp; rng = rng)
-      @test u ≈ [0.274511 0.349494 0.8443515 0.5447064 0.44514597] atol=1.0e-5
+      if VERSION <= v"1.7"
+          @test u ≈ [0.274511 0.349494 0.8443515 0.5447064 0.44514597] atol=1.0e-5
+      else
+          @test u ≈ [0.274511 0.349494 0.8443515 0.5447064 0.44514597] atol=1.0e-5
+      end
   end
   @testset "large example on data" begin
       c1 = Clayton_cop(2, 3.)
