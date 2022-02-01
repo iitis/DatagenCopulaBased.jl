@@ -193,7 +193,7 @@ end
 
 
     Random.seed!(43)
-    x = simulate_copula(40_000, cp)
+    x = simulate_copula(30_000, cp)
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
@@ -430,18 +430,6 @@ end
 
 
 @testset "test on Big Float" begin
-    if false
-        c1 = Clayton_cop(2, BigFloat(3.))
-        c2 = Clayton_cop(3, BigFloat(4.))
-        cp = Nested_Clayton_cop([c1, c2], 2, BigFloat(1.5))
-
-        Random.seed!(42)
-        x = simulate_copula(10, cp)
-        @test typeof(x) == Array{BigFloat,2}
-        @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-        @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-        @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-    end
 
     c1 = Gumbel_cop(2, BigFloat(3.))
     c2 = Gumbel_cop(3, BigFloat(4.))
@@ -472,31 +460,4 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
 
-
-    if false
-        c1 = AMH_cop(2, BigFloat(0.3))
-        c2 = AMH_cop(3, BigFloat(0.5))
-        cp = Nested_AMH_cop([c1, c2], 2, BigFloat(.2))
-
-        Random.seed!(42)
-        x = simulate_copula(100, cp)
-        println(typeof(x) == Array{BigFloat,2})
-        @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-        @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-        @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-    end
-    if false
-
-        c1 = Frank_cop(2, BigFloat(1.1))
-        #c2 = Frank_cop(3, BigFloat(2.))
-        cp = Nested_Frank_cop([c1], 1, BigFloat(.9))
-
-        Random.seed!(42)
-        x = simulate_copula(2, cp)
-        @test typeof(x) == Array{BigFloat,2}
-        #@test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
-        #@test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
-        #@test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
-
-    end
 end
