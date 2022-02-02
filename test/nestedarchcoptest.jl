@@ -2,19 +2,15 @@
 
 @testset "nested archimedean copulas helpers 4 higher correlations" begin
   Random.seed!(43)
-  u = nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6]; rng = Random.GLOBAL_RNG)
-  if VERSION <= v"1.7"
-      @test u ≈ [0.1532 0.1824 0.3742 0.4076; 0.6903 0.7409 0.2548 0.2791] atol=1.0e-3
-  else
-      @test u ≈ [0.3491 0.40705 0.6121 0.6551; 0.3630 0.41073 0.6927 0.7349] atol=1.0e-3
-  end
+  rng = StableRNG(123)
+  u = nestedcopulag("clayton", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6]; rng = rng)
+  @test u ≈ [0.2496 0.2946 0.71634 0.75654; 0.32992 0.37465 0.31906 0.34895] atol=1.0e-3
+
   Random.seed!(42)
-  x = nestedcopulag("gumbel", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6]; rng = Random.GLOBAL_RNG)
-  if VERSION <= v"1.7"
-      @test x ≈ [0.6248 0.6748 0.4516 0.4839; 0.8006 0.8250 0.9074 0.9152] atol=1.0e-3
-  else
-      @test x ≈ [0.3974 0.4623 0.2064 0.2368; 0.2826 0.3352 0.3489 0.38313] atol=1.0e-3
-  end
+  rng = StableRNG(123)
+  x = nestedcopulag("gumbel", [[1,2],[3,4]], [2., 3.], 1.1, [0.1 0.2 0.3 0.4 0.5; 0.2 0.3 0.4 0.5 0.6]; rng = rng)
+  @test x ≈ [0.0940 0.13852 0.17391 0.20250; 0.31450 0.3676 0.45506 0.4880] atol=1.0e-3
+
 end
 
 @testset "nested Clayton copula" begin
@@ -36,22 +32,6 @@ end
       c1 = Clayton_cop(2, 2.)
       c2 = Clayton_cop(2, 3.)
       cp = Nested_Clayton_cop([c1, c2], 1, 1.1)
-
-      Random.seed!(43)
-      if VERSION <= v"1.7"
-          @test simulate_copula(1, cp)[:,1:2] ≈ [0.514118  0.84089] atol=1.0e-5
-      else
-          @test simulate_copula(1, cp)[:,1:2] ≈ [0.402091 0.98398] atol=1.0e-5
-      end
-
-      u = zeros(1,5)
-      Random.seed!(43)
-      simulate_copula!(u, cp)
-      if VERSION <= v"1.7"
-          @test u ≈ [0.514118  0.84089  0.870106  0.906233  0.739349] atol=1.0e-5
-      else
-          @test u[:,1:2] ≈ [0.402091 0.98398] atol=1.0e-5
-      end
 
       Random.seed!(43)
       rng = StableRNG(123)
@@ -198,7 +178,7 @@ end
     @test pvalue(ExactOneSampleKSTest(x[:,2], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,3], Uniform(0,1))) > α
     @test pvalue(ExactOneSampleKSTest(x[:,4], Uniform(0,1))) > α
-    
+
     @test corkendall(x)[1:4,1] ≈ [1.0, 0.60262, 0.60262, 0.2139] atol=1.0e-1
     @test corkendall(x)[3:5,4] ≈ [0.2139, 1.0, 0.6658] atol=1.0e-2
     @test corkendall(x)[6:7,6] ≈ [1.0, 0.2139] atol=1.0e-2
