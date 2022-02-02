@@ -195,8 +195,8 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Normal(mu[2],S[2]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(mu[3],S[3]))) > α
-  @test maximum(abs.(cov(y[:,1:2])-cov(x[:,1:2]))) < 0.03
-  @test maximum(abs.(cor(y[:,1:2])-cor(x[:,1:2]))) < 0.03
+  @test maximum(abs.(cov(y[:,1:2])-cov(x[:,1:2]))) < 0.05
+  @test maximum(abs.(cor(y[:,1:2])-cor(x[:,1:2]))) < 0.05
   @test_throws AssertionError gcop2marshallolkin(y, [1,1])
   @test_throws DomainError gcop2marshallolkin(y, [1,2], 1., -1.)
   @test_throws DomainError gcop2marshallolkin(y, [1,2], -1., 1.)
