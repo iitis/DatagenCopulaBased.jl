@@ -12,23 +12,16 @@
 end
 @testset "stable levy dist" begin
   Random.seed!(43)
-  if VERSION <= v"1.7"
-    @test levyel(2., rand(), rand()) ≈ 0.181703 atol=1.0e-5
-  else
-    @test levyel(2., rand(), rand()) ≈ 0.059716 atol=1.0e-5
-  end
+  rng = StableRNG(123)
+  @test levyel(2., rand(rng), rand(rng)) ≈ 0.592404 atol=1.0e-5
+
   Random.seed!(43)
-  if VERSION <= v"1.7"
-    @test tiltedlevygen(0.2, 2.; rng = Random.GLOBAL_RNG) ≈ 0.00409 atol=1.0e-5
-  else
-    @test tiltedlevygen(0.2, 2.; rng = Random.GLOBAL_RNG) ≈ 0.032748 atol=1.0e-5
-  end
+  rng = StableRNG(123)
+  @test tiltedlevygen(0.2, 2.; rng = rng) ≈ 0.014182 atol=1.0e-5
+
   Random.seed!(43)
-  if VERSION <= v"1.7"
-    @test tiltedlevygen(0.6, 2.; rng = Random.GLOBAL_RNG) ≈ 0.036822 atol=1.0e-5
-  else
-    @test tiltedlevygen(0.6, 2.; rng = Random.GLOBAL_RNG) ≈ 0.294735 atol=1.0e-5
-  end
+  rng = StableRNG(123)
+  @test tiltedlevygen(0.6, 2.; rng = rng) ≈ 0.12764 atol=1.0e-5
 
 end
 @testset "nested copulas data generators" begin
@@ -37,18 +30,13 @@ end
   @test sampleInvlaJ(0.5, 0.5) == 1
   @test sampleInvlaJ(0.5, 0.8) == 8
   Random.seed!(43)
+  rng = StableRNG(123)
   w = logseriescdf(1-exp(-4.))
-  if VERSION <= v"1.7"
-    @test elInvlaF(4., 2., w; rng = Random.GLOBAL_RNG) == 7
-  else
-    @test elInvlaF(4., 2., w; rng = Random.GLOBAL_RNG) == 1
-  end
+  @test elInvlaF(4., 2., w; rng = rng) == 1
+
   Random.seed!(43)
-  if VERSION <= v"1.7"
-    @test elInvlaF(4., .5, w; rng = Random.GLOBAL_RNG) == 16
-    @test nestedfrankgen(4., 3., 1, w; rng = Random.GLOBAL_RNG) == 6
-  else
-    @test elInvlaF(4., .5, w; rng = Random.GLOBAL_RNG) == 111
-    @test nestedfrankgen(4., 3., 1, w; rng = Random.GLOBAL_RNG) == 1
-  end
+  rng = StableRNG(123)
+  @test elInvlaF(4., .5, w; rng = rng) == 3
+  @test nestedfrankgen(4., 3., 1, w; rng = rng) == 1
+
 end
