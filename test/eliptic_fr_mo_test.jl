@@ -8,11 +8,9 @@
   end
   @testset "examples on data" begin
     Random.seed!(43)
-    if VERSION <= v"1.7"
-      @test simulate_copula(1, Gaussian_cop([1. 0.; 0. 1.])) ≈ [0.589188  0.817617] atol=1.0e-5
-    else
-      @test simulate_copula(1, Gaussian_cop([1. 0.; 0. 1.])) ≈ [0.623817 0.0518950] atol=1.0e-5
-    end
+    rng = StableRNG(123)
+    @test simulate_copula(1, Gaussian_cop([1. 0.; 0. 1.]); rng = rng) ≈ [0.44953 0.74757] atol=1.0e-5
+
     Random.seed!(43)
     x = simulate_copula(350000, Gaussian_cop([1. 0.5; 0.5 1.]))
     @test pvalue(ExactOneSampleKSTest(x[:,1], Uniform(0,1))) > α
@@ -32,11 +30,9 @@ end
 
   @testset "example on data" begin
     Random.seed!(43)
-    if VERSION <= v"1.7"
-      @test simulate_copula(1, Student_cop([1. 0.; 0. 1.], 1)) ≈ [0.936433  0.983987] atol=1.0e-5
-    else
-      @test simulate_copula(1, Student_cop([1. 0.; 0. 1.], 1)) ≈ [0.727310 0.070078] atol=1.0e-5
-    end
+    rng = StableRNG(123)
+    @test simulate_copula(1, Student_cop([1. 0.; 0. 1.], 1); rng = rng) ≈ [0.39949 0.832173] atol=1.0e-5
+
     ν = 10
     rho = 0.5
     λ = 2*pdf(TDist(ν+1), -sqrt.((ν+1)*(1-rho)/(1+rho)))
@@ -76,40 +72,30 @@ end
     frechet_el2!(u, 0.2, 0.6, 0.6)
     @test u ≈ [0.2, 0.8]
     Random.seed!(43)
-    if VERSION <= v"1.7"
-      @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
-    else
-      @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.428396 0.428396 0.428396 0.42839656] atol=1.0e-5
-    end
+    rng = StableRNG(123)
+    @test simulate_copula(1, Frechet_cop(4, 1.); rng = rng) ≈ [0.042730 0.04273 0.04273 0.042730] atol=1.0e-5
+
     Random.seed!(43)
-    if VERSION <= v"1.7"
-      @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
-    else
-      @test simulate_copula(1, Frechet_cop(4, 1.)) ≈ [0.428396 0.428396 0.428396 0.42839656] atol=1.0e-5
-    end
+    rng = StableRNG(123)
+    @test simulate_copula(1, Frechet_cop(4, 1.); rng = rng) ≈ [0.042730 0.042730 0.04273 0.04273] atol=1.0e-5
+
     Random.seed!(43)
-    if VERSION <= v"1.7"
-      @test simulate_copula(1, Frechet_cop(2, 0.4, 0.4)) ≈ [0.1809752 0.7753771] atol=1.0e-5
-    else
-      @test simulate_copula(1, Frechet_cop(2, 0.4, 0.4)) ≈ [0.988527 0.9885277] atol=1.0e-5
-    end
+    rng = StableRNG(123)
+    @test simulate_copula(1, Frechet_cop(2, 0.4, 0.4); rng = rng) ≈ [0.632510 0.36748] atol=1.0e-5
+
 
     u = zeros(1,4)
     u1 = zeros(1,2)
     Random.seed!(43)
-    simulate_copula!(u, Frechet_cop(4, 1.))
-    if VERSION <= v"1.7"
-      @test u ≈ [0.9248760  0.9248760  0.9248760  0.9248760] atol=1.0e-5
-    else
-      @test u ≈ [0.428396 0.4283965 0.428396 0.4283965] atol=1.0e-5
-    end
+    rng = StableRNG(123)
+    simulate_copula!(u, Frechet_cop(4, 1.); rng = rng)
+    @test u ≈ [0.042730 0.042730 0.04273 0.04273] atol=1.0e-5
+
     Random.seed!(43)
-    simulate_copula!(u1, Frechet_cop(2, 0.4, 0.4))
-    if VERSION <= v"1.7"
-      @test u1 ≈ [0.1809752 0.7753771] atol=1.0e-5
-    else
-      @test u1 ≈ [0.98852774 0.98852774] atol=1.0e-5
-    end
+    rng = StableRNG(123)
+    simulate_copula!(u1, Frechet_cop(2, 0.4, 0.4); rng = rng)
+    @test u1 ≈ [0.63251 0.36748] atol=1.0e-5
+
   end
   @testset "examples on larger data" begin
     Random.seed!(43)
@@ -157,20 +143,16 @@ end
   end
   @testset "small example" begin
     Random.seed!(43)
-    if VERSION <= v"1.7"
-      @test simulate_copula(1, Marshall_Olkin_cop([1., 2., 3.])) ≈ [0.854724  0.821831] atol=1.0e-5
-    else
-      @test simulate_copula(1, Marshall_Olkin_cop([1., 2., 3.])) ≈ [0.277907 0.971565] atol=1.0e-5
-    end
+    rng = StableRNG(123)
+    @test simulate_copula(1, Marshall_Olkin_cop([1., 2., 3.]); rng = rng) ≈ [0.585174 0.511807] atol=1.0e-5
+
 
     u = zeros(1,2)
     Random.seed!(43)
-    simulate_copula!(u, Marshall_Olkin_cop([1., 2., 3.]))
-    if VERSION <= v"1.7"
-      @test u ≈ [0.854724  0.821831] atol=1.0e-5
-    else
-      @test u ≈ [0.277907 0.971565] atol=1.0e-5
-    end
+    rng = StableRNG(123)
+    simulate_copula!(u, Marshall_Olkin_cop([1., 2., 3.]); rng=rng)
+    @test u ≈ [0.585174 0.511807] atol=1.0e-5
+
 
     m = [0.252982 0.201189;  0.464758 0.409039; 0.585662 0.5357]
     @test mocopula([0.2 0.3 0.4; 0.3 0.4 0.6; 0.4 0.5 0.7], 2, [1., 1.5, 2.]) ≈ m atol=1.0e-4
