@@ -1,6 +1,6 @@
 DatagenCopulaBased.jl is licensed under the MIT License (MIT)
 
-Copyright (c) 2017-2018 Krzysztof Domino, Adam Glos, 
+Copyright (c) 2017-2022 Krzysztof Domino, Adam Glos, Oskar Laverny 
 Institute of Theoretical and Applied Informatics, Polish Academy of Sciences
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
