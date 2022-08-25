@@ -99,7 +99,7 @@ function frank_gen(r, θ, logseries)
 end
 
 """
-    Gumbel_cop
+    GumbelCopula
 
 Fields:
   - n::Int - number of marginals
@@ -107,13 +107,13 @@ Fields:
 
 Constructor
 
-        Gumbel_cop(n::Int, θ::Real)
+        GumbelCopula(n::Int, θ::Real)
 
 The Gumbel n variate copula is parameterized by θ::Real ∈ [1, ∞), supported for n::Int ≧ 2.
 
 Constructor
 
-    Gumbel_cop(n::Int, θ::Real, cor::Type{<:CorrelationType})
+    GumbelCopula(n::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
@@ -121,22 +121,22 @@ The copula parameter will be computed then. The correlation must be greater than
 
 ```jldoctest
 
-julia> Gumbel_cop(4, 3.)
-Gumbel_cop(4, 3.0)
+julia> GumbelCopula(4, 3.)
+GumbelCopula(4, 3.0)
 
-julia> Gumbel_cop(4, .75, KendallCorrelation)
-Gumbel_cop(4, 4.0)
+julia> GumbelCopula(4, .75, KendallCorrelation)
+GumbelCopula(4, 4.0)
 ```
 """
-struct Gumbel_cop{T} <: Copula{T}
+struct GumbelCopula{T} <: Copula{T}
   n::Int
   θ::T
-  function(::Type{Gumbel_cop})(n::Int, θ::T) where T <: Real
+  function(::Type{GumbelCopula})(n::Int, θ::T) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       testθ(θ, "gumbel")
       new{T}(n, θ)
   end
-  function(::Type{Gumbel_cop})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{GumbelCopula})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "gumbel", cor)
       new{T}(n, θ)
@@ -146,9 +146,9 @@ end
 
 
 """
-    simulate_copula!(U::Matrix{Real}, copula::Gumbel_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::GumbelCopula; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Given the preallocated output U, Returns size(U,1) realizations from the Gumbel copula -  Gumbel_cop(n, θ)
+Given the preallocated output U, Returns size(U,1) realizations from the Gumbel copula -  GumbelCopula(n, θ)
 N.o. marginals is size(U,2), requires size(U,2) == copula.n
 
 ```jldoctest
@@ -159,7 +159,7 @@ julia> U = zeros(2,3)
  0.0  0.0  0.0
  0.0  0.0  0.0
 
-julia> simulate_copula!(U, Gumbel_cop(3, 1.5))
+julia> simulate_copula!(U, GumbelCopula(3, 1.5))
 
 julia> U
 2×3 Array{Float64,2}:
@@ -167,7 +167,7 @@ julia> U
  0.637826  0.483514  0.123949
 ```
 """
-function simulate_copula!(U, copula::Gumbel_cop{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::GumbelCopula{T}; rng = Random.GLOBAL_RNG) where T
     θ = copula.θ
     n = copula.n
     size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
@@ -178,7 +178,7 @@ function simulate_copula!(U, copula::Gumbel_cop{T}; rng = Random.GLOBAL_RNG) whe
 end
 
 """
-    Gumbel_cop_rev
+    GumbelCopulaRev
 
 Fields:
   - n::Int - number of marginals
@@ -186,22 +186,22 @@ Fields:
 
 Constructor
 
-    Gumbel_cop_rev(n::Int, θ::Real)
+    GumbelCopulaRev(n::Int, θ::Real)
 
 The reversed Gumbel copula (reversed means u → 1 .- u),
 parameterized by θ::Real ∈ [1, ∞), supported for n::Int ≧ 2.
 
 Constructor
 
-    Gumbel_cop_rev(n::Int, θ::Real, cor::Type{<:CorrelationType})
+    GumbelCopulaRev(n::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
 The copula parameter will be computed then. The correlation must be greater than zero.
 
 ```jldoctest
-julia> c = Gumbel_cop_rev(4, .75, KendallCorrelation)
-Gumbel_cop_rev(4, 4.0)
+julia> c = GumbelCopulaRev(4, .75, KendallCorrelation)
+GumbelCopulaRev(4, 4.0)
 
 julia> Random.seed!(43);
 
@@ -211,15 +211,15 @@ julia> simulate_copula(2, c)
  0.0954475  0.138451  0.13593   0.0678172
 ```
 """
-struct Gumbel_cop_rev{T} <: Copula{T}
+struct GumbelCopulaRev{T} <: Copula{T}
   n::Int
   θ::T
-  function(::Type{Gumbel_cop_rev})(n::Int, θ::T) where T <: Real
+  function(::Type{GumbelCopulaRev})(n::Int, θ::T) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       testθ(θ, "gumbel")
       new{T}(n, θ)
   end
-  function(::Type{Gumbel_cop_rev})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{GumbelCopulaRev})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "gumbel", cor)
       new{T}(n, θ)
@@ -229,9 +229,9 @@ end
 
 
 """
-    simulate_copula!(U::Matrix{Real}, copula::Gumbel_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::GumbelCopulaRev; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Given the preallocated output U, Returns size(U,1) realizations from the reversed Gumbel copula -  Gumbel_cop_rev(n, θ)
+Given the preallocated output U, Returns size(U,1) realizations from the reversed Gumbel copula -  GumbelCopulaRev(n, θ)
 N.o. marginals is size(U,2), requires size(U,2) == copula.n
 
 ```jldoctest
@@ -242,7 +242,7 @@ julia> U = zeros(2,3)
  0.0  0.0  0.0
  0.0  0.0  0.0
 
-julia> simulate_copula!(U, Gumbel_cop_rev(3, 1.5))
+julia> simulate_copula!(U, GumbelCopulaRev(3, 1.5))
 
 julia> U
 2×3 Array{Flaot64,2}:
@@ -250,7 +250,7 @@ julia> U
  0.362174  0.516486  0.876051
 ```
 """
-function simulate_copula!(U, copula::Gumbel_cop_rev{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::GumbelCopulaRev{T}; rng = Random.GLOBAL_RNG) where T
     θ = copula.θ
     n = copula.n
     size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
@@ -261,7 +261,7 @@ function simulate_copula!(U, copula::Gumbel_cop_rev{T}; rng = Random.GLOBAL_RNG)
 end
 
 """
-    Clayton_cop
+    ClaytonCopula
 
 Fields:
   - n::Int - number of marginals
@@ -269,31 +269,31 @@ Fields:
 
 Constructor
 
-    Clayton_cop(n::Int, θ::Real)
+    ClaytonCopula(n::Int, θ::Real)
 
 The Clayton n variate copula parameterized by θ::Real, such that θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
 supported for n::Int ≥ 2.
 
 Constructor
 
-    Clayton_cop(n::Int, θ::Real, cor::Type{<:CorrelationType})
+    ClaytonCopula(n::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
 The copula parameter will be computed then. The correlation must be greater than zero.
 
 ```jldoctest
-julia> Clayton_cop(4, 3.)
-Clayton_cop(4, 3.0)
+julia> ClaytonCopula(4, 3.)
+ClaytonCopula(4, 3.0)
 
-julia> Clayton_cop(4, 0.9, SpearmanCorrelation)
-Clayton_cop(4, 5.5595567742323775)
+julia> ClaytonCopula(4, 0.9, SpearmanCorrelation)
+ClaytonCopula(4, 5.5595567742323775)
 ```
 """
-struct Clayton_cop{T} <: Copula{T}
+struct ClaytonCopula{T} <: Copula{T}
   n::Int
   θ::T
-  function(::Type{Clayton_cop})(n::Int, θ::T) where T <: Real
+  function(::Type{ClaytonCopula})(n::Int, θ::T) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "clayton")
@@ -302,7 +302,7 @@ struct Clayton_cop{T} <: Copula{T}
       end
       new{T}(n, θ)
   end
-  function(::Type{Clayton_cop})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{ClaytonCopula})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "clayton", cor)
       new{T}(n, θ)
@@ -311,9 +311,9 @@ end
 
 
 """
-    simulate_copula!(U::Matrix{Real}, copula::Clayton_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::ClaytonCopula; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Given the preallocated output U, Returns t realizations from the Clayton copula - Clayton_cop(n, θ)
+Given the preallocated output U, Returns t realizations from the Clayton copula - ClaytonCopula(n, θ)
 N.o. marginals is size(U,2), requires size(U,2) == copula.n.
 N.o. realisations is size(U,1).
 
@@ -326,7 +326,7 @@ julia> U = zeros(3,2)
  0.0  0.0
  0.0  0.0
 
-julia> simulate_copula!(U, Clayton_cop(2, 1.))
+julia> simulate_copula!(U, ClaytonCopula(2, 1.))
 
 julia> U
 3×2 Array{Float64,2}:
@@ -341,7 +341,7 @@ julia> U = zeros(2,2)
 
 julia> Random.seed!(43);
 
-julia> simulate_copula!(U, Clayton_cop(2, -.5))
+julia> simulate_copula!(U, ClaytonCopula(2, -.5))
 
 julia> U
 2×2 Array{Float64,2}:
@@ -349,12 +349,12 @@ julia> U
  0.888934  0.863358
 ```
 """
-function simulate_copula!(U, copula::Clayton_cop{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::ClaytonCopula{T}; rng = Random.GLOBAL_RNG) where T
     θ = copula.θ
     n = copula.n
     size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
     if (n == 2) & (θ < 0)
-        simulate_copula!(U, Chain_of_Archimedeans([θ], "clayton"); rng = rng)
+        simulate_copula!(U, ChainArchimedeanCopulas([θ], "clayton"); rng = rng)
     else
         for j in 1:size(U,1)
             u = rand(rng, T, n+1)
@@ -364,7 +364,7 @@ function simulate_copula!(U, copula::Clayton_cop{T}; rng = Random.GLOBAL_RNG) wh
 end
 
 """
-    Clayton_cop_rev
+    ClaytonCopulaRev
 
 Fields:
 - n::Int - number of marginals
@@ -372,7 +372,7 @@ Fields:
 
 Constructor
 
-    Clayton_cop_rev(n::Int, θ::Real)
+    ClaytonCopulaRev(n::Int, θ::Real)
 
 The reversed Clayton copula parameterized by θ::Real (reversed means u → 1 .- u).
 Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ [-1, 0) ∪ (0, ∞) for n = 2,
@@ -380,7 +380,7 @@ supported for n::Int ≧ 2.
 
 Constructor
 
-    Clayton_cop_rev(n::Int, θ::Real, cor::Type{<:CorrelationType})
+    ClaytonCopulaRev(n::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
@@ -388,18 +388,18 @@ The copula parameter will be computed then. The correlation must be greater than
 
 ```jldoctest
 
-julia> Clayton_cop_rev(4, 3.)
-Clayton_cop_rev(4, 3.0)
+julia> ClaytonCopulaRev(4, 3.)
+ClaytonCopulaRev(4, 3.0)
 
-julia> Clayton_cop_rev(4, 0.9, SpearmanCorrelation)
-Clayton_cop_rev(4, 5.5595567742323775)
+julia> ClaytonCopulaRev(4, 0.9, SpearmanCorrelation)
+ClaytonCopulaRev(4, 5.5595567742323775)
 
 ```
 """
-struct Clayton_cop_rev{T} <: Copula{T}
+struct ClaytonCopulaRev{T} <: Copula{T}
   n::Int
   θ::T
-  function(::Type{Clayton_cop_rev})(n::Int, θ::T) where T <: Real
+  function(::Type{ClaytonCopulaRev})(n::Int, θ::T) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "clayton")
@@ -408,7 +408,7 @@ struct Clayton_cop_rev{T} <: Copula{T}
       end
       new{T}(n, θ)
   end
-  function(::Type{Clayton_cop_rev})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{ClaytonCopulaRev})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "clayton", cor)
       new{T}(n, θ)
@@ -418,9 +418,9 @@ end
 
 
 """
-    simulate_copula!(U::Matrix{Real}, copula::Clayton_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::ClaytonCopulaRev; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Given the preallocated output U, Returns size(U,1) realizations from the reversed Clayton copula - Clayton_cop_rev(n, θ)
+Given the preallocated output U, Returns size(U,1) realizations from the reversed Clayton copula - ClaytonCopulaRev(n, θ)
 N.o. marginals is size(U,2), requires size(U,2) == copula.n
 
 ```jldoctest
@@ -431,7 +431,7 @@ julia> U = zeros(2,2)
  0.0  0.0
  0.0  0.0
 
-julia> simulate_copula!(U, Clayton_cop_rev(2, -0.5))
+julia> simulate_copula!(U, ClaytonCopulaRev(2, -0.5))
 
 julia> U
 2×2 Array{Float64,2}:
@@ -445,7 +445,7 @@ julia> U = zeros(2,2)
  0.0  0.0
  0.0  0.0
 
-julia> simulate_copula!(U, Clayton_cop_rev(2, 2.))
+julia> simulate_copula!(U, ClaytonCopulaRev(2, 2.))
 
 julia> U
 2×2 Array{Float64,2}:
@@ -453,7 +453,7 @@ julia> U
  0.0257036  0.212676
 ```
 """
-function simulate_copula!(U, copula::Clayton_cop_rev{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::ClaytonCopulaRev{T}; rng = Random.GLOBAL_RNG) where T
     θ = copula.θ
     n = copula.n
     size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
@@ -472,7 +472,7 @@ function simulate_copula!(U, copula::Clayton_cop_rev{T}; rng = Random.GLOBAL_RNG
 end
 
 """
-    AMH_cop
+    AmhCopula
 
 Fields:
 - n::Int - number of marginals
@@ -480,13 +480,13 @@ Fields:
 
 Constructor
 
-    AMH_cop(n::Int, θ::Real)
+    AmhCopula(n::Int, θ::Real)
 
 The Ali-Mikhail-Haq copula parameterized by θ, domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
 
 Constructor
 
-    AMH_cop(n::Int, θ::Real, cor::Type{<:CorrelationType})
+    AmhCopula(n::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
@@ -496,18 +496,18 @@ Such correlation must be grater than zero and limited from above due to the θ d
             - Kendall correlation must be in range (0, 1/3)
 
 ```jldoctest
-julia> AMH_cop(4, .3)
-AMH_cop(4, 0.3)
+julia> AmhCopula(4, .3)
+AmhCopula(4, 0.3)
 
-julia> AMH_cop(4, .3, KendallCorrelation)
-AMH_cop(4, 0.9999)
+julia> AmhCopula(4, .3, KendallCorrelation)
+AmhCopula(4, 0.9999)
 
 ```
 """
-struct AMH_cop{T} <: Copula{T}
+struct AmhCopula{T} <: Copula{T}
   n::Int
   θ::T
-  function(::Type{AMH_cop})(n::Int, θ::T) where T <: Real
+  function(::Type{AmhCopula})(n::Int, θ::T) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "amh")
@@ -516,7 +516,7 @@ struct AMH_cop{T} <: Copula{T}
       end
       new{T}(n, θ)
   end
-  function(::Type{AMH_cop})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{AmhCopula})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "amh", cor)
       new{T}(n, θ)
@@ -526,15 +526,15 @@ end
 
 
 """
-    simulate_copula!(U::Matrix{Real}, copula::AMH_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::AmhCopula; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Given the preallocated output U, Returns size(U,1) realizations from the Ali-Mikhail-Haq copula- AMH_cop(n, θ)
+Given the preallocated output U, Returns size(U,1) realizations from the Ali-Mikhail-Haq copula- AmhCopula(n, θ)
 N.o. marginals is size(U,2), requires size(U,2) == copula.n
 
 ```jldoctest
 julia> Random.seed!(43);
 
-julia> simulate_copula!(U, AMH_cop(2, -0.5))
+julia> simulate_copula!(U, AmhCopula(2, -0.5))
 
 julia> U
 4×2 Array{Float64,2}:
@@ -544,12 +544,12 @@ julia> U
  0.828727  0.335864
 ```
 """
-function simulate_copula!(U, copula::AMH_cop{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::AmhCopula{T}; rng = Random.GLOBAL_RNG) where T
   n = copula.n
   θ = copula.θ
   size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
   if (θ in [0,1]) | (n == 2)*(θ < 0)
-      simulate_copula!(U, Chain_of_Archimedeans([θ], "amh"); rng = rng)
+      simulate_copula!(U, ChainArchimedeanCopulas([θ], "amh"); rng = rng)
   else
     for j in 1:size(U,1)
       u = rand(rng, T, n+1)
@@ -559,7 +559,7 @@ function simulate_copula!(U, copula::AMH_cop{T}; rng = Random.GLOBAL_RNG) where 
 end
 
 """
-    AMH_cop_rev
+    AmhCopulaRev
 
 Fields:
   - n::Int - number of marginals
@@ -567,7 +567,7 @@ Fields:
 
 Constructor
 
-    AMH_cop_rev(n::Int, θ::Real)
+    AmhCopulaRev(n::Int, θ::Real)
 
 The reversed Ali-Mikhail-Haq copula parametrized by θ, i.e.
 such that the output is 1 .- u, where u is modelled by the corresponding AMH copula.
@@ -575,7 +575,7 @@ Domain: θ ∈ (0, 1) for n > 2 and  θ ∈ [-1, 1] for n = 2.
 
 Constructor
 
-    AMH_cop_rev(n::Int, θ::Real, cor::Type{<:CorrelationType})
+    AmhCopulaRev(n::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
@@ -585,14 +585,14 @@ Such correlation must be grater than zero and limited from above due to the θ d
               -  Kendall correlation must be in range (0, 1/3)
 
 ```jldoctest
-julia> AMH_cop_rev(4, .3)
-AMH_cop_rev(4, 0.3)
+julia> AmhCopulaRev(4, .3)
+AmhCopulaRev(4, 0.3)
 ```
 """
-struct AMH_cop_rev{T} <: Copula{T}
+struct AmhCopulaRev{T} <: Copula{T}
   n::Int
   θ::T
-  function(::Type{AMH_cop_rev})(n::Int, θ::T) where T <: Real
+  function(::Type{AmhCopulaRev})(n::Int, θ::T) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "amh")
@@ -601,7 +601,7 @@ struct AMH_cop_rev{T} <: Copula{T}
       end
       new{T}(n, θ)
   end
-  function(::Type{AMH_cop_rev})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{AmhCopulaRev})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "amh", cor)
       new{T}(n, θ)
@@ -611,9 +611,9 @@ end
 
 
 """
-    simulate_copula!(U::Matrix{Real}, copula::AMH_cop_rev; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::AmhCopulaRev; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Given the preallocated output U, Returns size(U,1) realizations from the reversed Ali-Mikhail-Haq copula a - AMH_cop_rev(n, θ)
+Given the preallocated output U, Returns size(U,1) realizations from the reversed Ali-Mikhail-Haq copula a - AmhCopulaRev(n, θ)
 N.o. marginals is size(U,2), requires size(U,2) == copula.n
 
 ```jldoctest
@@ -626,7 +626,7 @@ julia> U = zeros(4,2)
  0.0  0.0
  0.0  0.0
 
-julia> simulate_copula!(U, AMH_cop_rev(2, 0.5))
+julia> simulate_copula!(U, AmhCopulaRev(2, 0.5))
 
 julia> U
 4×2 Array{Float64,2}:
@@ -636,7 +636,7 @@ julia> U
  0.0845089  0.505477
 ```
 """
-function simulate_copula!(U, copula::AMH_cop_rev{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::AmhCopulaRev{T}; rng = Random.GLOBAL_RNG) where T
     θ = copula.θ
     n = copula.n
     size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
@@ -655,7 +655,7 @@ function simulate_copula!(U, copula::AMH_cop_rev{T}; rng = Random.GLOBAL_RNG) wh
 end
 
 """
-    Frank_cop
+    FrankCopula
 
 Fields:
 - n::Int - number of marginals
@@ -663,7 +663,7 @@ Fields:
 
 Constructor
 
-    Frank_cop(n::Int, θ::Real)
+    FrankCopula(n::Int, θ::Real)
 
 The Frank n variate copula parameterized by θ::Real.
 Domain: θ ∈ (0, ∞) for n > 2 and θ ∈ (-∞, 0) ∪ (0, ∞) for n = 2,
@@ -671,24 +671,24 @@ supported for n::Int ≧ 2.
 
 Constructor
 
-    Frank_cop(n::Int, θ::Real, cor::Type{<:CorrelationType})
+    FrankCopula(n::Int, θ::Real, cor::Type{<:CorrelationType})
 
 For computing copula parameter from expected correlation use empty type cor::Type{<:CorrelationType} where
 SpearmanCorrelation <:CorrelationType and KendallCorrelation<:CorrelationType. If used cor put expected correlation in the place of θ  in the constructor.
 The copula parameter will be computed then. The correlation must be greater than zero.
 
 ```jldoctest
-julia> Frank_cop(2, -5.)
-Frank_cop(2, -5.0)
+julia> FrankCopula(2, -5.)
+FrankCopula(2, -5.0)
 
-julia> Frank_cop(4, .3)
-Frank_cop(4, 0.3)
+julia> FrankCopula(4, .3)
+FrankCopula(4, 0.3)
 ```
 """
-struct Frank_cop{T} <: Copula{T}
+struct FrankCopula{T} <: Copula{T}
   n::Int
   θ::T
-  function(::Type{Frank_cop})(n::Int, θ::T) where T <: Real
+  function(::Type{FrankCopula})(n::Int, θ::T) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       if n > 2
         testθ(θ, "frank")
@@ -697,7 +697,7 @@ struct Frank_cop{T} <: Copula{T}
       end
       new{T}(n, θ)
   end
-  function(::Type{Frank_cop})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{FrankCopula})(n::Int, ρ::T, cor::Type{<:CorrelationType}) where T <: Real
       n >= 2 || throw(DomainError("not supported for n < 2"))
       θ = getθ4arch(ρ, "frank", cor)
       new{T}(n, θ)
@@ -707,9 +707,9 @@ end
 
 
 """
-    simulate_copula!(U::Matrix{Real}, copula::Frank_cop; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::FrankCopula; rng::AbstractRNG = Random.GLOBAL_RNG)
 
-Given the preallocated output U, Returns size(U,1) realizations from the Frank copula- Frank_cop(n, θ)
+Given the preallocated output U, Returns size(U,1) realizations from the Frank copula- FrankCopula(n, θ)
 N.o. marginals is size(U,2), requires size(U,2) == copula.n
 
 ```jldoctest
@@ -722,7 +722,7 @@ julia> U = zeros(4,2)
 
 julia> Random.seed!(43);
 
-julia> simulate_copula!(U, Frank_cop(2, 3.5))
+julia> simulate_copula!(U, FrankCopula(2, 3.5))
 
 julia> U
 4×2 Array{Float64,2}:
@@ -732,12 +732,12 @@ julia> U
  0.747862  0.29333
 ```
 """
-function simulate_copula!(U, copula::Frank_cop{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::FrankCopula{T}; rng = Random.GLOBAL_RNG) where T
   n = copula.n
   θ = copula.θ
   size(U, 2) == n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
   if (n == 2) & (θ < 0)
-      simulate_copula!(U, Chain_of_Archimedeans([θ], "frank"); rng = rng)
+      simulate_copula!(U, ChainArchimedeanCopulas([θ], "frank"); rng = rng)
   else
     w = logseriescdf(1-exp(-θ))
     for j in 1:size(U,1)

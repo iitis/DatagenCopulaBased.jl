@@ -196,31 +196,31 @@ end
 
 if false
   ρ = collect(0.05:0.05:.95)
-  e4 = empiricalcums(Clayton_cop, 4, ρ)
+  e4 = empiricalcums(ClaytonCopula, 4, ρ)
   save("pics/c4clgmarg.jld2", "emp", e4,"rho", ρ)
   t = statstheoreticalclayton(4, Normal(0,1), ρ);
   save("pics/teorc4clgmarg.jld2", "theor", t,"rho", ρ)
 end
 if false
   ρ = collect(0.05:0.05:.95)
-  e3 = empiricalcums(Clayton_cop, 3, ρ)
+  e3 = empiricalcums(ClaytonCopula, 3, ρ)
   save("pics/c3clgmarg.jld2", "emp", e3,"rho", ρ)
   t = statstheoreticalclayton(3, Normal(0,1), ρ);
   save("pics/teorc3clgmarg.jld2", "theor", t,"rho", ρ)
 end
 if false
   ρ = [i for i in 0.02:0.02:.85]
-  e = empiricalcums(Frank_cop, 3, ρ)
+  e = empiricalcums(FrankCopula, 3, ρ)
   save("pics/c3frgmarg.jld2", "emp", e,"rho", ρ)
 end
 if false
   ρ = [i for i in 0.02:0.02:.98]
-  e = empiricalcums(Gumbel_cop, 3, ρ)
+  e = empiricalcums(GumbelCopula, 3, ρ)
   save("pics/c3gugmarg.jld2", "emp", e,"rho", ρ)
 end
 if false
   ρ = vcat([i for i in 0.02:0.02:.49], [0.499])
-  e = empiricalcums(AMH_cop, 3, ρ)
+  e = empiricalcums(AmhCopula, 3, ρ)
   save("pics/c3amhgmarg.jld2", "emp", e,"rho", ρ)
 end
 

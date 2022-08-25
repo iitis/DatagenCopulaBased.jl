@@ -32,7 +32,7 @@ function rand2cop(u1, θ, copula, w)
   end
 end
 """
-    Chain_of_Archimedeans
+    ChainArchimedeanCopulas
 
 Subsequent pairs of marginals are modeled by bi-variate copulas form the Archimedean
 family, following copulas are supported: "Clayton", "Frank", "Ali-Mikhail-Haq",
@@ -46,20 +46,20 @@ Fields:
 
 Constructor
 
-    Chain_of_Archimedeans(θ::Vector{Real}, copulas::Vector{String})
+    ChainArchimedeanCopulas(θ::Vector{Real}, copulas::Vector{String})
 
 requires length(θ) = length(copulas) and limitations on θ for particular bi-variate copulas
 
 Constructor
 
-    Chain_of_Archimedeans(θ::Vector{Real}, copulas::String)
+    ChainArchimedeanCopulas(θ::Vector{Real}, copulas::String)
 one copula family for all subsequent pairs of marginals.
 
 Constructors
 
-    Chain_of_Archimedeans(θ::Vector{Real}, copulas::Vector{String}, cor::Type{<:CorrelationType})
+    ChainArchimedeanCopulas(θ::Vector{Real}, copulas::Vector{String}, cor::Type{<:CorrelationType})
 
-    Chain_of_Archimedeans(θ::Vector{Real}, copulas::String, cor::Type{<:CorrelationType})
+    ChainArchimedeanCopulas(θ::Vector{Real}, copulas::String, cor::Type{<:CorrelationType})
 
 For computing copula parameters from expected correlation use empty type cor::Type{<:CorrelationType}.
 cor ∈ {SpearmanCorrelation, KendallCorrelation} uses these correlations in the place of θ  in the constructor
@@ -69,19 +69,19 @@ In all cases n = length(θ)+1.
 
 ```jldoctest
 
-julia> c = Chain_of_Archimedeans([4., 11.], "frank")
-Chain_of_Archimedeans(3, [4.0, 11.0], ["frank", "frank"])
+julia> c = ChainArchimedeanCopulas([4., 11.], "frank")
+ChainArchimedeanCopulas(3, [4.0, 11.0], ["frank", "frank"])
 
-julia> c = Chain_of_Archimedeans([.5, .7], ["frank", "clayton"], "Kendall")
-Chain_of_Archimedeans(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
+julia> c = ChainArchimedeanCopulas([.5, .7], ["frank", "clayton"], "Kendall")
+ChainArchimedeanCopulas(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
 
 ```
 """
-struct Chain_of_Archimedeans{T} <: Copula{T}
+struct ChainArchimedeanCopulas{T} <: Copula{T}
   n::Int
   θ::Vector{T}
   copulas::Vector{String}
-  function(::Type{Chain_of_Archimedeans})(θ::Vector{T}, copulas::Vector{String}) where T <: Real
+  function(::Type{ChainArchimedeanCopulas})(θ::Vector{T}, copulas::Vector{String}) where T <: Real
       n = length(θ)+1
       n-1 == length(copulas) || throw(BoundsError("length(θ) ≠ length(copulas)"))
       map(i -> testbivθ(θ[i], copulas[i]), 1:n-1)
@@ -90,7 +90,7 @@ struct Chain_of_Archimedeans{T} <: Copula{T}
       end
       new{T}(n, θ, copulas)
   end
-  function(::Type{Chain_of_Archimedeans})(θ::Vector{T}, copulas::Vector{String}, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{ChainArchimedeanCopulas})(θ::Vector{T}, copulas::Vector{String}, cor::Type{<:CorrelationType}) where T <: Real
       n = length(θ)+1
       n - 1 == length(copulas) || throw(BoundsError("length(θ) ≠ length(copulas)"))
       for copula in copulas
@@ -99,13 +99,13 @@ struct Chain_of_Archimedeans{T} <: Copula{T}
       θ = map(i -> usebivρ(θ[i], copulas[i], cor), 1:n-1)
       new{T}(n, θ, copulas)
   end
-  function(::Type{Chain_of_Archimedeans})(θ::Vector{T}, copula::String) where T <: Real
+  function(::Type{ChainArchimedeanCopulas})(θ::Vector{T}, copula::String) where T <: Real
       n = length(θ)+1
       map(i -> testbivθ(θ[i], copula), 1:n-1)
       copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
       new{T}(n, θ, [copula for i in 1:n-1])
   end
-  function(::Type{Chain_of_Archimedeans})(θ::Vector{T}, copula::String, cor::Type{<:CorrelationType}) where T <: Real
+  function(::Type{ChainArchimedeanCopulas})(θ::Vector{T}, copula::String, cor::Type{<:CorrelationType}) where T <: Real
       n = length(θ)+1
       map(i -> testbivθ(θ[i], copula), 1:n-1)
       copula in ["clayton", "amh", "frank"] || throw(AssertionError("$(copula) copula is not supported"))
@@ -117,14 +117,14 @@ end
 
 
 """
-    simulate_copula!(U::Matrix{Real}, copula::Chain_of_Archimedeans; rng::AbstractRNG = Random.GLOBAL_RNG)
+    simulate_copula!(U::Matrix{Real}, copula::ChainArchimedeanCopulas; rng::AbstractRNG = Random.GLOBAL_RNG)
 
 Given the preallocated output U, returns size(U,1) realizations of data modeled by the chain
 of bivariate Archimedean copulas. N.o. marginals is size(U,2), requires size(U,2) == copula.n
 
 ```jldoctest
-julia> c = Chain_of_Archimedeans([4., 11.], "frank")
-Chain_of_Archimedeans(3, [4.0, 11.0], ["frank", "frank"])
+julia> c = ChainArchimedeanCopulas([4., 11.], "frank")
+ChainArchimedeanCopulas(3, [4.0, 11.0], ["frank", "frank"])
 
 julia> u = zeros(1,3)
 1×3 Array{Float64,2}:
@@ -144,8 +144,8 @@ julia> u
 
 julia> Random.seed!(43);
 
-julia> c = Chain_of_Archimedeans([.5, .7], ["frank", "clayton"], KendallCorrelation)
-Chain_of_Archimedeans(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
+julia> c = ChainArchimedeanCopulas([.5, .7], ["frank", "clayton"], KendallCorrelation)
+ChainArchimedeanCopulas(3, [5.736282707019972, 4.666666666666666], ["frank", "clayton"])
 
 julia> simulate_copula!(u,c)
 
@@ -154,7 +154,7 @@ julia> u
  0.180975  0.408582  0.646887
 ```
 """
-function simulate_copula!(U, copula::Chain_of_Archimedeans{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::ChainArchimedeanCopulas{T}; rng = Random.GLOBAL_RNG) where T
     θ = copula.θ
     copulas = copula.copulas
     size(U, 2) == copula.n || throw(AssertionError("n.o. margins in pre allocated output and copula not equal"))
@@ -215,7 +215,7 @@ end
 
 # chain frechet copulas
 """
-    Chain_of_Frechet
+    ChainFrechetCopulas
 
 Chain of bi-variate Frechet copulas. Models each subsequent pair of marginals by the
 bi-variate Frechet copula.
@@ -229,31 +229,31 @@ Here α[i] and β[i] parameterized bi-variate Frechet copula between i th and i+
 
 Constructors
 
-    Chain_of_Frechet(α::Vector{Real})
+    ChainFrechetCopulas(α::Vector{Real})
 here β = zero(0)
 
-    Chain_of_Frechet(α::Vector{Real}, β::Vector{Real})
+    ChainFrechetCopulas(α::Vector{Real}, β::Vector{Real})
 
 ```jldoctest
-julia> Chain_of_Frechet([0.2, 0.3, 0.4])
-Chain_of_Frechet(4, [0.2, 0.3, 0.4], [0.0, 0.0, 0.0])
+julia> ChainFrechetCopulas([0.2, 0.3, 0.4])
+ChainFrechetCopulas(4, [0.2, 0.3, 0.4], [0.0, 0.0, 0.0])
 
-julia> Chain_of_Frechet([0.2, 0.3, 0.4], [0.1, 0.1, 0.1])
-Chain_of_Frechet(4, [0.2, 0.3, 0.4], [0.1, 0.1, 0.1])
+julia> ChainFrechetCopulas([0.2, 0.3, 0.4], [0.1, 0.1, 0.1])
+ChainFrechetCopulas(4, [0.2, 0.3, 0.4], [0.1, 0.1, 0.1])
 ```
 """
-struct Chain_of_Frechet{T} <: Copula{T}
+struct ChainFrechetCopulas{T} <: Copula{T}
   n::Int
   α::Vector{T}
   β::Vector{T}
-  function(::Type{Chain_of_Frechet})(α::Vector{T}) where T <: Real
+  function(::Type{ChainFrechetCopulas})(α::Vector{T}) where T <: Real
       n = length(α)+1
       β = zero(α)
       minimum(α) >= 0 || throw(DomainError("negative α parameter"))
       maximum(α) <= 1 || throw(DomainError("α parameter greater than 1"))
       new{T}(n, α, β)
   end
-  function(::Type{Chain_of_Frechet})(α::Vector{T}, β::Vector{T}) where T <: Real
+  function(::Type{ChainFrechetCopulas})(α::Vector{T}, β::Vector{T}) where T <: Real
       n = length(α)+1
       n == length(β) +1 || throw(AssertionError("length(α) ≠ length(β)"))
       minimum(α) >= 0 || throw(DomainError("negative α parameter"))
@@ -265,7 +265,7 @@ end
 
 
 
-function simulate_copula!(U, copula::Chain_of_Frechet{T}; rng = Random.GLOBAL_RNG) where T
+function simulate_copula!(U, copula::ChainFrechetCopulas{T}; rng = Random.GLOBAL_RNG) where T
   α = copula.α
   β = copula.β
   n = copula.n

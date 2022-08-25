@@ -31,11 +31,11 @@ module DatagenCopulaBased
   include("add_higher_order_cors.jl")
 
 
-  export Gaussian_cop, Student_cop, Frechet_cop, Marshall_Olkin_cop
-  export Gumbel_cop, Gumbel_cop_rev, Clayton_cop, Clayton_cop_rev, AMH_cop, AMH_cop_rev, Frank_cop
-  export Nested_Clayton_cop, Nested_AMH_cop, Nested_Frank_cop, Nested_Gumbel_cop
-  export Double_Nested_Gumbel_cop, Hierarchical_Gumbel_cop
-  export Chain_of_Archimedeans, Chain_of_Frechet
+  export GaussianCopula, StudentCopula, FrechetCopula, MarshallOlkinCopula
+  export GumbelCopula, GumbelCopulaRev, ClaytonCopula, ClaytonCopulaRev, AmhCopula, AmhCopulaRev, FrankCopula
+  export NestedClaytonCopula, NestedAmhCopula, NestedFrankCopula, NestedGumbelCopula
+  export DoubleNestedGumbelCopula, HierarchicalGumbelCopula, NestedGumbelCopula
+  export ChainArchimedeanCopulas, ChainFrechetCopulas
   export SpearmanCorrelation, KendallCorrelation, CorrelationType
   export cormatgen, cormatgen_constant, cormatgen_toeplitz, convertmarg!
   export cormatgen_constant_noised, cormatgen_toeplitz_noised, cormatgen_rand

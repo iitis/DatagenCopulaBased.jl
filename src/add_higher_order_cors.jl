@@ -44,7 +44,7 @@ function gcop2tstudent(x, ind, ν; naive = false, rng = Random.GLOBAL_RNG)
   μ = mean(x, dims = 1)
   y = (y.-μ)./S
   if naive
-    z = simulate_copula(size(x,1), Student_cop(cor(x[:,ind]), ν))
+    z = simulate_copula(size(x,1), StudentCopula(cor(x[:,ind]), ν))
     y[:,ind] = quantile.(Normal(0,1), z)
   else
     U = rand(rng, Chisq(ν), size(x, 1))
