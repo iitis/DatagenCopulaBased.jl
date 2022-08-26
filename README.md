@@ -63,7 +63,7 @@ julia> u = zeros(6,3)
 julia> Random.seed!(43);
 
 julia> c = ClaytonCopula(3, 3.)
-ClaytonCopula(3, 3.0)
+ClaytonCopula{Float64}(3, 3.0)
 
 julia> simulate_copula!(u, c)
 
@@ -92,7 +92,7 @@ The Gaussian copula is parameterized by the correlation matrix `Σ` that needs t
 
 ```julia
 julia> GaussianCopula([1. 0.5; 0.5 1.])
-GaussianCopula([1.0 0.5; 0.5 1.0])
+GaussianCopula{Float64}([1.0 0.5; 0.5 1.0], 2)
 ```
 
 ### The t-Student copula
@@ -105,7 +105,7 @@ The t-Student copula is parameterized by the `Σ` matrix a in the Gaussian copul
 
 ```julia
 julia> StudentCopula([1. 0.5; 0.5 1.], 1)
-StudentCopula([1.0 0.5; 0.5 1.0], 1)
+StudentCopula{Float64}([1.0 0.5; 0.5 1.0], 1, 2)
 ```
 
 ## The Marshall-Olkin copula
@@ -121,18 +121,17 @@ Parameters are ordered as follow in the argument vector `λ = [λ₁, λ₂, ...
 To generate data from the Marshall-Olkin copula we use algorithm presented in P. Embrechts, F. Lindskog, A McNeil 'modeling Dependence with Copulas and Applications to Risk Management', 2001.
 
 ```julia
+julia> c = MarshallOlkinCopula([1., 2., 3.])
+MarshallOlkinCopula{Float64}(2, [1.0, 2.0, 3.0])
+
 julia> Random.seed!(43);
 
-julia> c = MarshallOlkinCopula([1., 2., 3.])
-MarshallOlkinCopula(2, [1.0, 2.0, 3.0])
-
-julia> simulate_copula(5, c)
-5×2 Array{Float64,2}:
- 0.576703   0.795618
- 0.361453   0.625213
- 0.624422   0.101533
- 0.731702   0.12085
- 0.0661758  0.893326
+julia> 5×2 Matrix{Float64}:
+ 0.854724   0.821831
+ 0.885202   0.858624
+ 0.471677   0.244436
+ 0.834864   0.356275
+ 0.0661758  0.033564
 ```
 
 ## The Frechet copula
@@ -147,22 +146,18 @@ is supported only for `n = 2`.
 
 ```julia
 julia> c = FrechetCopula(2, 0.4, 0.4)
-FrechetCopula(2, 0.4, 0.4)
+FrechetCopula{Float64}(2, 0.4, 0.4)
 
 julia> Random.seed!(43);
 
-julia> simulate_copula(10, c)
-10×2 Array{Float64,2}:
- 0.180975   0.661781  
- 0.0742681  0.0742681
- 0.888934   0.125437  
+julia> simulate_copula(5, c)
+5×2 Matrix{Float64}:
+ 0.180975   0.775377
+ 0.924876   0.408278
+ 0.599463   0.400537
+ 0.661781   0.661781
  0.0950087  0.0950087
- 0.869526   0.130474  
- 0.912603   0.740184  
- 0.995362   0.00463791
- 0.400537   0.0288987
- 0.521601   0.521601  
- 0.955881   0.851275  
+
 ```
 
 The one parameter Frechet copula `C(u₁, ..., uₙ) = α C_{max}(u₁, ..., uₙ) + (1-α) C_{⟂}(u₁, ..., uₙ)`, where `0 ≤ α ≤ 1` is supported for any `n ≥ 2`.
@@ -172,22 +167,17 @@ julia> FrechetCopula(n::Int, α::Float64)
 ```
 ```julia
 julia> c = FrechetCopula(3, 0.4)
-FrechetCopula(3, 0.4, 0.0)
+FrechetCopula{Float64}(3, 0.4, 0.0)
 
 julia> Random.seed!(43);
 
-julia> simulate_copula(10, c)
-10×3 Array{Float64,2}:
- 0.180975  0.661781    0.996764
- 0.775377  0.0742681   0.204033
- 0.979901  0.979901    0.979901
- 0.924876  0.0950087   0.120669
- 0.453027  0.453027    0.453027
- 0.912603  0.740184    0.800909
- 0.828727  0.00463791  0.54892
- 0.400537  0.0288987   0.933832
- 0.396943  0.396943    0.396943
- 0.804096  0.804096    0.804096
+julia> simulate_copula(5, c)
+5×3 Matrix{Float64}:
+ 0.180975    0.775377   0.888934
+ 0.408278    0.912603   0.828727
+ 0.661781    0.661781   0.661781
+ 0.125437    0.0950087  0.130474
+ 0.00463791  0.0288987  0.521601
  ```
 
 ## The Archimedean copulas
@@ -219,10 +209,10 @@ of Ali-Mikhail-Haq Copula', Applied Mathematical Sciences, Vol. 4, 2010, no. 14,
 
 
 ```julia
-julia> Random.seed!(43);
-
 julia> c = ClaytonCopula(3, 3.)
-ClaytonCopula(3, 3.0)
+ClaytonCopula{Float64}(3, 3.0)
+
+julia> Random.seed!(43);
 
 julia> simulate_copula(5, c)
 5×3 Array{Float64,2}:
@@ -240,7 +230,7 @@ Here only positive correlations are supported, and there are some limitations ar
 
 ```julia
 julia> c = ClaytonCopula(3, 0.5, KendallCorrelation)
-ClaytonCopula(3, 2.0)
+ClaytonCopula{Float64}(3, 2.0)
 
 julia> x = simulate_copula(500_000, c);
 
@@ -253,7 +243,7 @@ julia> corkendall(x)
 
 ```julia
 julia> c = ClaytonCopula(3, 0.5, SpearmanCorrelation)
-ClaytonCopula(3, 1.0760904048732394)
+ClaytonCopula{Float64}(3, 1.0760904048732394)
 
 julia> x = simulate_copula(500_000, c);
 
@@ -281,7 +271,7 @@ investment in shares traded on the Warsaw Stock Exchange', Physica A: Statistica
 
 ```julia
 julia> c = ClaytonCopulaRev(2, 5.)
-ClaytonCopulaRev(2, 5.0)
+ClaytonCopulaRev{Float64}(2, 5.0)
 
 julia> Random.seed!(43);
 
@@ -306,27 +296,27 @@ The Nested Archimedean copula is
 Here `θ` is the parameter of the parent copula while `ϕᵢ` is the parameter of the child copula. If `m > 0`, some random variables will be modeled by the parent copula only. The example is:
 
 ```julia
-julia> Nested_ClaytonCopula(childred::Vector{ClaytonCopula}, m::Int, θ::Float64)
+julia> NestedClaytonCopula(childred::Vector{ClaytonCopula}, m::Int, θ::Float64)
 ```
 
 ```julia
 julia> a = ClaytonCopula(2, 3.)
-ClaytonCopula(2, 3.0)
+ClaytonCopula{Float64}(2, 3.0)
 
 julia> b = ClaytonCopula(2, 4.)
-ClaytonCopula(2, 4.0)
+ClaytonCopula{Float64}(2, 4.0)
 
-julia> Nested_ClaytonCopula([a,b], 0, 1.)
-Nested_ClaytonCopula(ClaytonCopula[ClaytonCopula(2, 3.0), ClaytonCopula(2, 4.0)], 0, 1.0)
+julia> NestedClaytonCopula([a,b], 0, 1.)
+NestedClaytonCopula{Float64}(ClaytonCopula{Float64}[ClaytonCopula{Float64}(2, 3.0), ClaytonCopula{Float64}(2, 4.0)], 0, 1.0, 4)
 ```
 Only the nesting within the same family is supported. The sufficient nesting condition requires parameters of the children copulas to be larger than the parameter of the parent copula. For sampling one uses the algorithm form  McNeil, A.J., 'Sampling nested Archimedean copulas', Journal of Statistical Computation and Simulation 78, 567–581 (2008).
 
 ```julia
 julia> a = ClaytonCopula(2, 0.9, KendallCorrelation)
-ClaytonCopula(2, 18.000000000000004)
+ClaytonCopula{Float64}(2, 18.000000000000004)
 
-julia> b = Nested_ClaytonCopula([a], 1, .2, KendallCorrelation)
-Nested_ClaytonCopula(ClaytonCopula[ClaytonCopula(2, 18.000000000000004)], 1, 0.5)
+julia> b = NestedClaytonCopula([a], 1, .2, KendallCorrelation)
+NestedClaytonCopula{Float64}(ClaytonCopula{Float64}[ClaytonCopula{Float64}(2, 18.000000000000004)], 1, 0.5, 3)
 
 julia> x = simulate_copula(500000, b);
 
@@ -346,22 +336,23 @@ julia> DoubleNestedGumbelCopula(children::Vector{NestedGumbelCopula}, θ)
 
 ```julia
 julia> a = GumbelCopula(2, 2.)
-GumbelCopula(2, 2.0)
+GumbelCopula{Float64}(2, 2.0)
 
 julia> b = GumbelCopula(2, 3.)
-GumbelCopula(2, 3.0)
+GumbelCopula{Float64}(2, 3.0)
 
 julia> c = GumbelCopula(2, 4.)
-GumbelCopula(2, 4.0)
+GumbelCopula{Float64}(2, 4.0)
 
 julia> p = NestedGumbelCopula([a,b], 0, 1.75)
-NestedGumbelCopula(GumbelCopula[GumbelCopula(2, 2.0), GumbelCopula(2, 3.0)], 0, 1.75)
+NestedGumbelCopula{Float64}(GumbelCopula{Float64}[GumbelCopula{Float64}(2, 2.0), GumbelCopula{Float64}(2, 3.0)], 0, 1.75, 4)
 
 julia> p1 = NestedGumbelCopula([c], 1, 1.5)
-NestedGumbelCopula(GumbelCopula[GumbelCopula(2, 4.0)], 1, 1.5)
+NestedGumbelCopula{Float64}(GumbelCopula{Float64}[GumbelCopula{Float64}(2, 4.0)], 1, 1.5, 3)
 
 julia> gp = DoubleNestedGumbelCopula([p, p1], 1.2)
-DoubleNestedGumbelCopula(NestedGumbelCopula[NestedGumbelCopula(GumbelCopula[GumbelCopula(2, 2.0), GumbelCopula(2, 3.0)], 0, 1.75), NestedGumbelCopula(GumbelCopula[GumbelCopula(2, 4.0)], 1, 1.5)], 1.2)
+DoubleNestedGumbelCopula{Float64}(NestedGumbelCopula{Float64}[NestedGumbelCopula{Float64}(GumbelCopula{Float64}[GumbelCopula{Float64}(2, 2.0), GumbelCopula{Float64}(2, 3.0)], 0, 1.75, 4), NestedGumbelCopula{Float64}(GumbelCopula{Float64}[GumbelCopula{Float64}(2, 4.0)], 1, 1.5, 3)], 1.2, 7)
+
 
 julia> Random.seed!(43);
 
@@ -371,23 +362,24 @@ julia> simulate_copula(2, gp)
  0.755824  0.946489  0.745881  0.916382   0.448706  0.354352  0.676657
 ```
 
-More straight forward example
+Another example
 
 ```julia
 julia> a = GumbelCopula(2, .9, KendallCorrelation)
-GumbelCopula(2, 10.000000000000002)
+GumbelCopula{Float64}(2, 10.000000000000002)
 
 julia> b = GumbelCopula(2, 0.8, KendallCorrelation)
-GumbelCopula(2, 5.000000000000001)
+GumbelCopula{Float64}(2, 5.000000000000001)
 
 julia> p = NestedGumbelCopula([a], 1, 0.6, KendallCorrelation)
 NestedGumbelCopula(GumbelCopula[GumbelCopula(2, 10.000000000000002)], 1, 2.5)
 
 julia> p1 = NestedGumbelCopula([b], 1, 0.5, KendallCorrelation)
-NestedGumbelCopula(GumbelCopula[GumbelCopula(2, 5.000000000000001)], 1, 2.0)
+NestedGumbelCopula{Float64}(GumbelCopula{Float64}[GumbelCopula{Float64}(2, 10.000000000000002)], 1, 2.5, 3)
 
 julia> pp = DoubleNestedGumbelCopula([p,p1], 0.1, KendallCorrelation)
-DoubleNestedGumbelCopula(NestedGumbelCopula[NestedGumbelCopula(GumbelCopula[GumbelCopula(2, 10.000000000000002)], 1, 2.5), NestedGumbelCopula(GumbelCopula[GumbelCopula(2, 5.000000000000001)], 1, 2.0)], 1.1111111111111112)
+DoubleNestedGumbelCopula{Float64}(NestedGumbelCopula{Float64}[NestedGumbelCopula{Float64}(GumbelCopula{Float64}[GumbelCopula{Float64}(2, 10.000000000000002)], 1, 2.5, 3), NestedGumbelCopula{Float64}(GumbelCopula{Float64}[GumbelCopula{Float64}(2, 4.0)], 1, 1.5, 3)], 1.1111111111111112, 6)
+
 
 julia> x = simulate_copula(750_000, pp);
 
@@ -411,7 +403,7 @@ must be sorted in the descending order.
 
 ```julia
 julia> c = HierarchicalGumbelCopula([5., 4., 3.])
-HierarchicalGumbelCopula(4, [5.0, 4.0, 3.0])
+HierarchicalGumbelCopula{Float64}(4, [5.0, 4.0, 3.0])
 
 julia> Random.seed!(43);
 
@@ -424,7 +416,7 @@ julia> simulate_copula(3, c)
 
 ```julia
 julia> c = HierarchicalGumbelCopula([.9, 0.7, 0.5, 0.1], KendallCorrelation)
-HierarchicalGumbelCopula(5, [10.000000000000002, 3.333333333333333, 2.0, 1.1111111111111112])
+HierarchicalGumbelCopula{Float64}(5, [10.000000000000002, 3.333333333333333, 2.0, 1.1111111111111112])
 
 julia> x = simulate_copula(750_000, c);
 
@@ -469,7 +461,7 @@ ChainArchimedeanCopulas(3, [2.0, 3.0], ["frank", "frank"])
 
 ```julia
 julia> c = ChainArchimedeanCopulas([0.7, 0.5, 0.7], "clayton", KendallCorrelation)
-ChainArchimedeanCopulas(4, [4.666666666666666, 2.0, 4.666666666666666], ["clayton", "clayton", "clayton"])
+ChainArchimedeanCopulas{Float64}(4, [4.666666666666666, 2.0, 4.666666666666666], ["clayton", "clayton", "clayton"])
 
 julia> x = simulate_copula(750_000, c);
 
@@ -485,7 +477,7 @@ Negative correlations are supported here as well:
 
 ```julia
 julia> c = ChainArchimedeanCopulas([0.7, 0.5, -0.7], "clayton", KendallCorrelation)
-ChainArchimedeanCopulas(4, [4.666666666666666, 2.0, -0.8235294117647058], ["clayton", "clayton", "clayton"])
+ChainArchimedeanCopulas{Float64}(4, [4.666666666666666, 2.0, -0.8235294117647058], ["clayton", "clayton", "clayton"])
 
 julia> x = simulate_copula(750_000, c);
 
@@ -508,7 +500,7 @@ julia> c = ChainFrechetCopulas(α, β)
 
 ```julia
 julia> c = ChainFrechetCopulas([0.2, 0.3], [0.5, 0.1])
-ChainFrechetCopulas(3, [0.2, 0.3], [0.5, 0.1])
+ChainFrechetCopulas{Float64}(3, [0.2, 0.3], [0.5, 0.1])
 
 julia> Random.seed!(43);
 
@@ -731,14 +723,7 @@ julia> gcop2arch(x, ["clayton" => [1,2]])
 
 julia> Random.seed!(42);
 
-julia> x = Array(rand(MvNormal(Σ), 6)')
-6×3 Array{Float64,2}:
--0.556027  -0.662861   -0.384124
--0.299484   1.38993    -0.571326
--0.468606  -0.0990787  -2.3464  
-1.00331    1.43902     0.966819
-0.518149   1.55065     0.989712
--0.886205   0.149748   -1.54419
+julia> x = Array(rand(MvNormal(Σ), 6)');
 
 julia> gcop2arch(x, ["gumbel" => [1,2]])
 6×3 Array{Float64,2}:
@@ -764,14 +749,7 @@ julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
 julia> Random.seed!(42)
 
-julia> x = Array(rand(MvNormal(Σ), 6)')
-6×3 Array{Float64,2}:
- -0.556027  -0.662861   -0.384124
- -0.299484   1.38993    -0.571326
- -0.468606  -0.0990787  -2.3464
-  1.00331    1.43902     0.966819
-  0.518149   1.55065     0.989712
- -0.886205   0.149748   -1.54419
+julia> x = Array(rand(MvNormal(Σ), 6)');
 
 julia> gcop2frechet(x, [1,2])
 6×3 Array{Float64,2}:
@@ -797,14 +775,7 @@ julia> Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1];
 
 julia> Random.seed!(42);
 
-julia> x = Array(rand(MvNormal(Σ), 6)')
-6×3 Array{Float64,2}:
- -0.556027  -0.662861   -0.384124
- -0.299484   1.38993    -0.571326
- -0.468606  -0.0990787  -2.3464  
-  1.00331    1.43902     0.966819
-  0.518149   1.55065     0.989712
- -0.886205   0.149748   -1.54419
+julia> x = Array(rand(MvNormal(Σ), 6)');
 
 julia> gcop2marshallolkin(x, [1,2])
 6×3 Array{Float64,2}:
@@ -822,27 +793,29 @@ julia> gcop2marshallolkin(x, [1,2])
 Takes matrix `X`: `size(X) = (t, n)` ie `t` realisations of `n`-dimensional random variable, with all uniform marginal univariate distributions `∀ᵢ X[:,i] ∼ Uniform(0,1)`, and convert those marginals to the common distribution `d` with parameters `p[i]`
 
 ```julia
-julia> convertmarg!(U::Matrix{T}, d::UnionAll, p::Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}; testunif::Bool = true)
+julia> convertmarg!(x::Matrix{T}, d::UnionAll, p::Union{Vector{Vector{Int64}}, Vector{Vector{Float64}}}; testunif::Bool = true)
 ```
 
 If `testunif = true` each marginal is tested for uniformity.
 
 ```julia
-julia> using Distributions
+julia> c = GaussianCopula([1. 0.5; 0.5 1.])
 
 julia> Random.seed!(43);
 
-julia> U = gausscopulagen(10);
+julia> x = simulate_copula(10, c);
 
-julia> convertmarg!(U, Normal, [[0, 1],[0, 10]])
 
-julia> U
+julia> convertmarg!(x, Normal, [[0, 1],[0, 10]])
+
+julia> x
 10×2 Array{Float64,2}:
+10×2 Matrix{Float64}:
   0.225457      8.97627
   0.548381     14.3926
-  0.666147    -10.0689                                                                                                                                                      
- -0.746662     -9.03553                                                                                                                                                     
- -0.746857     17.2101                                                                                                                                                      
+  0.666147    -10.0689
+ -0.746662     -9.03553
+ -0.746857     17.2101
  -0.608109     -3.45649
  -0.136555      0.700419
   0.215631     -7.34409
@@ -857,15 +830,17 @@ To convert `i` th marginal to univariate distribution `d` with parameters array
 
 julia> using Distributions
 
-julia> quantile.(d(p...), U[:,i])
+julia> quantile.(d(p...), x[:,i])
 ```
 
 ```julia
+julia> c = GaussianCopula([1. 0.5; 0.5 1.])
+
 julia> Random.seed!(43);
 
-julia> U = gausscopulagen(10);
+julia> x = simulate_copula(10, c);
 
-julia> quantile.(Levy(0, 1), U[:,2])
+julia> quantile.(Levy(0, 1), x[:,2])
 10-element Array{Float64,1}:
   18.327904335047272
  112.72788160148863  
@@ -883,11 +858,11 @@ To convert all marginals to the same `d` with the same parameters `p` run
 ```
 julia> using Distributions
 
-julia> quantile.(d(p...), U)
+julia> quantile.(d(p...), x)
 ```
 
 ```julia
-julia> quantile.(Levy(0, 1), U)
+julia> quantile.(Levy(0, 1), x)
 10×2 Array{Float64,2}:
  3.42919    18.3279  
  7.14305   112.728   
@@ -908,14 +883,15 @@ For some copulas: Marshall-Olkin, Frechet, Gumbel, Frank, Ali-Mikhail-Haq,and Ne
 
 julia> θ = BigFloat(2.);
 
-julia> c = GumbelCopula(3, θ)
-GumbelCopula{BigFloat}(3, 2.0)
+julia> Random.seed!(43)
+MersenneTwister(43)
 
 julia> simulate_copula(3, c)
-3×3 Array{BigFloat,2}:
- 0.641156  0.397985  0.737306
- 0.285039  0.483624  0.547879
- 0.533071  0.634007  0.478209
+3×3 Matrix{BigFloat}:
+ 0.201305  0.277557  0.387158
+ 0.395095  0.536081  0.152753
+ 0.612178  0.39509   0.426144
+
 ```
 
 # Citing this work
