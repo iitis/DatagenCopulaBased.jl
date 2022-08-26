@@ -90,7 +90,7 @@ function stats3theoreunifcl()
 end
 
 
-function statstheoreticalclayton(m::Int = 3, d = Normal(0,1), ρ)
+function statstheoreticalclayton(m::Int, d, ρ)
   θ = map(i -> ρ2θ(i, "clayton"), ρ)
   n = length(θ)
   t = (m == 3) ? zeros(n, 3) : zeros(n, 5)
@@ -109,7 +109,7 @@ function empiricalcums(copula, m::Int, ρ::Vector{Float64})
   e = (m == 3) ? zeros(n, 3) : zeros(n, 5)
   for i in 1:n
     println(i)
-    e[i,:] = (m == 3) ? c3empirical(copula(3, ρ[i], "Spearman"), Normal(0,1)) : c4empirical(copula(4, ρ[i], "Spearman"), Normal(0,1))
+    e[i,:] = (m == 3) ? c3empirical(copula(3, ρ[i], SpearmanCorrelation), Normal(0,1)) : c4empirical(copula(4, ρ[i], SpearmanCorrelation), Normal(0,1))
   end
   e
 end

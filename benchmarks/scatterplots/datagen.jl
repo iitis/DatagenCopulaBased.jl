@@ -7,26 +7,26 @@ using RandomNumbers.Xorshifts
 
 ## tests on simulated sata with custom rmg
 
-c = Gumbel_cop(2, 5.)
-cg = Nested_Gumbel_cop([c], 1, 2.)
+c = GumbelCopula(2, 5.)
+cg = NestedGumbelCopula([c], 1, 2.)
 
-c = Frank_cop(2, 5.)
-cf = Nested_Frank_cop([c], 1, 2.)
+c = FrankCopula(2, 5.)
+cf = NestedFrankCopula([c], 1, 2.)
 
-c = Clayton_cop(2, 5.)
-cc = Nested_Clayton_cop([c], 1, 2.)
+c = ClaytonCopula(2, 5.)
+cc = NestedClaytonCopula([c], 1, 2.)
 
-c = AMH_cop(2, .9)
-ca = Nested_AMH_cop([c], 1, .3)
+c = AmhCopula(2, .9)
+ca = NestedAmhCopula([c], 1, .3)
 
-cch = Chain_of_Archimedeans([-0.9, 3], "clayton")
+cch = ChainArchimedeanCopulas([-0.9, 3], "clayton")
 
-cmo = Marshall_Olkin_cop([1., 2., 3., 1., 2., 3., 4.])
+cmo = MarshallOlkinCopula([1., 2., 3., 1., 2., 3., 4.])
 
-cf = Frechet_cop(3, 0.5)
+cf = FrechetCopula(3, 0.5)
 
 Σ = [1. 0.5 0.5; 0.5 1. 0.5; 0.5 0.5 1.]
-ct = Student_cop(Σ, 1)
+ct = StudentCopula(Σ, 1)
 
 t = 100_000
 
