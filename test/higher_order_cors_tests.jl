@@ -74,7 +74,7 @@ end
 
     x2 = gcop2arch(y, d; naive = true)
     @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(0,S[1]))) > α
-    @test pvalue(ExactOneSampleKSTest(x2[:,4], Normal(0,S[4]))) > α
+    @test pvalue(ExactOneSampleKSTest(x2[:,2], Normal(0,S[4]))) > α
     @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.06
     @test_throws AssertionError gcop2arch(y, ["clayton" => [1,1,3,4]])
   end
