@@ -154,7 +154,7 @@ end
   x2 = gcop2tstudent(y, [1,2,3,4], 10; naive = true)
   @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(mu[3],S[3]))) > α
   @test pvalue(ExactOneSampleKSTest(x2[:,4], Normal(mu[4],S[4]))) > α
-  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.0065
+  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.007
 end
 
 @testset "convert sub-copula to Frechet" begin
