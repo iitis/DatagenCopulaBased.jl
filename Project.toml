@@ -25,7 +25,7 @@ HCubature = "1.5"
 HypothesisTests = "0.10"
 QuadGK = "2.8"
 Roots = "2"
-SpecialFunctions = "2"
+SpecialFunctions = "1, 2"
 StatsBase = "0.33"
 julia = "1"
 
