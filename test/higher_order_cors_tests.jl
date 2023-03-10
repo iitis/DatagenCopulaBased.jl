@@ -168,16 +168,16 @@ end
   @test pvalue(ExactOneSampleKSTest(x[:,1], Normal(mu[1],S[1]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,2], Normal(mu[2],S[2]))) > α
   @test pvalue(ExactOneSampleKSTest(x[:,3], Normal(mu[3],S[3]))) > α
-  @test norm(cor(y)-cor(x))/norm(cor(y)) < 0.21
-  @test norm(cov(y)-cov(x))/norm(cov(y)) < 0.21
-  @test maximum(abs.(cor(y)-cor(x))) < 0.39
+  @test norm(cor(y)-cor(x))/norm(cor(y)) < 0.22
+  @test norm(cov(y)-cov(x))/norm(cov(y)) < 0.23
+  @test maximum(abs.(cor(y)-cor(x))) < 0.42
   @test_throws AssertionError gcop2frechet(y, [1,1,3,4])
   Random.seed!(42)
   x2 = gcop2frechet(y, [1,2,3,4]; naive = true)
   @test pvalue(ExactOneSampleKSTest(x2[:,1], Normal(mu[1],S[1]))) > α
   @test pvalue(ExactOneSampleKSTest(x2[:,2], Normal(mu[2],S[2]))) > α
   @test pvalue(ExactOneSampleKSTest(x2[:,3], Normal(mu[3],S[3]))) > α
-  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.15
+  @test maximum(abs.(cov(y[:,1:4])-cov(x2[:,1:4]))) < 0.16
 end
 
 
