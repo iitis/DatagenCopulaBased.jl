@@ -26,15 +26,14 @@ HypothesisTests = "0.10"
 QuadGK = "2.8"
 Roots = "2"
 SpecialFunctions = "1, 2"
-StatsBase = "0.33"
+StatsBase = "0.33, 0.34"
 julia = "1"
 
 [extras]
 Cubature = "667455a9-e2ce-5579-9412-b964f529a492"
-PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "PyCall", "Cubature", "StableRNGs"]
+test = ["Test", "Cubature", "StableRNGs"]
